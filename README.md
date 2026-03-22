@@ -2,6 +2,8 @@
 
 Single-page **React 18 + Vite + Tailwind CSS** portfolio with **Framer Motion** animations — *Neural Noir* aesthetic (dark editorial, cyan/teal accents).
 
+Repository: [github.com/RAUNAKVARMA/raunak_portfolio_site](https://github.com/RAUNAKVARMA/raunak_portfolio_site)
+
 ## Stack
 
 - React 18, Vite 8
