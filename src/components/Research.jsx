@@ -55,7 +55,7 @@ function Research() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
 
   return (
-    <section id="research" className="py-24" ref={ref}>
+    <section id="research" className="sci-fi-section py-24" ref={ref}>
       <div className="section-container">
         <div className="relative mb-14">
           <span className="section-number">03</span>

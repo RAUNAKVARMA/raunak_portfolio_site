@@ -68,7 +68,7 @@ function Experience() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 })
 
   return (
-    <section id="experience" className="py-24" ref={ref}>
+    <section id="experience" className="sci-fi-section py-24" ref={ref}>
       <div className="section-container">
         <div className="relative mb-14">
           <span className="section-number">04</span>

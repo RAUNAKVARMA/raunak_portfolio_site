@@ -41,7 +41,7 @@ function Projects() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
 
   return (
-    <section id="projects" className="py-24" ref={ref}>
+    <section id="projects" className="sci-fi-section py-24" ref={ref}>
       <div className="section-container">
         <div className="relative mb-14">
           <span className="section-number">02</span>

@@ -18,7 +18,7 @@ function About() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
 
   return (
-    <section id="about" className="py-24" ref={ref}>
+    <section id="about" className="sci-fi-section py-24" ref={ref}>
       <div className="section-container grid gap-12 lg:grid-cols-2 lg:items-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

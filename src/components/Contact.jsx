@@ -27,7 +27,7 @@ function Contact() {
   }
 
   return (
-    <section id="contact" className="py-24" ref={ref}>
+    <section id="contact" className="sci-fi-section py-24" ref={ref}>
       <div className="section-container text-center">
         <div className="relative mb-8">
           <span className="section-number left-1/2 -translate-x-1/2">06</span>

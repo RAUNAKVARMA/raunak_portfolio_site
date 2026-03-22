@@ -49,7 +49,7 @@ select,
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.045;
   z-index: 40;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
 }
@@ -92,6 +92,30 @@ select,
   .section-container {
     @apply px-4;
   }
+}
+
+/* Section chrome — holographic top rail */
+.sci-fi-section {
+  position: relative;
+}
+
+.sci-fi-section::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 1;
+  width: min(920px, 88%);
+  height: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(34, 211, 238, 0.28),
+    rgba(232, 121, 249, 0.22),
+    transparent
+  );
+  pointer-events: none;
 }
 
 /* Space hero grid */

@@ -36,7 +36,7 @@ function Certifications() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
 
   return (
-    <section className="py-24" ref={ref}>
+    <section className="sci-fi-section py-24" ref={ref}>
       <div className="section-container">
         <h2 className="section-title text-3xl md:text-5xl">Certifications</h2>
         <div className="mt-10 grid gap-6 md:grid-cols-2">

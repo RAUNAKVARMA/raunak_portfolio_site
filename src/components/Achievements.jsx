@@ -29,7 +29,7 @@ function Achievements() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
 
   return (
-    <section className="py-24" ref={ref}>
+    <section className="sci-fi-section py-24" ref={ref}>
       <div className="section-container grid gap-6 md:grid-cols-3">
         {achievements.map((item, index) => (
           <motion.article

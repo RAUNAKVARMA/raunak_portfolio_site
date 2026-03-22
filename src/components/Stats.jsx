@@ -13,7 +13,10 @@ function Stats() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.25 })
 
   return (
-    <section className="border-y border-borderColor bg-bgSecondary py-12" ref={ref}>
+    <section
+      className="sci-fi-section overflow-hidden border-y border-white/[0.08] bg-[#0b1224]/85 py-12 shadow-[0_0_80px_rgba(88,28,135,0.08)] backdrop-blur-[2px]"
+      ref={ref}
+    >
       <div className="section-container grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
           <motion.div
