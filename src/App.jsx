@@ -31,8 +31,9 @@ function App() {
       <div className="relative z-10">
         <SpaceBackdrop />
         <SciFiLayer />
-        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_70%_45%_at_50%_-10%,rgba(34,211,238,0.09),transparent_55%)]" />
-        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_55%_40%_at_100%_30%,rgba(232,121,249,0.06),transparent_50%)]" />
+        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_75%_50%_at_50%_-8%,rgba(34,211,238,0.11),transparent_58%)]" />
+        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_60%_45%_at_100%_25%,rgba(232,121,249,0.09),transparent_52%)]" />
+        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_45%_35%_at_0%_70%,rgba(167,139,250,0.07),transparent_45%)]" />
         <SciFiHUD />
         <div className="noise-overlay" />
         <CustomCursor />

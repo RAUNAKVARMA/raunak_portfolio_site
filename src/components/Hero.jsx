@@ -146,16 +146,22 @@ function Hero() {
             initial="hidden"
             animate="visible"
             custom={3}
-            className="mt-6 flex min-h-[2.25rem] select-none items-center border-l-2 border-fuchsia-500/50 pl-4 font-mono text-sm sm:mt-8 sm:text-base"
+            className="relative mt-6 min-h-[3rem] select-none sm:mt-8"
           >
-            <span className="text-slate-500">I build </span>
-            <span className="ml-1.5 font-semibold text-cyan-300 [text-shadow:0_0_24px_rgba(34,211,238,0.35)]">
-              {typedText}
+            <div className="pointer-events-none absolute -inset-px rounded-xl bg-gradient-to-r from-cyan-500/40 via-fuchsia-500/35 to-purple-600/30 opacity-70 blur-[1px]" />
+            <div className="pointer-events-none absolute inset-0 rounded-xl bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,rgba(34,211,238,0.04)_3px,rgba(34,211,238,0.04)_4px)]" />
+            <div className="relative flex min-h-[2.75rem] items-center overflow-hidden rounded-xl border border-cyan-400/25 bg-gradient-to-r from-slate-950/90 via-indigo-950/50 to-fuchsia-950/40 px-4 py-3 font-mono text-sm shadow-[0_0_50px_rgba(34,211,238,0.12),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md sm:text-base">
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.25em] text-fuchsia-300/90">Signal</span>
+              <span className="mx-3 h-4 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
+              <span className="text-slate-400">I am </span>
+              <span className="ml-1.5 font-semibold text-cyan-100 [text-shadow:0_0_20px_rgba(34,211,238,0.55),0_0_42px_rgba(232,121,249,0.35)]">
+                {typedText}
+              </span>
               <span
-                className="ml-0.5 inline-block h-[1.05em] w-[2px] animate-pulse bg-gradient-to-b from-fuchsia-400 to-cyan-400 align-middle"
+                className="ml-1 inline-block h-[1.1em] w-[3px] animate-pulse rounded-sm bg-gradient-to-b from-fuchsia-400 via-white to-cyan-400 align-middle shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                 aria-hidden
               />
-            </span>
+            </div>
           </motion.div>
 
           <motion.p

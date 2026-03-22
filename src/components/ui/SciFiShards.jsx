@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 function SciFiShards() {
   const shards = useMemo(
     () =>
-      Array.from({ length: 36 }, (_, i) => {
+      Array.from({ length: 72 }, (_, i) => {
         const a = (i * 9301 + 49297) % 233280
         return {
           top: `${((a * 7) % 100).toFixed(2)}%`,
@@ -46,7 +46,7 @@ function SciFiShards() {
             transform: `translateZ(${s.z}px) rotateX(${s.rotX}deg) rotateZ(${s.rotZ}deg)`,
             animation: `floatY ${s.dur}s ease-in-out infinite`,
             animationDelay: `${s.delay}s`,
-            opacity: 0.55,
+            opacity: 0.62,
           }}
         />
       ))}

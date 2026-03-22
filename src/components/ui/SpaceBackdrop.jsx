@@ -19,7 +19,7 @@ function buildStars(count) {
 }
 
 function SpaceBackdrop() {
-  const stars = useMemo(() => buildStars(160), [])
+  const stars = useMemo(() => buildStars(280), [])
 
   return (
     <div className="pointer-events-none fixed inset-0 z-[0] overflow-hidden">
@@ -27,7 +27,8 @@ function SpaceBackdrop() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_70%_at_15%_20%,rgba(88,28,135,0.35),transparent_55%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_85%_15%,rgba(14,165,233,0.18),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_60%_85%,rgba(236,72,153,0.12),transparent_45%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_80%_at_50%_120%,rgba(15,23,42,0.9),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_80%_at_50%_120%,rgba(15,23,42,0.88),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_30%_60%,rgba(52,211,153,0.06),transparent_50%)]" />
 
       {/* Star field */}
       {stars.map((s, i) => (
@@ -51,6 +52,7 @@ function SpaceBackdrop() {
       {/* Large bokeh orbs (depth) */}
       <div className="absolute -left-20 top-1/4 h-72 w-72 rounded-full bg-purple-500/10 blur-[80px]" />
       <div className="absolute -right-16 bottom-1/4 h-96 w-96 rounded-full bg-cyan-500/10 blur-[90px]" />
+      <div className="absolute left-1/3 top-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-fuchsia-600/8 blur-[70px]" />
     </div>
   )
 }
