@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #080b10;
+  --bg-secondary: #0d1117;
+  --bg-card: #111827;
+  --accent-primary: #00d4ff;
+  --accent-secondary: #f59e0b;
+  --accent-glow: rgba(0, 212, 255, 0.15);
+  --text-primary: #f1f5f9;
+  --text-muted: #64748b;
+  --border: rgba(255, 255, 255, 0.06);
+  --gradient-hero: linear-gradient(135deg, #080b10 0%, #0d1a2d 50%, #080b10 100%);
+}
+
+* {
+  @apply box-border;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply m-0 bg-bgPrimary font-body text-textPrimary antialiased;
+  background-image: radial-gradient(circle at 20% 15%, rgba(0, 212, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 78% 0%, rgba(245, 158, 11, 0.06), transparent 20%);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+a,
+button,
+input,
+textarea,
+select,
+[role='button'] {
+  cursor: none;
+}
+
+#root {
+  position: relative;
+  min-height: 100vh;
+}
+
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: 40;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+.section-container {
+  @apply mx-auto w-full max-w-[1240px] px-4 sm:px-6 lg:px-8;
+}
+
+.section-title {
+  @apply relative z-10 font-heading text-3xl font-extrabold uppercase tracking-tight text-textPrimary sm:text-4xl md:text-6xl;
+}
+
+.section-number {
+  @apply pointer-events-none absolute -top-6 left-0 z-0 font-mono text-6xl font-semibold text-white/5 sm:-top-8 sm:text-7xl md:text-9xl;
+}
+
+.glass-card {
+  @apply border border-borderColor bg-white/[0.03] backdrop-blur-md;
+}
+
+.ring-accent {
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.35), 0 0 40px rgba(0, 212, 255, 0.14);
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  body {
+    cursor: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .section-container {
+    @apply px-4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
