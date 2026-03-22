@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { RiArrowRightUpLine, RiGithubLine } from 'react-icons/ri'
+import { RiArrowRightUpLine, RiExternalLinkLine, RiGithubLine } from 'react-icons/ri'
 import { useInView } from 'react-intersection-observer'
 
 const projects = [
@@ -14,7 +14,7 @@ const projects = [
     tech: ['Node.js', 'REST APIs', 'Secure Data Systems'],
   },
   {
-    name: 'RAG Knowledge Assistant',
+    name: 'Cosmic RAG',
     year: '2025',
     category: 'LLM Platform',
     accent: 'bg-accentSecondary',
@@ -22,6 +22,7 @@ const projects = [
       'NotebookLLM-style question answering assistant with retrieval-aware orchestration. Tuned chunking and ranking strategies to improve precision and system responsiveness.',
     metric: '↑25% accuracy, ↓30% latency',
     tech: ['Python', 'LLM APIs', 'Vector Databases', 'NLP'],
+    liveUrl: 'https://et-t-project-doqi-bb9qdn7mk-raunak-varmas-projects.vercel.app/chat',
   },
   {
     name: 'Gesture Virtual Mouse',
@@ -32,6 +33,7 @@ const projects = [
       'AI-powered hand tracking interaction system translating gestures into mouse events. Optimized model and smoothing logic for stable real-time human-computer interaction.',
     metric: '20-30 FPS, ↓20% false triggers',
     tech: ['Python', 'OpenCV', 'MediaPipe'],
+    liveUrl: 'https://ai-gesture-virtual-mouse-hjgugnisok8t75yfcxqd7i.streamlit.app/',
   },
 ]
 
@@ -85,16 +87,32 @@ function Projects() {
                 ))}
               </div>
 
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noreferrer"
-                className="mt-6 inline-flex items-center gap-1.5 text-sm text-accentPrimary"
-              >
-                <RiGithubLine />
-                View Repository
-                <RiArrowRightUpLine className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
-              </a>
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                {project.liveUrl && (
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-accentPrimary"
+                  >
+                    <RiExternalLinkLine className="text-base" />
+                    Live app
+                    <RiArrowRightUpLine className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </a>
+                )}
+                {project.repoUrl && (
+                  <a
+                    href={project.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-accentPrimary/90"
+                  >
+                    <RiGithubLine />
+                    Repository
+                    <RiArrowRightUpLine className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </a>
+                )}
+              </div>
             </motion.article>
           ))}
         </div>

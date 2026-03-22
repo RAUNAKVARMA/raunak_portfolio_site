@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { RiFlaskLine } from 'react-icons/ri'
+import { RiArrowRightUpLine, RiExternalLinkLine, RiFlaskLine } from 'react-icons/ri'
 import { useInView } from 'react-intersection-observer'
 
 const activeResearch = [
@@ -33,15 +33,19 @@ const publications = [
     items: [
       {
         title:
-          'System Design Methodology and Efficiency Optimization of Wireless Charging for Electric Vehicles - ICSCEA 2025',
-        publisher: 'Conference',
+          'System Design Methodology and Efficiency Optimization of Wireless Charging for Electric Vehicles — ICSoftComp / ICSCEA 2025',
+        publisher: 'Conference (Full Paper)',
         status: 'Full Paper',
+        paperUrl:
+          'https://drive.google.com/file/d/1owhIK2cbkbUreXc3ZlyPKa-johDQmUQI/view?usp=drivesdk',
       },
       {
         title:
-          'Wireless Charging for Electric Vehicles: A Comprehensive Review - SSIC 2025',
-        publisher: 'Conference',
+          'Wireless Charging for Electric Vehicles: A Comprehensive Review — SSIC 2025',
+        publisher: 'Conference (Full Paper)',
         status: 'Full Paper',
+        paperUrl:
+          'https://drive.google.com/file/d/1uAdgaP9-Af-k05WyboCnqxA6ObpSb4Ir/view?usp=drivesdk',
       },
     ],
   },
@@ -109,9 +113,23 @@ function Research() {
                   <article key={paper.title} className="rounded-xl border border-borderColor bg-bgSecondary/60 p-4">
                     <h4 className="text-lg font-semibold">{paper.title}</h4>
                     <p className="mt-1 text-sm text-accentPrimary">{paper.publisher}</p>
-                    <span className="mt-3 inline-block rounded-full border border-accentSecondary/50 bg-accentSecondary/10 px-3 py-1 font-mono text-xs text-accentSecondary">
-                      {paper.status}
-                    </span>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <span className="inline-block rounded-full border border-accentSecondary/50 bg-accentSecondary/10 px-3 py-1 font-mono text-xs text-accentSecondary">
+                        {paper.status}
+                      </span>
+                      {paper.paperUrl && (
+                        <a
+                          href={paper.paperUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group/link inline-flex items-center gap-1.5 text-sm font-medium text-accentPrimary hover:text-accentPrimary/90"
+                        >
+                          <RiExternalLinkLine />
+                          View paper (PDF)
+                          <RiArrowRightUpLine className="transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                        </a>
+                      )}
+                    </div>
                   </article>
                 ))}
               </div>
