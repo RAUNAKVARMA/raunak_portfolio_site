@@ -34,6 +34,7 @@ export default {
         reverseSpin: 'reverseSpin 14s linear infinite',
         floatY: 'floatY 4s ease-in-out infinite',
         meshShift: 'meshShift 18s ease-in-out infinite',
+        twinkle: 'twinkle 3.2s ease-in-out infinite',
       },
       keyframes: {
         glowPulse: {
@@ -55,6 +56,10 @@ export default {
         meshShift: {
           '0%, 100%': { opacity: '0.5', transform: 'scale(1) translate(0, 0)' },
           '50%': { opacity: '0.85', transform: 'scale(1.05) translate(2%, -1%)' },
+        },
+        twinkle: {
+          '0%, 100%': { opacity: '0.2' },
+          '50%': { opacity: '1' },
         },
       },
     },

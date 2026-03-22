@@ -39,11 +39,11 @@ function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-borderColor bg-bgPrimary/70 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#030712]/75 shadow-[0_8px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl backdrop-saturate-150">
         <div className="section-container flex h-[74px] items-center justify-between">
           <a
             href="#hero"
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-accentPrimary to-cyan-400 font-heading text-lg font-extrabold text-bgPrimary"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-purple-700 font-heading text-lg font-extrabold text-white shadow-[0_0_24px_rgba(34,211,238,0.35)]"
           >
             RV
           </a>

@@ -5,6 +5,7 @@ import Hero from './components/Hero'
 import Stats from './components/Stats'
 import About from './components/About'
 import ScrollProgressBar from './components/ui/ScrollProgressBar'
+import SpaceBackdrop from './components/ui/SpaceBackdrop'
 import ParticleBackground from './components/ui/ParticleBackground'
 import CustomCursor from './components/ui/CustomCursor'
 import Footer from './components/Footer'
@@ -27,6 +28,7 @@ function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative z-10">
+        <SpaceBackdrop />
         <ParticleBackground />
         <div className="noise-overlay" />
         <CustomCursor />

@@ -5,16 +5,16 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #080b10;
-  --bg-secondary: #0d1117;
+  --bg-primary: #030712;
+  --bg-secondary: #0b1224;
   --bg-card: #111827;
-  --accent-primary: #00d4ff;
-  --accent-secondary: #f59e0b;
-  --accent-glow: rgba(0, 212, 255, 0.15);
+  --accent-primary: #22d3ee;
+  --accent-secondary: #e879f9;
+  --accent-glow: rgba(34, 211, 238, 0.2);
   --text-primary: #f1f5f9;
-  --text-muted: #64748b;
-  --border: rgba(255, 255, 255, 0.06);
-  --gradient-hero: linear-gradient(135deg, #080b10 0%, #0d1a2d 50%, #080b10 100%);
+  --text-muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+  --gradient-hero: linear-gradient(135deg, #030712 0%, #1e1b4b 40%, #030712 100%);
 }
 
 * {
@@ -27,8 +27,6 @@ html {
 
 body {
   @apply m-0 bg-bgPrimary font-body text-textPrimary antialiased;
-  background-image: radial-gradient(circle at 20% 15%, rgba(0, 212, 255, 0.08), transparent 28%),
-    radial-gradient(circle at 78% 0%, rgba(245, 158, 11, 0.06), transparent 20%);
   overflow-x: hidden;
   cursor: none;
 }
@@ -96,24 +94,13 @@ select,
   }
 }
 
-/* Hero: editorial grid + mesh (Neural Noir) */
-.hero-grid {
+/* Space hero grid */
+.hero-grid-space {
   background-image:
-    linear-gradient(rgba(0, 212, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 30%, black 20%, transparent 70%);
-}
-
-.hero-headline-text {
-  background-image: linear-gradient(105deg, #f8fafc 0%, #e2e8f0 38%, #22d3ee 78%, #00d4ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.hero-vignette {
-  background: radial-gradient(ellipse 90% 70% at 50% 40%, transparent 0%, rgba(8, 11, 16, 0.65) 55%, #080b10 100%);
+    linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 38, 211, 0.05) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 95% 80% at 50% 25%, black 15%, transparent 72%);
 }
 
 @media (prefers-reduced-motion: reduce) {

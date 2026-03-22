@@ -5,26 +5,26 @@ import { useIsMobileOrTouch } from '../../hooks/useIsMobileOrTouch'
 const CLICKABLE_SELECTOR =
   'a, button, input, textarea, select, [role="button"], [data-cursor-hover="true"]'
 
-/** Stronger flow: lower = more lag / longer “tail” */
 const LERP = {
-  dot: 0.32,
-  ring: 0.078,
+  dot: 0.38,
+  ring: 0.085,
 }
 
-/**
- * Chained trail: each orb follows the *previous* point (mouse → t0 → t1 → …)
- * so the tail stretches instead of collapsing to one spot.
- */
-const TRAIL_CHAIN = [0.2, 0.16, 0.13, 0.105, 0.085, 0.068]
+/** Chained trail — each follows previous point */
+const TRAIL_CHAIN = [0.22, 0.17, 0.14, 0.11, 0.09, 0.075, 0.062]
 
-const TRAIL_VISUAL = [
-  { size: 'w-2.5 h-2.5', opacity: 'opacity-[0.55]', glow: 'shadow-[0_0_14px_rgba(0,212,255,0.55)]' },
-  { size: 'w-3.5 h-3.5', opacity: 'opacity-[0.42]', glow: 'shadow-[0_0_18px_rgba(0,212,255,0.45)]' },
-  { size: 'w-4 h-4', opacity: 'opacity-[0.32]', glow: 'shadow-[0_0_22px_rgba(0,212,255,0.38)]' },
-  { size: 'w-5 h-5', opacity: 'opacity-[0.22]', glow: 'shadow-[0_0_26px_rgba(0,212,255,0.32)]' },
-  { size: 'w-6 h-6', opacity: 'opacity-[0.14]', glow: 'shadow-[0_0_32px_rgba(0,212,255,0.28)]' },
-  { size: 'w-7 h-7', opacity: 'opacity-[0.08]', glow: 'shadow-[0_0_38px_rgba(0,212,255,0.22)]' },
+/** Hard colourful flow: cyan → magenta → pink → amber → lime → violet → sky */
+const TRAIL_PALETTE = [
+  { bg: 'linear-gradient(135deg,#22d3ee,#06b6d4)', shadow: '0 0 18px rgba(34,211,238,0.95)' },
+  { bg: 'linear-gradient(135deg,#e879f9,#c026d3)', shadow: '0 0 20px rgba(232,121,249,0.9)' },
+  { bg: 'linear-gradient(135deg,#f472b6,#db2777)', shadow: '0 0 20px rgba(244,114,182,0.85)' },
+  { bg: 'linear-gradient(135deg,#fbbf24,#f59e0b)', shadow: '0 0 18px rgba(251,191,36,0.9)' },
+  { bg: 'linear-gradient(135deg,#a3e635,#65a30d)', shadow: '0 0 18px rgba(163,230,53,0.85)' },
+  { bg: 'linear-gradient(135deg,#a78bfa,#7c3aed)', shadow: '0 0 20px rgba(167,139,250,0.9)' },
+  { bg: 'linear-gradient(135deg,#38bdf8,#0ea5e9)', shadow: '0 0 16px rgba(56,189,248,0.85)' },
 ]
+
+const TRAIL_SIZES = [11, 13, 15, 17, 19, 21, 23]
 
 function CustomCursor() {
   const prefersReducedMotion = useReducedMotion()
@@ -32,20 +32,19 @@ function CustomCursor() {
 
   const dotRef = useRef(null)
   const ringRef = useRef(null)
-  const t0 = useRef(null)
-  const t1 = useRef(null)
-  const t2 = useRef(null)
-  const t3 = useRef(null)
-  const t4 = useRef(null)
-  const t5 = useRef(null)
-  const trailRefs = [t0, t1, t2, t3, t4, t5]
+  const r0 = useRef(null)
+  const r1 = useRef(null)
+  const r2 = useRef(null)
+  const r3 = useRef(null)
+  const r4 = useRef(null)
+  const r5 = useRef(null)
+  const r6 = useRef(null)
+  const trailRefs = [r0, r1, r2, r3, r4, r5, r6]
 
   const targetRef = useRef({ x: 0, y: 0 })
   const dotPosRef = useRef({ x: 0, y: 0 })
   const ringPosRef = useRef({ x: 0, y: 0 })
-  const trailPosRef = useRef(
-    TRAIL_CHAIN.map(() => ({ x: 0, y: 0 })),
-  )
+  const trailPosRef = useRef(TRAIL_CHAIN.map(() => ({ x: 0, y: 0 })))
 
   const [hovering, setHovering] = useState(false)
 
@@ -84,7 +83,7 @@ function CustomCursor() {
 
       lerp2d(dotPosRef.current, target, LERP.dot)
       if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${dotPosRef.current.x - 6}px, ${dotPosRef.current.y - 6}px, 0)`
+        dotRef.current.style.transform = `translate3d(${dotPosRef.current.x - 7}px, ${dotPosRef.current.y - 7}px, 0)`
       }
 
       lerp2d(ringPosRef.current, target, LERP.ring)
@@ -92,7 +91,6 @@ function CustomCursor() {
         ringRef.current.style.transform = `translate3d(${ringPosRef.current.x}px, ${ringPosRef.current.y}px, 0) translate(-50%, -50%)`
       }
 
-      // Chained flow: t0 → mouse, t1 → t0, …
       const positions = trailPosRef.current
       for (let i = 0; i < positions.length; i += 1) {
         const follow = i === 0 ? target : positions[i - 1]
@@ -120,27 +118,44 @@ function CustomCursor() {
 
   return (
     <>
-      {TRAIL_VISUAL.map((style, i) => (
+      {TRAIL_PALETTE.map((c, i) => (
         <div
           key={`trail-${i}`}
           ref={trailRefs[i]}
-          className={`pointer-events-none fixed left-0 top-0 z-[74] rounded-full bg-accentPrimary ${style.size} ${style.opacity} blur-[1px] ${style.glow} will-change-transform`}
+          className="pointer-events-none fixed left-0 top-0 z-[74] rounded-full blur-[0.5px]"
+          style={{
+            width: TRAIL_SIZES[i],
+            height: TRAIL_SIZES[i],
+            background: c.bg,
+            opacity: 0.55 + i * 0.045,
+            boxShadow: c.shadow,
+            mixBlendMode: 'screen',
+          }}
         />
       ))}
 
       <div
         ref={ringRef}
-        className={`pointer-events-none fixed left-0 top-0 z-[79] rounded-full border-2 border-accentPrimary/90 will-change-transform ${
-          hovering
-            ? 'h-[56px] w-[56px] bg-accentPrimary/12 shadow-[0_0_28px_rgba(0,212,255,0.45)]'
-            : 'h-9 w-9 bg-transparent shadow-[0_0_12px_rgba(0,212,255,0.2)]'
-        }`}
-        style={{ transition: 'width 200ms ease, height 200ms ease, background-color 200ms ease, box-shadow 200ms ease' }}
+        className="pointer-events-none fixed left-0 top-0 z-[79] rounded-full border-2 border-cyan-300/90 will-change-transform"
+        style={{
+          width: hovering ? 58 : 38,
+          height: hovering ? 58 : 38,
+          background: hovering ? 'linear-gradient(135deg, rgba(232,121,249,0.2), rgba(34,211,238,0.15))' : 'transparent',
+          boxShadow: hovering
+            ? '0 0 36px rgba(232,121,249,0.55), 0 0 60px rgba(34,211,238,0.35)'
+            : '0 0 16px rgba(34,211,238,0.35)',
+          transition: 'width 200ms ease, height 200ms ease, background 200ms ease, box-shadow 200ms ease',
+        }}
       />
 
       <div
         ref={dotRef}
-        className="pointer-events-none fixed left-0 top-0 z-[80] h-3 w-3 rounded-full bg-accentPrimary shadow-[0_0_20px_rgba(0,212,255,1)] will-change-transform"
+        className="pointer-events-none fixed left-0 top-0 z-[80] h-3.5 w-3.5 rounded-full will-change-transform"
+        style={{
+          background: 'linear-gradient(135deg, #fff, #22d3ee)',
+          boxShadow:
+            '0 0 12px #fff, 0 0 28px rgba(34,211,238,1), 0 0 48px rgba(232,121,249,0.75)',
+        }}
       />
     </>
   )

@@ -7,7 +7,7 @@ function ScrollProgressBar() {
   return (
     <div className="fixed inset-x-0 top-0 z-[70] h-[2px] bg-white/5">
       <motion.div
-        className="h-full origin-left bg-accentPrimary shadow-[0_0_12px_rgba(0,212,255,0.9)]"
+        className="h-full origin-left bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-pink-500 shadow-[0_0_14px_rgba(232,121,249,0.85)]"
         style={{ scaleX: progress }}
       />
     </div>

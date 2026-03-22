@@ -33,14 +33,14 @@ function ParticleBackground() {
       fpsLimit: particleConfig.fpsLimit,
       particles: {
         number: { value: particleConfig.count, density: { enable: true, area: 900 } },
-        color: { value: ['#00D4FF', '#F1F5F9'] },
-        opacity: { value: { min: 0.2, max: 0.4 } },
+        color: { value: ['#22D3EE', '#E879F9', '#F0F9FF', '#C084FC'] },
+        opacity: { value: { min: 0.25, max: 0.55 } },
         size: { value: { min: 1, max: 2.2 } },
         links: {
           enable: true,
           distance: particleConfig.linkDistance,
-          color: '#00D4FF',
-          opacity: 0.17,
+          color: '#67E8F9',
+          opacity: 0.22,
           width: 1,
         },
         move: {
