@@ -33,6 +33,7 @@ export default {
         slowSpin: 'slowSpin 20s linear infinite',
         reverseSpin: 'reverseSpin 14s linear infinite',
         floatY: 'floatY 4s ease-in-out infinite',
+        meshShift: 'meshShift 18s ease-in-out infinite',
       },
       keyframes: {
         glowPulse: {
@@ -50,6 +51,10 @@ export default {
         floatY: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-8px)' },
+        },
+        meshShift: {
+          '0%, 100%': { opacity: '0.5', transform: 'scale(1) translate(0, 0)' },
+          '50%': { opacity: '0.85', transform: 'scale(1.05) translate(2%, -1%)' },
         },
       },
     },
