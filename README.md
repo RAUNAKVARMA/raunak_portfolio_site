@@ -7,6 +7,7 @@ Repository: [github.com/RAUNAKVARMA/raunak_portfolio_site](https://github.com/RA
 ## Stack
 
 - React 18, Vite 8
+- `.npmrc` sets `legacy-peer-deps=true` so **Vercel** can install `@react-three/postprocessing` with R3F v8 without `ERESOLVE` failures.
 - Tailwind CSS 3
 - Framer Motion
 - Three.js + React Three Fiber (optional WebGL nebula / starfield on desktop)
