@@ -59,7 +59,7 @@ function Research() {
       <div className="section-container">
         <div className="relative mb-14">
           <span className="section-number">03</span>
-          <h2 className="section-title">Research & Publications</h2>
+          <h2 className="section-title">{'Research & Publications'}</h2>
         </div>
 
         <div className="space-y-5">

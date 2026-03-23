@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { useIsMobileOrTouch } from '../../hooks/useIsMobileOrTouch'
 import SciFiScanlines from './SciFiScanlines'
+import WebGLErrorBoundary from './WebGLErrorBoundary'
 
 const SciFiCanvas = lazy(() => import('../three/SciFiCanvas'))
 
@@ -20,9 +21,11 @@ function SciFiLayer() {
   return (
     <>
       {!isTouchLike && (
-        <Suspense fallback={null}>
-          <SciFiCanvas />
-        </Suspense>
+        <WebGLErrorBoundary>
+          <Suspense fallback={null}>
+            <SciFiCanvas />
+          </Suspense>
+        </WebGLErrorBoundary>
       )}
       <SciFiScanlines />
     </>

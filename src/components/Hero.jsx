@@ -109,7 +109,7 @@ function Hero() {
             custom={0}
             className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80"
           >
-            AI systems · Research & build
+            {'AI systems · Research & build'}
           </motion.p>
 
           <motion.div
