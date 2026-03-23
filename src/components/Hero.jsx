@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { RiArrowDownLine, RiGithubLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
 import MagneticButton from './ui/MagneticButton'
-import ConceptSilhouette from './ui/ConceptSilhouette'
 import { useTypewriter } from '../hooks/useTypewriter'
 
 const skillPills = ['Python', 'LLMs', 'RAG', 'MARL']
@@ -96,12 +95,12 @@ function Hero() {
       <div className="hero-grid-space pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-500/30 to-transparent" />
 
-      <div className="section-container relative z-10 grid w-full items-center gap-12 lg:grid-cols-12 lg:gap-10 xl:gap-16">
+      <div className="section-container relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-          className="lg:col-span-7 xl:col-span-7"
+          className="mx-auto max-w-4xl"
         >
           <motion.p
             variants={lineReveal}
@@ -110,7 +109,7 @@ function Hero() {
             custom={0}
             className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80"
           >
-            Deep space · Precision systems
+            AI systems · Research & build
           </motion.p>
 
           <motion.div
@@ -236,15 +235,6 @@ function Hero() {
               ))}
             </motion.div>
           </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.12, duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
-          className="relative flex justify-center lg:col-span-5 xl:col-span-5"
-        >
-          <ConceptSilhouette reducedMotion={prefersReducedMotion} />
         </motion.div>
       </div>
 

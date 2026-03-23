@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import HoveringConceptSilhouettes from './HoveringConceptSilhouettes'
 
 /** Deterministic field stars — distant points, not “hovering objects” */
 function buildStars(count) {
@@ -54,9 +53,6 @@ function SpaceBackdrop() {
       <div className="absolute -left-24 top-1/4 h-80 w-80 rounded-full bg-purple-600/12 blur-[100px]" />
       <div className="absolute -right-20 bottom-1/4 h-[28rem] w-[28rem] rounded-full bg-cyan-500/11 blur-[110px]" />
       <div className="absolute left-1/3 top-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-fuchsia-600/9 blur-[85px]" />
-
-      {/* Abstract concept wedges — slow hover in deep field (under page content z-10) */}
-      <HoveringConceptSilhouettes />
     </div>
   )
 }

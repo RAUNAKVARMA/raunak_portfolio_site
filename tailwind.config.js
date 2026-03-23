@@ -37,8 +37,6 @@ export default {
         twinkle: 'twinkle 3.2s ease-in-out infinite',
         auroraDrift: 'auroraDrift 85s ease-in-out infinite',
         nebulaPulse: 'nebulaPulse 42s ease-in-out infinite',
-        ghostCarDrift: 'ghostCarDrift 32s ease-in-out infinite',
-        ghostCarDriftSlow: 'ghostCarDrift 48s ease-in-out infinite',
       },
       keyframes: {
         glowPulse: {
@@ -73,11 +71,6 @@ export default {
         nebulaPulse: {
           '0%, 100%': { opacity: '0.55' },
           '50%': { opacity: '0.85' },
-        },
-        ghostCarDrift: {
-          '0%, 100%': { transform: 'translate(0, 0) rotate(-2deg)', opacity: '0.22' },
-          '33%': { transform: 'translate(12px, -18px) rotate(1deg)', opacity: '0.32' },
-          '66%': { transform: 'translate(-8px, 10px) rotate(-1deg)', opacity: '0.26' },
         },
       },
     },
