@@ -35,6 +35,10 @@ export default {
         floatY: 'floatY 4s ease-in-out infinite',
         meshShift: 'meshShift 18s ease-in-out infinite',
         twinkle: 'twinkle 3.2s ease-in-out infinite',
+        auroraDrift: 'auroraDrift 85s ease-in-out infinite',
+        nebulaPulse: 'nebulaPulse 42s ease-in-out infinite',
+        ghostCarDrift: 'ghostCarDrift 32s ease-in-out infinite',
+        ghostCarDriftSlow: 'ghostCarDrift 48s ease-in-out infinite',
       },
       keyframes: {
         glowPulse: {
@@ -60,6 +64,20 @@ export default {
         twinkle: {
           '0%, 100%': { opacity: '0.2' },
           '50%': { opacity: '1' },
+        },
+        auroraDrift: {
+          '0%, 100%': { opacity: '0.85', transform: 'translate(0%, 0%) scale(1)' },
+          '33%': { opacity: '1', transform: 'translate(2%, -1%) scale(1.02)' },
+          '66%': { opacity: '0.9', transform: 'translate(-1.5%, 1.5%) scale(1.01)' },
+        },
+        nebulaPulse: {
+          '0%, 100%': { opacity: '0.55' },
+          '50%': { opacity: '0.85' },
+        },
+        ghostCarDrift: {
+          '0%, 100%': { transform: 'translate(0, 0) rotate(-2deg)', opacity: '0.22' },
+          '33%': { transform: 'translate(12px, -18px) rotate(1deg)', opacity: '0.32' },
+          '66%': { transform: 'translate(-8px, 10px) rotate(-1deg)', opacity: '0.26' },
         },
       },
     },

@@ -5,9 +5,19 @@ import { useInView } from 'react-intersection-observer'
 import MagneticButton from './ui/MagneticButton'
 
 const cards = [
-  { label: 'Email', value: 'raunak.varma.ai@gmail.com', href: 'mailto:raunak.varma.ai@gmail.com', icon: RiMailLine },
-  { label: 'GitHub', value: 'github.com/raunak-varma', href: 'https://github.com', icon: RiGithubLine },
-  { label: 'LinkedIn', value: 'linkedin.com/in/raunakvarma', href: 'https://linkedin.com', icon: RiLinkedinLine },
+  {
+    label: 'Email',
+    value: 'raunaknitinvarma@gmail.com',
+    href: 'mailto:raunaknitinvarma@gmail.com',
+    icon: RiMailLine,
+  },
+  { label: 'GitHub', value: 'github.com/RAUNAKVARMA', href: 'https://github.com/RAUNAKVARMA', icon: RiGithubLine },
+  {
+    label: 'LinkedIn',
+    value: 'linkedin.com/in/raunak-varma-8656382b2',
+    href: 'https://www.linkedin.com/in/raunak-varma-8656382b2/',
+    icon: RiLinkedinLine,
+  },
 ]
 
 function Contact() {

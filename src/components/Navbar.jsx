@@ -53,6 +53,7 @@ function Navbar() {
               <a
                 key={link.section}
                 href={link.href}
+                aria-current={activeSection === link.section ? 'page' : undefined}
                 className={`text-sm font-medium transition-colors duration-300 ${
                   activeSection === link.section
                     ? 'text-accentPrimary'
@@ -99,6 +100,7 @@ function Navbar() {
                   key={link.section}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
+                  aria-current={activeSection === link.section ? 'page' : undefined}
                   className={`text-lg ${
                     activeSection === link.section ? 'text-accentPrimary' : 'text-textPrimary'
                   }`}

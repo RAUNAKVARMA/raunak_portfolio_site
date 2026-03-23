@@ -23,6 +23,12 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+/* Keyboard / screen reader — skip navigation */
+.skip-to-main {
+  @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-24 focus:z-[100] focus:rounded-lg focus:border focus:border-cyan-400/50 focus:bg-slate-950 focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-cyan-100 focus:shadow-[0_8px_32px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-2 focus:ring-cyan-400/40;
 }
 
 body {
@@ -43,6 +49,17 @@ select,
 #root {
   position: relative;
   min-height: 100vh;
+}
+
+/* Visible focus for keyboard users (custom cursor hides default) */
+:focus-visible {
+  outline: 2px solid rgba(34, 211, 238, 0.55);
+  outline-offset: 3px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline-offset: 2px;
 }
 
 .noise-overlay {
@@ -121,10 +138,11 @@ select,
 /* Space hero grid */
 .hero-grid-space {
   background-image:
-    linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(192, 38, 211, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(34, 211, 238, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192, 38, 211, 0.035) 1px, transparent 1px);
   background-size: 80px 80px;
-  mask-image: radial-gradient(ellipse 95% 80% at 50% 25%, black 15%, transparent 72%);
+  mask-image: radial-gradient(ellipse 95% 80% at 50% 25%, black 12%, transparent 78%);
+  opacity: 0.42;
 }
 
 @media (prefers-reduced-motion: reduce) {

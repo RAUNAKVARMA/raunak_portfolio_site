@@ -29,6 +29,12 @@ function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="relative z-10">
+        <a
+          href="#main-content"
+          className="skip-to-main"
+        >
+          Skip to main content
+        </a>
         <SpaceBackdrop />
         <SciFiLayer />
         <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_75%_50%_at_50%_-8%,rgba(34,211,238,0.11),transparent_58%)]" />
@@ -40,7 +46,7 @@ function App() {
         <ScrollProgressBar />
         <Navbar />
 
-        <main className="relative z-10">
+        <main id="main-content" className="relative z-10" tabIndex={-1}>
           <Hero />
           <Stats />
           <About />

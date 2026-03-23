@@ -18,7 +18,7 @@ function Footer() {
             </a>
           ))}
         </div>
-        <p className="text-center md:text-right">© 2025</p>
+        <p className="text-center md:text-right">© {new Date().getFullYear()} Raunak Varma</p>
       </div>
     </footer>
   )

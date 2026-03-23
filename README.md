@@ -9,7 +9,7 @@ Repository: [github.com/RAUNAKVARMA/raunak_portfolio_site](https://github.com/RA
 - React 18, Vite 8
 - Tailwind CSS 3
 - Framer Motion
-- @tsparticles/react (neural particle background)
+- Three.js + React Three Fiber (optional WebGL nebula / starfield on desktop)
 - react-icons, react-intersection-observer
 
 ## Scripts
@@ -50,6 +50,8 @@ Add these **GitHub repository secrets** (Repo → **Settings** → **Secrets and
 | `VERCEL_PROJECT_ID` | Project ID               |
 
 Workflow: `.github/workflows/deploy-vercel.yml` runs on push to `main` and on **workflow_dispatch** (manual run).
+
+**Troubleshooting CI:** If the workflow fails with `No existing credentials` or `Error: No existing credentials found` / `--token=` empty, the GitHub secret **`VERCEL_TOKEN`** is missing or not saved. Add all three secrets and re-run the workflow. Do **not** paste the token in code—only in **GitHub → Settings → Secrets and variables → Actions**.
 
 ### Local CLI deploy
 

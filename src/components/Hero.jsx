@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { RiArrowDownLine, RiGithubLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
 import MagneticButton from './ui/MagneticButton'
-import SpacePlanet from './ui/SpacePlanet'
+import ConceptSilhouette from './ui/ConceptSilhouette'
 import { useTypewriter } from '../hooks/useTypewriter'
+
+const skillPills = ['Python', 'LLMs', 'RAG', 'MARL']
 
 const roles = [
   'AI Engineer',
@@ -76,7 +78,6 @@ function Hero() {
   const prefersReducedMotion = useReducedMotion()
   const typedText = useTypewriter(roles)
   const [hideScrollCue, setHideScrollCue] = useState(false)
-  const orbitBadges = useMemo(() => ['Python', 'LLMs', 'RAG', 'MARL'], [])
 
   useEffect(() => {
     const onScroll = () => setHideScrollCue(window.scrollY > 100)
@@ -92,7 +93,7 @@ function Hero() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#030712_0%,#0b1224_45%,#030712_100%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgba(34,211,238,0.12),transparent_55%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_100%_10%,rgba(192,38,211,0.12),transparent_50%)]" />
-      <div className="hero-grid-space pointer-events-none absolute inset-0 opacity-80" />
+      <div className="hero-grid-space pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-500/30 to-transparent" />
 
       <div className="section-container relative z-10 grid w-full items-center gap-12 lg:grid-cols-12 lg:gap-10 xl:gap-16">
@@ -109,7 +110,7 @@ function Hero() {
             custom={0}
             className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80"
           >
-            Deep space · AI systems
+            Deep space · Precision systems
           </motion.p>
 
           <motion.div
@@ -200,8 +201,11 @@ function Hero() {
             <div className="flex items-center gap-2 pl-1">
               {[
                 { icon: RiGithubLine, href: 'https://github.com/RAUNAKVARMA' },
-                { icon: RiLinkedinLine, href: 'https://linkedin.com/in/raunakvarma' },
-                { icon: RiMailLine, href: 'mailto:raunak.varma.ai@gmail.com' },
+                {
+                  icon: RiLinkedinLine,
+                  href: 'https://www.linkedin.com/in/raunak-varma-8656382b2/',
+                },
+                { icon: RiMailLine, href: 'mailto:raunaknitinvarma@gmail.com' },
               ].map(({ icon: Icon, href }, idx) => (
                 <a
                   key={idx}
@@ -214,37 +218,33 @@ function Hero() {
                 </a>
               ))}
             </div>
+
+            <motion.div
+              variants={lineReveal}
+              initial="hidden"
+              animate="visible"
+              custom={6}
+              className="mt-6 flex w-full basis-full flex-wrap gap-2"
+            >
+              {skillPills.map((label) => (
+                <span
+                  key={label}
+                  className="rounded-full border border-white/[0.12] bg-white/[0.04] px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:text-[11px]"
+                >
+                  {label}
+                </span>
+              ))}
+            </motion.div>
           </motion.div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15, duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.12, duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
           className="relative flex justify-center lg:col-span-5 xl:col-span-5"
         >
-          <div className="relative w-full max-w-[420px]">
-            <SpacePlanet reducedMotion={prefersReducedMotion} />
-
-            {orbitBadges.map((badge, index) => (
-              <div
-                key={badge}
-                className="absolute left-1/2 top-1/2 z-[5] -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  transform: `rotate(${index * 90}deg) translate(clamp(118px, 36vw, 178px)) rotate(-${index * 90}deg)`,
-                }}
-              >
-                <span
-                  className={`rounded-full border border-cyan-400/40 bg-slate-950/90 px-3.5 py-1.5 font-mono text-[11px] font-medium uppercase tracking-wider text-cyan-200 shadow-[0_4px_28px_rgba(0,0,0,0.5)] backdrop-blur-md sm:text-xs ${
-                    prefersReducedMotion ? '' : 'animate-floatY'
-                  }`}
-                  style={{ animationDelay: `${index * 0.15}s` }}
-                >
-                  {badge}
-                </span>
-              </div>
-            ))}
-          </div>
+          <ConceptSilhouette reducedMotion={prefersReducedMotion} />
         </motion.div>
       </div>
 
