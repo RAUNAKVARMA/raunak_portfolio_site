@@ -2,7 +2,7 @@
 import { RiArrowRightUpLine, RiExternalLinkLine } from 'react-icons/ri'
 import { useInView } from 'react-intersection-observer'
 
-const publications = [
+export const publications = [
   {
     year: '2026',
     items: [

@@ -1,7 +1,7 @@
 ﻿import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 
-const timeline = [
+export const experienceTimeline = [
   {
     role: 'AI Intern',
     company: 'EY (Ernst & Young), Gurgaon',
@@ -66,7 +66,7 @@ function Experience() {
           <div className="absolute left-2 top-2 h-[calc(100%-10px)] w-px bg-gradient-to-b from-accentPrimary/80 via-accentPrimary/40 to-transparent md:left-4" />
 
           <div className="space-y-8">
-            {timeline.map((item, index) => (
+            {experienceTimeline.map((item, index) => (
               <motion.article
                 key={`${item.role}-${item.company}`}
                 initial={{ opacity: 0, y: 25 }}

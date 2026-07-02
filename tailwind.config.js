@@ -14,29 +14,28 @@ export default {
         borderColor: 'var(--border)',
       },
       fontFamily: {
-        heading: ['Syne', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
+        heading: ['Space Grotesk', 'Inter', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       boxShadow: {
-        cyan: '0 0 30px rgba(0, 212, 255, 0.22)',
+        cyan: '0 0 30px rgba(99, 102, 241, 0.22)',
         card: '0 12px 38px rgba(0, 0, 0, 0.35)',
+        glass: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06)',
+        glassHover: '0 16px 48px rgba(99, 102, 241, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       },
       backgroundImage: {
         hero: 'var(--gradient-hero)',
+        ambient: 'var(--gradient-ambient)',
       },
       transitionTimingFunction: {
         neural: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       animation: {
         glowPulse: 'glowPulse 2.2s ease-in-out infinite',
         slowSpin: 'slowSpin 20s linear infinite',
-        reverseSpin: 'reverseSpin 14s linear infinite',
         floatY: 'floatY 4s ease-in-out infinite',
-        meshShift: 'meshShift 18s ease-in-out infinite',
-        twinkle: 'twinkle 3.2s ease-in-out infinite',
-        auroraDrift: 'auroraDrift 85s ease-in-out infinite',
-        nebulaPulse: 'nebulaPulse 42s ease-in-out infinite',
       },
       keyframes: {
         glowPulse: {
@@ -47,34 +46,12 @@ export default {
           from: { transform: 'rotate(0deg)' },
           to: { transform: 'rotate(360deg)' },
         },
-        reverseSpin: {
-          from: { transform: 'rotate(360deg)' },
-          to: { transform: 'rotate(0deg)' },
-        },
         floatY: {
           '0%, 100%': { transform: 'translateY(0px)' },
           '50%': { transform: 'translateY(-8px)' },
-        },
-        meshShift: {
-          '0%, 100%': { opacity: '0.5', transform: 'scale(1) translate(0, 0)' },
-          '50%': { opacity: '0.85', transform: 'scale(1.05) translate(2%, -1%)' },
-        },
-        twinkle: {
-          '0%, 100%': { opacity: '0.2' },
-          '50%': { opacity: '1' },
-        },
-        auroraDrift: {
-          '0%, 100%': { opacity: '0.85', transform: 'translate(0%, 0%) scale(1)' },
-          '33%': { opacity: '1', transform: 'translate(2%, -1%) scale(1.02)' },
-          '66%': { opacity: '0.9', transform: 'translate(-1.5%, 1.5%) scale(1.01)' },
-        },
-        nebulaPulse: {
-          '0%, 100%': { opacity: '0.55' },
-          '50%': { opacity: '0.85' },
         },
       },
     },
   },
   plugins: [],
 }
-

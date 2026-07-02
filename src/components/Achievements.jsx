@@ -1,6 +1,6 @@
-﻿import { motion } from 'framer-motion'
-import { RiArrowRightUpLine, RiExternalLinkLine } from 'react-icons/ri'
-import { useInView } from 'react-intersection-observer'
+﻿import { RiArrowRightUpLine, RiExternalLinkLine } from 'react-icons/ri'
+import SectionReveal from './layout/SectionReveal'
+import GlassCard from './ui/GlassCard'
 
 const achievements = [
   {
@@ -51,43 +51,40 @@ const achievements = [
 ]
 
 function Achievements() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
-
   return (
-    <section className="sci-fi-section py-24" ref={ref}>
-      <div className="section-container">
-        <h2 className="section-title text-3xl md:text-5xl">Achievements</h2>
+    <section className="py-24">
+      <SectionReveal className="section-container">
+        <h2 className="section-title" data-reveal>
+          Achievements
+        </h2>
         <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {achievements.map((item, index) => (
-            <motion.article
-              key={item.title}
-              initial={{ opacity: 0, y: 22 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: index * 0.06, duration: 0.55 }}
-              className="group glass-card rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-accentPrimary/50"
-            >
-              <div className="text-4xl">{item.icon}</div>
-              <h3 className="mt-4 font-heading text-xl font-bold">{item.title}</h3>
-              <p className="mt-3 text-slate-300">{item.description}</p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <span className="inline-block rounded-full border border-accentSecondary/45 bg-accentSecondary/10 px-3 py-1 font-mono text-xs text-accentSecondary">
+          {achievements.map((item) => (
+            <GlassCard key={item.title} className="flex flex-col p-6" data-reveal>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-3xl" aria-hidden>
+                  {item.icon}
+                </span>
+                <span className="rounded-full border border-white/[0.08] px-3 py-1 font-mono text-xs text-textMuted">
                   {item.year}
                 </span>
-                <a
-                  href={item.certificateUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-accentPrimary hover:text-accentPrimary/90"
-                >
-                  <RiExternalLinkLine />
-                  {item.linkLabel}
-                  <RiArrowRightUpLine className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
               </div>
-            </motion.article>
+              <h3 className="mt-4 font-heading text-lg font-bold leading-snug">{item.title}</h3>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-slate-400">{item.description}</p>
+              <a
+                href={item.certificateUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor-hover="true"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 hover:text-indigo-200"
+              >
+                <RiExternalLinkLine />
+                {item.linkLabel}
+                <RiArrowRightUpLine />
+              </a>
+            </GlassCard>
           ))}
         </div>
-      </div>
+      </SectionReveal>
     </section>
   )
 }

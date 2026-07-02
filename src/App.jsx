@@ -1,19 +1,21 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { MotionConfig } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Stats from './components/Stats'
 import About from './components/About'
 import ScrollProgressBar from './components/ui/ScrollProgressBar'
-import SpaceBackdrop from './components/ui/SpaceBackdrop'
-import SciFiLayer from './components/ui/SciFiLayer'
-import SciFiHUD from './components/ui/SciFiHUD'
+import SceneLayer from './components/ui/SceneLayer'
+import SceneController from './components/three/SceneController'
+import ScrollSceneTriggers from './components/three/ScrollSceneTriggers'
 import CustomCursor from './components/ui/CustomCursor'
 import Footer from './components/Footer'
+import { SceneProgressProvider } from './providers/SceneProgressProvider'
+import { SmoothScrollProvider } from './providers/SmoothScrollProvider'
+import { useReducedMotionProfile } from './hooks/useReducedMotionProfile'
 
 const Projects = lazy(() => import('./components/Projects'))
-const Research = lazy(() => import('./components/Research'))
-const Experience = lazy(() => import('./components/Experience'))
+const ExperienceTimeline = lazy(() => import('./components/sections/ExperienceTimeline'))
 const Achievements = lazy(() => import('./components/Achievements'))
 const Skills = lazy(() => import('./components/Skills'))
 const Certifications = lazy(() => import('./components/Certifications'))
@@ -25,57 +27,65 @@ function SectionSkeleton({ height = 'h-[260px]' }) {
   )
 }
 
+function CursorBodyClass() {
+  const { enableCustomCursor } = useReducedMotionProfile()
+
+  useEffect(() => {
+    document.body.classList.toggle('custom-cursor-active', enableCustomCursor)
+    return () => document.body.classList.remove('custom-cursor-active')
+  }, [enableCustomCursor])
+
+  return null
+}
+
 function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <div className="relative z-10">
-        <a
-          href="#main-content"
-          className="skip-to-main"
-        >
-          Skip to main content
-        </a>
-        <SpaceBackdrop />
-        <SciFiLayer />
-        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_75%_50%_at_50%_-8%,rgba(34,211,238,0.11),transparent_58%)]" />
-        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_60%_45%_at_100%_25%,rgba(232,121,249,0.09),transparent_52%)]" />
-        <div className="pointer-events-none fixed inset-0 z-[6] bg-[radial-gradient(ellipse_45%_35%_at_0%_70%,rgba(167,139,250,0.07),transparent_45%)]" />
-        <SciFiHUD />
-        <div className="noise-overlay" />
-        <CustomCursor />
-        <ScrollProgressBar />
-        <Navbar />
+      <SceneProgressProvider>
+        <SmoothScrollProvider>
+          <CursorBodyClass />
+          <SceneController />
+          <ScrollSceneTriggers />
+          <div className="relative z-10">
+            <a href="#main-content" className="skip-to-main">
+              Skip to main content
+            </a>
+            <SceneLayer />
+            <div className="pointer-events-none fixed inset-0 z-[1] bg-ambient" aria-hidden />
+            <div className="noise-overlay" />
+            <CustomCursor />
+            <ScrollProgressBar />
+            <Navbar />
 
-        <main id="main-content" className="relative z-10" tabIndex={-1}>
-          <Hero />
-          <Stats />
-          <About />
+            <main id="main-content" className="relative z-10" tabIndex={-1}>
+              <Hero />
+              <About />
+              <Stats />
 
-          <Suspense fallback={<SectionSkeleton />}>
-            <Projects />
-          </Suspense>
-          <Suspense fallback={<SectionSkeleton />}>
-            <Research />
-          </Suspense>
-          <Suspense fallback={<SectionSkeleton height="h-[380px]" />}>
-            <Experience />
-          </Suspense>
-          <Suspense fallback={<SectionSkeleton />}>
-            <Achievements />
-          </Suspense>
-          <Suspense fallback={<SectionSkeleton />}>
-            <Skills />
-          </Suspense>
-          <Suspense fallback={<SectionSkeleton />}>
-            <Certifications />
-          </Suspense>
-          <Suspense fallback={<SectionSkeleton />}>
-            <Contact />
-          </Suspense>
-        </main>
+              <Suspense fallback={<SectionSkeleton />}>
+                <Skills />
+              </Suspense>
+              <Suspense fallback={<SectionSkeleton />}>
+                <Projects />
+              </Suspense>
+              <Suspense fallback={<SectionSkeleton height="h-[480px]" />}>
+                <ExperienceTimeline />
+              </Suspense>
+              <Suspense fallback={<SectionSkeleton />}>
+                <Achievements />
+              </Suspense>
+              <Suspense fallback={<SectionSkeleton />}>
+                <Certifications />
+              </Suspense>
+              <Suspense fallback={<SectionSkeleton />}>
+                <Contact />
+              </Suspense>
+            </main>
 
-        <Footer />
-      </div>
+            <Footer />
+          </div>
+        </SmoothScrollProvider>
+      </SceneProgressProvider>
     </MotionConfig>
   )
 }

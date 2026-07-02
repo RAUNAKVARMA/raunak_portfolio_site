@@ -1,6 +1,6 @@
-﻿import { motion } from 'framer-motion'
-import { RiArrowRightUpLine, RiExternalLinkLine, RiGithubLine } from 'react-icons/ri'
-import { useInView } from 'react-intersection-observer'
+﻿import { RiArrowRightUpLine, RiExternalLinkLine, RiGithubLine } from 'react-icons/ri'
+import SectionReveal from './layout/SectionReveal'
+import GlassCard from './ui/GlassCard'
 
 const projects = [
   {
@@ -8,7 +8,7 @@ const projects = [
     subtitle: 'RAG-based LLM Knowledge Assistant',
     year: '2025',
     category: 'LLM Platform',
-    accent: 'bg-accentSecondary',
+    accent: 'bg-indigo-400',
     description:
       'End-to-end Retrieval-Augmented Generation system for contextual Q&A over custom document datasets, optimized for accuracy and low-latency responses.',
     metric: '↑25% accuracy, ↓30% latency',
@@ -26,7 +26,7 @@ const projects = [
     subtitle: 'Real-time Hand Gesture Recognition',
     year: '2025',
     category: 'Computer Vision',
-    accent: 'bg-accentPrimary',
+    accent: 'bg-violet-400',
     description:
       'Real-time hand gesture recognition system for touchless human-computer interaction with stable landmark detection and low-latency control.',
     metric: '20–30 FPS, ↓20% false triggers',
@@ -44,7 +44,7 @@ const projects = [
     subtitle: 'Secure Health Record Exchange Platform',
     year: '2025',
     category: 'AI Systems',
-    accent: 'bg-accentPrimary',
+    accent: 'bg-indigo-300',
     description:
       'Secure, scalable backend for interoperable medical record exchange across healthcare entities with encrypted data pipelines and role-based access control.',
     metric: 'Production-grade healthcare backend',
@@ -64,7 +64,8 @@ function LinkButton({ href, icon: Icon, label }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-accentPrimary hover:text-accentPrimary/90"
+      data-cursor-hover="true"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 hover:text-indigo-200"
     >
       <Icon className="text-base" />
       {label}
@@ -74,52 +75,47 @@ function LinkButton({ href, icon: Icon, label }) {
 }
 
 function Projects() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
-
   return (
-    <section id="projects" className="sci-fi-section py-24" ref={ref}>
-      <div className="section-container">
-        <div className="relative mb-14">
+    <section id="projects" className="py-24">
+      <SectionReveal className="section-container">
+        <div className="relative mb-14" data-reveal>
           <span className="section-number">02</span>
           <h2 className="section-title">Selected Work</h2>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          {projects.map((project, index) => (
-            <motion.article
+          {projects.map((project) => (
+            <GlassCard
               key={project.name}
-              initial={{ opacity: 0, y: 28 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: index * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative overflow-hidden rounded-2xl border border-borderColor bg-white/[0.03] p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-accentPrimary/50 hover:shadow-cyan"
+              className="group relative overflow-hidden p-6"
+              cursorLabel="View"
+              data-reveal
             >
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
               <div className="mb-5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className={`h-2.5 w-2.5 rounded-full ${project.accent}`} />
                   <span className="font-mono text-xs text-textMuted">{project.category}</span>
                 </div>
-                <span className="rounded-full border border-borderColor px-3 py-1 font-mono text-xs text-textMuted">
+                <span className="rounded-full border border-white/[0.08] px-3 py-1 font-mono text-xs text-textMuted">
                   {project.year}
                 </span>
               </div>
 
-              <h3 className="font-heading text-3xl font-bold leading-tight">{project.name}</h3>
+              <h3 className="font-heading text-2xl font-bold leading-tight sm:text-3xl">{project.name}</h3>
               {project.subtitle && (
-                <p className="mt-1 font-mono text-xs text-accentSecondary">{project.subtitle}</p>
+                <p className="mt-1 font-mono text-xs text-indigo-300/80">{project.subtitle}</p>
               )}
               <p className="mt-4 text-slate-300">{project.description}</p>
 
               <ul className="mt-4 space-y-1.5 text-sm text-slate-400">
                 {project.bullets.map((bullet) => (
-                  <li key={bullet} className="list-disc pl-1 marker:text-accentPrimary">
+                  <li key={bullet} className="list-disc pl-1 marker:text-indigo-400">
                     {bullet}
                   </li>
                 ))}
               </ul>
 
-              <span className="mt-5 inline-block rounded-full border border-accentPrimary/40 bg-accentPrimary/10 px-3 py-1 font-mono text-xs text-accentPrimary">
+              <span className="mt-5 inline-block rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 font-mono text-xs text-indigo-200">
                 {project.metric}
               </span>
 
@@ -127,7 +123,7 @@ function Projects() {
                 {project.tech.map((item) => (
                   <span
                     key={item}
-                    className="rounded-full border border-borderColor bg-bgSecondary px-2.5 py-1 font-mono text-[11px] text-textMuted"
+                    className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 font-mono text-[11px] text-textMuted"
                   >
                     {item}
                   </span>
@@ -142,10 +138,10 @@ function Projects() {
                   <LinkButton href={project.repoUrl} icon={RiGithubLine} label="GitHub" />
                 )}
               </div>
-            </motion.article>
+            </GlassCard>
           ))}
         </div>
-      </div>
+      </SectionReveal>
     </section>
   )
 }

@@ -4,8 +4,8 @@ import { RiCloseLine, RiMenu3Line } from 'react-icons/ri'
 
 const links = [
   { label: 'Home', href: '#hero', section: 'hero' },
+  { label: 'About', href: '#about', section: 'about' },
   { label: 'Projects', href: '#projects', section: 'projects' },
-  { label: 'Research', href: '#research', section: 'research' },
   { label: 'Experience', href: '#experience', section: 'experience' },
   { label: 'Contact', href: '#contact', section: 'contact' },
 ]
@@ -39,11 +39,12 @@ function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.06] bg-[#030712]/75 shadow-[0_8px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl backdrop-saturate-150">
-        <div className="section-container flex h-[74px] items-center justify-between">
+      <header className="glass-panel fixed inset-x-4 top-4 z-50 mx-auto max-w-[1240px] rounded-2xl border-white/[0.1] bg-[#030712]/60 sm:inset-x-6 lg:inset-x-8">
+        <div className="flex h-[68px] items-center justify-between px-4 sm:px-6">
           <a
             href="#hero"
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-purple-700 font-heading text-lg font-extrabold text-white shadow-[0_0_24px_rgba(34,211,238,0.35)]"
+            data-cursor-hover="true"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 font-heading text-lg font-bold text-white shadow-[0_0_24px_rgba(99,102,241,0.35)]"
           >
             RV
           </a>
@@ -53,10 +54,11 @@ function Navbar() {
               <a
                 key={link.section}
                 href={link.href}
+                data-cursor-hover="true"
                 aria-current={activeSection === link.section ? 'page' : undefined}
                 className={`text-sm font-medium transition-colors duration-300 ${
                   activeSection === link.section
-                    ? 'text-accentPrimary'
+                    ? 'text-indigo-300'
                     : 'text-textMuted hover:text-textPrimary'
                 }`}
               >
@@ -66,50 +68,41 @@ function Navbar() {
           </nav>
 
           <button
-            onClick={() => setMobileOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-borderColor text-textPrimary md:hidden"
-            aria-label="Open menu"
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.1] text-textPrimary md:hidden"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileOpen((open) => !open)}
           >
-            <RiMenu3Line size={20} />
+            {mobileOpen ? <RiCloseLine className="text-xl" /> : <RiMenu3Line className="text-xl" />}
           </button>
         </div>
       </header>
 
       <AnimatePresence>
         {mobileOpen && (
-          <motion.aside
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-y-0 right-0 z-[60] w-[85%] max-w-sm border-l border-borderColor bg-bgSecondary p-6"
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="glass-panel fixed inset-x-4 top-[88px] z-50 mx-auto max-w-[1240px] p-4 md:hidden"
           >
-            <div className="mb-10 flex items-center justify-between">
-              <span className="font-heading text-2xl">Navigate</span>
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg border border-borderColor p-2"
-                aria-label="Close menu"
-              >
-                <RiCloseLine size={20} />
-              </button>
-            </div>
-            <div className="flex flex-col gap-5">
+            <nav className="flex flex-col gap-2">
               {links.map((link) => (
                 <a
                   key={link.section}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  aria-current={activeSection === link.section ? 'page' : undefined}
-                  className={`text-lg ${
-                    activeSection === link.section ? 'text-accentPrimary' : 'text-textPrimary'
+                  className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                    activeSection === link.section
+                      ? 'bg-indigo-500/15 text-indigo-200'
+                      : 'text-textMuted hover:bg-white/[0.04]'
                   }`}
                 >
                   {link.label}
                 </a>
               ))}
-            </div>
-          </motion.aside>
+            </nav>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

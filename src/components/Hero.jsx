@@ -1,84 +1,73 @@
 ﻿import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { RiArrowDownLine, RiGithubLine, RiGraduationCapLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
+import {
+  RiArrowDownLine,
+  RiArrowRightUpLine,
+  RiBookOpenLine,
+  RiCodeBoxLine,
+  RiFlaskLine,
+  RiGithubLine,
+  RiGraduationCapLine,
+  RiLinkedinLine,
+  RiMailLine,
+  RiRocketLine,
+} from 'react-icons/ri'
+import GlassPanel from './ui/GlassPanel'
 import MagneticButton from './ui/MagneticButton'
 import { useTypewriter } from '../hooks/useTypewriter'
+import { useSceneProgress } from '../providers/SceneProgressProvider'
 
-const skillPills = ['Python', 'LLMs', 'RAG', 'PyTorch']
+const skillPills = ['Python', 'LLMs', 'RAG', 'PyTorch', 'Multi-Agent', 'Research']
 
 const roles = [
   'AI Engineer',
   'Researcher',
   'ML Enthusiast',
   'LLM Systems Builder',
-  'Multi-Agent Intelligence',
   'AI Intern @ EY',
   'Google PM Certified',
-  'Certified Project Manager (BITSOM)',
 ]
 
-const lineReveal = {
+const metrics = [
+  { label: 'Publications', value: '5', icon: RiBookOpenLine },
+  { label: 'Projects', value: '3', icon: RiCodeBoxLine },
+  { label: 'Startups', value: '1', icon: RiRocketLine },
+  { label: 'Research Yrs', value: '2', icon: RiFlaskLine },
+]
+
+const socialLinks = [
+  { icon: RiGithubLine, href: 'https://github.com/RAUNAKVARMA', label: 'GitHub' },
+  { icon: RiLinkedinLine, href: 'https://www.linkedin.com/in/raunak-varma-8656382b2/', label: 'LinkedIn' },
+  { icon: RiMailLine, href: 'mailto:raunaknitinvarma@gmail.com', label: 'Email' },
+  {
+    icon: RiGraduationCapLine,
+    href: 'https://scholar.google.com/citations?user=tlqu2IoAAAAJ',
+    label: 'Google Scholar',
+  },
+]
+
+const EASE = [0.16, 1, 0.3, 1]
+
+const reveal = {
   hidden: { opacity: 0, y: 28 },
   visible: (i) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: 0.08 + i * 0.1, duration: 0.75, ease: [0.22, 1, 0.36, 1] },
+    transition: { delay: 0.08 + i * 0.07, duration: 0.85, ease: EASE },
   }),
-}
-
-/** Always-visible name: solid paint + neon (gradient-on-letters breaks in many browsers). */
-const nameClass =
-  'block font-heading font-extrabold leading-[0.92] tracking-[-0.04em] text-[clamp(2.75rem,11vw,6.5rem)] text-white'
-
-const nameGlow = {
-  textShadow:
-    '0 0 42px rgba(34,211,238,0.55), 0 0 100px rgba(168,85,247,0.45), 0 0 160px rgba(236,72,153,0.2)',
-}
-
-function HeadlineName() {
-  const prefersReducedMotion = useReducedMotion()
-
-  if (prefersReducedMotion) {
-    return (
-      <h1 className="font-heading">
-        <span className={nameClass} style={nameGlow}>
-          RAUNAK
-        </span>
-        <span className={`${nameClass} mt-2 block sm:mt-3`} style={nameGlow}>
-          VARMA
-        </span>
-      </h1>
-    )
-  }
-
-  return (
-    <h1 className="font-heading">
-      <motion.span
-        initial={{ opacity: 0, y: 36 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-        className={nameClass}
-        style={nameGlow}
-      >
-        RAUNAK
-      </motion.span>
-      <motion.span
-        initial={{ opacity: 0, y: 36 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.85, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className={`${nameClass} mt-2 block sm:mt-3`}
-        style={nameGlow}
-      >
-        VARMA
-      </motion.span>
-    </h1>
-  )
 }
 
 function Hero() {
   const prefersReducedMotion = useReducedMotion()
   const typedText = useTypewriter(roles)
   const [hideScrollCue, setHideScrollCue] = useState(false)
+  const { registerSection, canvasReady } = useSceneProgress()
+
+  useEffect(() => {
+    const el = document.getElementById('hero')
+    if (el) registerSection('hero', el)
+    return () => registerSection('hero', null)
+  }, [registerSection])
 
   useEffect(() => {
     const onScroll = () => setHideScrollCue(window.scrollY > 100)
@@ -89,167 +78,183 @@ function Hero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-[100svh] items-center overflow-hidden pb-12 pt-[5.5rem] sm:pb-16 sm:pt-28"
+      className="relative flex min-h-[100svh] items-center overflow-hidden pb-16 pt-24 sm:pt-28"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#030712_0%,#0b1224_45%,#030712_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgba(34,211,238,0.12),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_100%_10%,rgba(192,38,211,0.12),transparent_50%)]" />
-      <div className="hero-grid-space pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-500/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-hero" aria-hidden />
 
       <div className="section-container relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto max-w-4xl"
-        >
-          <motion.p
-            variants={lineReveal}
-            initial="hidden"
-            animate="visible"
-            custom={0}
-            className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80"
-          >
-            {'AI systems Â· Research & build'}
-          </motion.p>
-
+        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
           <motion.div
-            variants={lineReveal}
-            initial="hidden"
-            animate="visible"
-            custom={1}
-            className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-emerald-400/30 bg-emerald-500/[0.08] px-4 py-2 text-sm text-emerald-100 shadow-[0_0_30px_rgba(52,211,153,0.15)] backdrop-blur-md"
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: EASE }}
+            className="lg:col-span-7"
           >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.95)]" />
-            </span>
-            <span className="font-medium tracking-wide">Available for opportunities</span>
-          </motion.div>
+            <GlassPanel className="p-6 sm:p-8 lg:p-10">
+              <motion.p
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={0}
+                className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.35em] text-indigo-300/90"
+              >
+                AI systems · Research & build
+              </motion.p>
 
-          <motion.p
-            variants={lineReveal}
-            initial="hidden"
-            animate="visible"
-            custom={2}
-            className="mb-2 text-sm text-slate-400 sm:text-base"
-          >
-            Hi, I&apos;m
-          </motion.p>
+              <motion.div
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={1}
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/[0.06] px-4 py-2 text-sm text-emerald-100"
+              >
+                <span className="relative flex h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="font-medium">Open to AI engineering & research roles</span>
+              </motion.div>
 
-          <div className="relative">
-            <div className="pointer-events-none absolute -left-4 top-1/2 hidden h-[min(200px,50%)] w-px -translate-y-1/2 bg-gradient-to-b from-transparent via-fuchsia-500/50 to-cyan-400/40 md:block" />
-            <HeadlineName />
-          </div>
+              <motion.p variants={reveal} initial="hidden" animate="visible" custom={2} className="mb-2 text-sm text-textMuted">
+                Hi, I&apos;m
+              </motion.p>
 
-          <motion.div
-            variants={lineReveal}
-            initial="hidden"
-            animate="visible"
-            custom={3}
-            className="relative mt-6 min-h-[3rem] select-none sm:mt-8"
-          >
-            <div className="pointer-events-none absolute -inset-px rounded-xl bg-gradient-to-r from-cyan-500/40 via-fuchsia-500/35 to-purple-600/30 opacity-70 blur-[1px]" />
-            <div className="pointer-events-none absolute inset-0 rounded-xl bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,rgba(34,211,238,0.04)_3px,rgba(34,211,238,0.04)_4px)]" />
-            <div className="relative flex min-h-[2.75rem] items-center overflow-hidden rounded-xl border border-cyan-400/25 bg-gradient-to-r from-slate-950/90 via-indigo-950/50 to-fuchsia-950/40 px-4 py-3 font-mono text-sm shadow-[0_0_50px_rgba(34,211,238,0.12),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md sm:text-base">
-              <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.25em] text-fuchsia-300/90">Signal</span>
-              <span className="mx-3 h-4 w-px bg-gradient-to-b from-transparent via-cyan-400/50 to-transparent" />
-              <span className="text-slate-400">I am </span>
-              <span className="ml-1.5 font-semibold text-cyan-100 [text-shadow:0_0_20px_rgba(34,211,238,0.55),0_0_42px_rgba(232,121,249,0.35)]">
-                {typedText}
-              </span>
-              <span
-                className="ml-1 inline-block h-[1.1em] w-[3px] animate-pulse rounded-sm bg-gradient-to-b from-fuchsia-400 via-white to-cyan-400 align-middle shadow-[0_0_12px_rgba(255,255,255,0.8)]"
-                aria-hidden
-              />
-            </div>
-          </motion.div>
+              <motion.div variants={reveal} initial="hidden" animate="visible" custom={3}>
+                <h1 className="font-heading text-[clamp(2.75rem,9vw,5rem)] font-bold leading-[0.95] tracking-[-0.03em]">
+                  <span className="text-gradient-indigo">Raunak</span>
+                  <br />
+                  <span className="text-gradient-indigo">Varma</span>
+                </h1>
+                <p className="mt-4 font-mono text-sm text-indigo-200/80 sm:text-base">
+                  AI Engineer · Researcher · Builder
+                </p>
+              </motion.div>
 
-          <motion.p
-            variants={lineReveal}
-            initial="hidden"
-            animate="visible"
-            custom={4}
-            className="mt-6 max-w-xl text-pretty text-[15px] leading-[1.75] text-slate-400 sm:mt-8 sm:max-w-2xl sm:text-[17px]"
-          >
-            AI Engineer, Researcher, and ML Enthusiast building intelligent systems at the intersection
-            of LLMs, multi-agent coordination, and computer vision. Certified Project Manager (BITSOM)
-            â€” Jaipur, India â€” shipping AI with measurable real-world impact.
-          </motion.p>
+              <motion.div
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={4}
+                className="mt-7 min-h-[2.75rem] rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 font-mono text-sm sm:text-base"
+              >
+                <span className="text-textMuted">I am </span>
+                <span className="font-medium text-textPrimary">{typedText}</span>
+                {!prefersReducedMotion && (
+                  <span className="ml-1 inline-block h-[1em] w-0.5 animate-pulse bg-indigo-400 align-middle" aria-hidden />
+                )}
+              </motion.div>
 
-          <motion.div
-            variants={lineReveal}
-            initial="hidden"
-            animate="visible"
-            custom={5}
-            className="mt-9 flex flex-wrap items-center gap-3 sm:mt-10"
-          >
-            <MagneticButton
-              as="a"
-              href="#projects"
-              className="bg-gradient-to-r from-cyan-500 to-fuchsia-600 px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_0_40px_rgba(34,211,238,0.35)] transition-shadow hover:shadow-[0_0_55px_rgba(192,38,211,0.45)]"
-            >
-              View my work
-            </MagneticButton>
-            <MagneticButton
-              as="a"
-              href="#contact"
-              className="border border-fuchsia-500/40 bg-white/[0.03] px-7 py-3.5 text-[15px] font-semibold text-slate-100 backdrop-blur-sm hover:border-cyan-400/50 hover:bg-cyan-500/10"
-            >
-              Download resume
-            </MagneticButton>
-            <div className="flex items-center gap-2 pl-1">
-              {[
-                { icon: RiGithubLine, href: 'https://github.com/RAUNAKVARMA' },
-                {
-                  icon: RiLinkedinLine,
-                  href: 'https://www.linkedin.com/in/raunak-varma-8656382b2/',
-                },
-                { icon: RiMailLine, href: 'mailto:raunaknitinvarma@gmail.com' },
-                {
-                  icon: RiGraduationCapLine,
-                  href: 'https://scholar.google.com/citations?user=tlqu2IoAAAAJ',
-                },
-              ].map(({ icon: Icon, href }, idx) => (
-                <a
-                  key={idx}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04] text-slate-100 transition-all duration-300 hover:-translate-y-0.5 hover:border-fuchsia-400/50 hover:bg-fuchsia-500/10 hover:text-fuchsia-200 hover:shadow-[0_0_24px_rgba(192,38,211,0.25)]"
+              <motion.p
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={5}
+                className="mt-6 max-w-xl text-[15px] leading-relaxed text-textMuted sm:text-[17px]"
+              >
+                Building intelligent systems at the intersection of LLMs, multi-agent coordination, and computer
+                vision — from RAG platforms to published research. Based in Jaipur, India.
+              </motion.p>
+
+              <motion.div
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={6}
+                className="mt-8 flex flex-wrap items-center gap-3"
+              >
+                <MagneticButton
+                  as="a"
+                  href="#projects"
+                  data-cursor-hover="true"
+                  className="inline-flex items-center gap-2 bg-indigo-500 px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_0_40px_rgba(99,102,241,0.35)] hover:bg-indigo-400"
                 >
-                  <Icon className="text-lg" />
-                </a>
-              ))}
-            </div>
-
-            <motion.div
-              variants={lineReveal}
-              initial="hidden"
-              animate="visible"
-              custom={6}
-              className="mt-6 flex w-full basis-full flex-wrap gap-2"
-            >
-              {skillPills.map((label) => (
-                <span
-                  key={label}
-                  className="rounded-full border border-white/[0.12] bg-white/[0.04] px-3 py-1.5 font-mono text-[10px] font-medium uppercase tracking-wider text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:text-[11px]"
+                  View my work
+                  <RiArrowRightUpLine />
+                </MagneticButton>
+                <MagneticButton
+                  as="a"
+                  href="#contact"
+                  data-cursor-hover="true"
+                  className="border border-white/[0.15] bg-white/[0.04] px-7 py-3.5 text-[15px] font-semibold text-textPrimary backdrop-blur-sm hover:border-indigo-400/40"
                 >
-                  {label}
-                </span>
-              ))}
-            </motion.div>
+                  Get in touch
+                </MagneticButton>
+              </motion.div>
+
+              <motion.div
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={7}
+                className="mt-6 flex flex-wrap items-center gap-2"
+              >
+                {socialLinks.map(({ icon: Icon, href, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    data-cursor-hover="true"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.03] text-textPrimary transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-400/40 hover:text-indigo-200"
+                  >
+                    <Icon className="text-lg" />
+                  </a>
+                ))}
+              </motion.div>
+
+              <motion.div
+                variants={reveal}
+                initial="hidden"
+                animate="visible"
+                custom={8}
+                className="mt-6 flex flex-wrap gap-2"
+              >
+                {skillPills.map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-textMuted sm:text-[11px]"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </motion.div>
+            </GlassPanel>
           </motion.div>
-        </motion.div>
+
+          <motion.aside
+            initial={prefersReducedMotion ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: canvasReady ? 1 : 0.6, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.9, ease: EASE }}
+            className="lg:col-span-5"
+            aria-label="Portfolio metrics"
+          >
+            <GlassPanel className="p-5 sm:p-6">
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-indigo-300/80">At a glance</p>
+                  <p className="mt-1 text-sm font-medium text-slate-200">Research & engineering</p>
+                </div>
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                {metrics.map((item) => (
+                  <div key={item.label} className="glass-card p-3">
+                    <div className="flex items-center gap-2 text-indigo-300/80">
+                      <item.icon className="text-base" aria-hidden />
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-textMuted">{item.label}</span>
+                    </div>
+                    <p className="mt-2 font-heading text-3xl font-bold text-white">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </GlassPanel>
+          </motion.aside>
+        </div>
       </div>
 
       {!hideScrollCue && !prefersReducedMotion && (
-        <div className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-center sm:bottom-10">
+        <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-center">
           <div className="flex flex-col items-center gap-2 text-textMuted">
-            <span className="h-8 w-px bg-gradient-to-b from-transparent via-fuchsia-400/60 to-cyan-400" />
-            <RiArrowDownLine className="text-xl text-cyan-300" />
-            <p className="text-[10px] font-mono uppercase tracking-[0.28em] text-slate-500">Explore</p>
+            <span className="h-8 w-px bg-gradient-to-b from-transparent via-indigo-400/50 to-transparent" />
+            <RiArrowDownLine className="text-xl text-indigo-300" />
+            <p className="font-mono text-[10px] uppercase tracking-[0.28em]">Scroll</p>
           </div>
         </div>
       )}
@@ -258,4 +263,3 @@ function Hero() {
 }
 
 export default Hero
-

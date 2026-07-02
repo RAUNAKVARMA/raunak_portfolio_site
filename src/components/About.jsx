@@ -1,6 +1,8 @@
-﻿import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+﻿import { useEffect } from 'react'
+import SectionReveal from './layout/SectionReveal'
+import GlassPanel from './ui/GlassPanel'
 import TerminalWindow from './ui/TerminalWindow'
+import { useSceneProgress } from '../providers/SceneProgressProvider'
 
 const competencies = [
   'LLMs',
@@ -24,17 +26,18 @@ const coursework = [
 ]
 
 function About() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.15 })
+  const { registerSection } = useSceneProgress()
+
+  useEffect(() => {
+    const el = document.getElementById('about')
+    if (el) registerSection('about', el)
+    return () => registerSection('about', null)
+  }, [registerSection])
 
   return (
-    <section id="about" className="sci-fi-section py-24" ref={ref}>
-      <div className="section-container grid gap-12 lg:grid-cols-2 lg:items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="relative"
-        >
+    <section id="about" className="-mt-8 py-24 sm:-mt-12">
+      <SectionReveal className="section-container grid gap-12 lg:grid-cols-2 lg:items-center">
+        <GlassPanel className="relative p-6 sm:p-8" data-reveal>
           <span className="section-number">01</span>
           <h2 className="section-title">About</h2>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
@@ -50,7 +53,7 @@ function About() {
             {competencies.map((skill) => (
               <span
                 key={skill}
-                className="rounded-full border border-accentPrimary/40 bg-accentPrimary/10 px-4 py-1.5 font-mono text-xs text-accentPrimary shadow-[0_0_18px_rgba(0,212,255,0.18)]"
+                className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-4 py-1.5 font-mono text-xs text-indigo-200"
               >
                 {skill}
               </span>
@@ -65,23 +68,19 @@ function About() {
               {coursework.map((course) => (
                 <span
                   key={course}
-                  className="rounded-full border border-borderColor bg-bgSecondary/60 px-3 py-1 font-mono text-[11px] text-slate-400"
+                  className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1 font-mono text-[11px] text-slate-400"
                 >
                   {course}
                 </span>
               ))}
             </div>
           </div>
-        </motion.div>
+        </GlassPanel>
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.12, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        >
+        <div data-reveal>
           <TerminalWindow />
-        </motion.div>
-      </div>
+        </div>
+      </SectionReveal>
     </section>
   )
 }

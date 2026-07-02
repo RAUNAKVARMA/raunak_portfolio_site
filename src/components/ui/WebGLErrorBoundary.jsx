@@ -18,7 +18,7 @@ export default class WebGLErrorBoundary extends Component {
   }
 
   render() {
-    if (this.state.hasError) return null
+    if (this.state.hasError) return this.props.fallback ?? null
     return this.props.children
   }
 }

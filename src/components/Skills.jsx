@@ -1,5 +1,5 @@
-﻿import { motion } from 'framer-motion'
-import { useInView } from 'react-intersection-observer'
+﻿import SectionReveal from './layout/SectionReveal'
+import GlassCard from './ui/GlassCard'
 
 const skillGroups = [
   {
@@ -63,39 +63,31 @@ const skillGroups = [
 ]
 
 function Skills() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 })
-
   return (
-    <section className="sci-fi-section py-24" ref={ref}>
-      <div className="section-container">
-        <div className="mb-10">
-          <h2 className="section-title text-3xl md:text-5xl">Skills</h2>
+    <section id="skills" className="py-24">
+      <SectionReveal className="section-container">
+        <div className="mb-10" data-reveal>
+          <h2 className="section-title">Skills</h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {skillGroups.map((group, index) => (
-            <motion.article
-              key={group.category}
-              initial={{ opacity: 0, y: 22 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: index * 0.06, duration: 0.55 }}
-              className="glass-card rounded-2xl p-6"
-            >
-              <h3 className="font-heading text-xl font-bold text-accentPrimary">{group.category}</h3>
+          {skillGroups.map((group) => (
+            <GlassCard key={group.category} className="p-6" data-reveal>
+              <h3 className="font-heading text-xl font-bold text-indigo-300">{group.category}</h3>
               <div className="mt-4 flex flex-wrap gap-2">
                 {group.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full border border-borderColor bg-bgSecondary/60 px-3 py-1.5 font-mono text-[11px] text-slate-300"
+                    className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 font-mono text-[11px] text-slate-300"
                   >
                     {skill}
                   </span>
                 ))}
               </div>
-            </motion.article>
+            </GlassCard>
           ))}
         </div>
-      </div>
+      </SectionReveal>
     </section>
   )
 }
