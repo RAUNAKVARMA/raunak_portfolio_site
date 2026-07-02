@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { RiArrowDownLine, RiGithubLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
+import { RiArrowDownLine, RiGithubLine, RiGraduationCapLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
 import MagneticButton from './ui/MagneticButton'
 import { useTypewriter } from '../hooks/useTypewriter'
 
-const skillPills = ['Python', 'LLMs', 'RAG', 'MARL']
+const skillPills = ['Python', 'LLMs', 'RAG', 'PyTorch']
 
 const roles = [
   'AI Engineer',
@@ -12,6 +12,8 @@ const roles = [
   'ML Enthusiast',
   'LLM Systems Builder',
   'Multi-Agent Intelligence',
+  'AI Intern @ EY',
+  'Google PM Certified',
   'Certified Project Manager (BITSOM)',
 ]
 
@@ -109,7 +111,7 @@ function Hero() {
             custom={0}
             className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.35em] text-fuchsia-300/80"
           >
-            {'AI systems · Research & build'}
+            {'AI systems Â· Research & build'}
           </motion.p>
 
           <motion.div
@@ -173,7 +175,7 @@ function Hero() {
           >
             AI Engineer, Researcher, and ML Enthusiast building intelligent systems at the intersection
             of LLMs, multi-agent coordination, and computer vision. Certified Project Manager (BITSOM)
-            — Jaipur, India — shipping AI with measurable real-world impact.
+            â€” Jaipur, India â€” shipping AI with measurable real-world impact.
           </motion.p>
 
           <motion.div
@@ -205,6 +207,10 @@ function Hero() {
                   href: 'https://www.linkedin.com/in/raunak-varma-8656382b2/',
                 },
                 { icon: RiMailLine, href: 'mailto:raunaknitinvarma@gmail.com' },
+                {
+                  icon: RiGraduationCapLine,
+                  href: 'https://scholar.google.com/citations?user=tlqu2IoAAAAJ',
+                },
               ].map(({ icon: Icon, href }, idx) => (
                 <a
                   key={idx}
@@ -252,3 +258,4 @@ function Hero() {
 }
 
 export default Hero
+
