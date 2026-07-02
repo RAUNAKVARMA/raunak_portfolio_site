@@ -1,6 +1,6 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { RiGithubLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
+import { RiGithubLine, RiGraduationCapLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
 import { useInView } from 'react-intersection-observer'
 import MagneticButton from './ui/MagneticButton'
 import ContactSciFiDecor from './ui/ContactSciFiDecor'
@@ -12,12 +12,23 @@ const cards = [
     href: 'mailto:raunaknitinvarma@gmail.com',
     icon: RiMailLine,
   },
-  { label: 'GitHub', value: 'github.com/RAUNAKVARMA', href: 'https://github.com/RAUNAKVARMA', icon: RiGithubLine },
+  {
+    label: 'GitHub',
+    value: 'github.com/RAUNAKVARMA',
+    href: 'https://github.com/RAUNAKVARMA',
+    icon: RiGithubLine,
+  },
   {
     label: 'LinkedIn',
     value: 'linkedin.com/in/raunak-varma-8656382b2',
     href: 'https://www.linkedin.com/in/raunak-varma-8656382b2/',
     icon: RiLinkedinLine,
+  },
+  {
+    label: 'Google Scholar',
+    value: 'scholar.google.com',
+    href: 'https://scholar.google.com/citations?user=tlqu2IoAAAAJ',
+    icon: RiGraduationCapLine,
   },
 ]
 
@@ -52,13 +63,13 @@ function Contact() {
           Open to AI engineering roles, research collaborations, and co-founding opportunities.
         </p>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {cards.map((card, index) => (
             <motion.a
               key={card.label}
               href={card.href}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: index * 0.06, duration: 0.6 }}
