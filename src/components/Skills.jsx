@@ -1,38 +1,63 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 
 const skillGroups = [
   {
+    category: 'Languages',
+    skills: ['Python', 'C', 'C++', 'TypeScript'],
+  },
+  {
     category: 'AI Systems',
     skills: [
-      { name: 'LLMs', value: 95 },
-      { name: 'RAG Pipelines', value: 90 },
-      { name: 'Computer Vision', value: 85 },
-      { name: 'Multi-Agent RL', value: 80 },
+      'LLMs',
+      'RAG Pipelines',
+      'Multi-Agent Systems',
+      'Hugging Face',
+      'Computer Vision',
+      'NLP',
     ],
   },
   {
-    category: 'Backend',
+    category: 'ML & Modeling',
     skills: [
-      { name: 'Node.js', value: 85 },
-      { name: 'REST APIs', value: 90 },
-      { name: 'Distributed Systems', value: 80 },
+      'Machine Learning',
+      'Deep Learning (CNNs, ResNet, RNNs, LSTMs)',
+      'Graph Neural Networks (GNNs)',
+      'Reinforcement Learning',
+      'Model Evaluation',
     ],
   },
   {
-    category: 'ML/Math',
+    category: 'Libraries & Tools',
     skills: [
-      { name: 'Reinforcement Learning', value: 80 },
-      { name: 'Regression Modeling', value: 85 },
-      { name: 'Information Theory', value: 75 },
+      'PyTorch',
+      'TensorFlow',
+      'scikit-learn',
+      'PyTorch Geometric',
+      'FastAPI',
+      'Flask',
+      'Streamlit',
+      'OpenCV',
+      'MediaPipe',
+      'Pandas',
+      'NumPy',
+      'FastText',
+      'Deep Translate',
+      'Ollama',
+      'Vector Databases',
     ],
   },
   {
-    category: 'Tools',
+    category: 'Research & Methods',
     skills: [
-      { name: 'Python', value: 95 },
-      { name: 'OpenCV', value: 88 },
-      { name: 'Vector DBs', value: 85 },
+      'Problem Formulation',
+      'Literature Review & Gap Analysis',
+      'Experimental Design',
+      'Dataset Generation & Preprocessing',
+      'Model Benchmarking & Evaluation',
+      'Ablation Studies',
+      'Performance Optimization',
+      'Research Paper Writing (IEEE/Springer/Elsevier)',
     ],
   },
 ]
@@ -44,7 +69,7 @@ function Skills() {
     <section className="sci-fi-section py-24" ref={ref}>
       <div className="section-container">
         <div className="mb-10">
-          <h2 className="section-title text-3xl md:text-5xl">Skill Matrix</h2>
+          <h2 className="section-title text-3xl md:text-5xl">Skills</h2>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -56,23 +81,15 @@ function Skills() {
               transition={{ delay: index * 0.06, duration: 0.55 }}
               className="glass-card rounded-2xl p-6"
             >
-              <h3 className="font-heading text-2xl font-bold">{group.category}</h3>
-              <div className="mt-5 space-y-4">
-                {group.skills.map((skill, skillIndex) => (
-                  <div key={skill.name}>
-                    <div className="mb-1 flex items-center justify-between text-sm">
-                      <span>{skill.name}</span>
-                      <span className="font-mono text-textMuted">{skill.value}%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/5">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={inView ? { width: `${skill.value}%` } : {}}
-                        transition={{ delay: 0.12 + skillIndex * 0.05, duration: 0.7 }}
-                        className="h-full rounded-full bg-accentPrimary shadow-[0_0_10px_rgba(0,212,255,0.55)]"
-                      />
-                    </div>
-                  </div>
+              <h3 className="font-heading text-xl font-bold text-accentPrimary">{group.category}</h3>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {group.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-full border border-borderColor bg-bgSecondary/60 px-3 py-1.5 font-mono text-[11px] text-slate-300"
+                  >
+                    {skill}
+                  </span>
                 ))}
               </div>
             </motion.article>

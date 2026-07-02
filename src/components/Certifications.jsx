@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
+import { RiArrowRightUpLine, RiExternalLinkLine } from 'react-icons/ri'
 import { useInView } from 'react-intersection-observer'
 
 const certs = [
@@ -8,27 +9,24 @@ const certs = [
     issuer: 'BITS School of Management (BITSOM)',
     year: '2025',
     description: 'Product Management with Generative & Agentic AI, focused on strategy and execution.',
+    credentialUrl: 'https://drive.google.com/file/d/1bo9aS609XfKHuwFWaD7cbO7rwFI2rjF3/view',
   },
   {
-    icon: '☁️',
-    name: 'AWS Certified Solutions Architect (Simulation)',
-    issuer: 'Amazon',
+    icon: '📋',
+    name: 'Google Project Management Professional Certificate',
+    issuer: 'Google',
     year: '2025',
-    description: 'Architectural fundamentals for scalable and secure cloud-native systems.',
+    description: 'Professional certificate covering project management fundamentals and agile execution.',
+    credentialUrl:
+      'https://www.coursera.org/account/accomplishments/professional-cert/certificate/KU6IJIZQ3TLL',
   },
   {
-    icon: '🗄️',
-    name: 'Oracle Database SQL Certified Associate',
-    issuer: 'Oracle',
-    year: '2024',
-    description: 'Validated proficiency in SQL querying, schema design, and relational modeling.',
-  },
-  {
-    icon: '⚡',
-    name: 'Industrial Training - EV & Software Simulation',
-    issuer: 'Industrial Program',
+    icon: '☕',
+    name: 'Object-Oriented Programming Using Java',
+    issuer: 'GeeksforGeeks',
     year: '2025',
-    description: 'Hands-on exposure to EV system behavior and simulation-led optimization.',
+    description: 'Validated proficiency in OOP principles and Java programming.',
+    credentialUrl: 'https://www.geeksforgeeks.org/certificate/535414d44eee3e554747a30c765c9a8a',
   },
 ]
 
@@ -39,7 +37,7 @@ function Certifications() {
     <section className="sci-fi-section py-24" ref={ref}>
       <div className="section-container">
         <h2 className="section-title text-3xl md:text-5xl">Certifications</h2>
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {certs.map((cert, index) => (
             <motion.article
               key={cert.name}
@@ -60,9 +58,19 @@ function Certifications() {
                   {cert.year}
                 </span>
               </div>
-              <h3 className="mt-4 font-heading text-2xl font-bold">{cert.name}</h3>
+              <h3 className="mt-4 font-heading text-xl font-bold">{cert.name}</h3>
               <p className="mt-2 text-sm text-accentPrimary">{cert.issuer}</p>
               <p className="mt-3 text-slate-300">{cert.description}</p>
+              <a
+                href={cert.credentialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accentPrimary hover:text-accentPrimary/90"
+              >
+                <RiExternalLinkLine />
+                View credential
+                <RiArrowRightUpLine className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
             </motion.article>
           ))}
         </div>
