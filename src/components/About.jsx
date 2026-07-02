@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import TerminalWindow from './ui/TerminalWindow'
 
@@ -12,6 +12,15 @@ const competencies = [
   'Python',
   'Research',
   'Project Management',
+]
+
+const coursework = [
+  'Machine Learning',
+  'Reinforcement Learning',
+  'Computer Vision',
+  'Natural Language Processing',
+  'Artificial Intelligence',
+  'Data Structures & Algorithms',
 ]
 
 function About() {
@@ -29,13 +38,12 @@ function About() {
           <span className="section-number">01</span>
           <h2 className="section-title">About</h2>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-            Raunak Varma is an AI Engineer, active Researcher, and ML Enthusiast currently
-            pursuing B.Tech in Computer Science at Manipal University Jaipur. He is a Certified
-            Project Manager from BITS School of Management (BITSOM), specializing in AI-driven
-            product strategy. As co-founder of Rauran Charge - a wireless EV charging startup
-            registered under Atal Incubation Centre - and a published researcher with papers in
-            Springer and Elsevier, Raunak bridges deep technical expertise with real-world product
-            thinking.
+            Raunak Varma is an AI Engineer, active Researcher, and ML Enthusiast pursuing B.Tech in
+            Computer Science and Engineering at Manipal University Jaipur (2023–2027). He is a
+            Certified Project Manager from BITS School of Management (BITSOM), specializing in
+            AI-driven product strategy. As co-founder of Rauran Charge — a wireless EV charging startup
+            registered under Atal Incubation Centre — and a published researcher with papers in Springer
+            and Elsevier, Raunak bridges deep technical expertise with real-world product thinking.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -47,6 +55,22 @@ function About() {
                 {skill}
               </span>
             ))}
+          </div>
+
+          <div className="mt-6">
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-textMuted">
+              Relevant Coursework
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {coursework.map((course) => (
+                <span
+                  key={course}
+                  className="rounded-full border border-borderColor bg-bgSecondary/60 px-3 py-1 font-mono text-[11px] text-slate-400"
+                >
+                  {course}
+                </span>
+              ))}
+            </div>
           </div>
         </motion.div>
 

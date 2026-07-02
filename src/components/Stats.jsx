@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import AnimatedCounter from './ui/AnimatedCounter'
 
 const stats = [
-  { target: 4, label: 'Publications' },
+  { target: 5, label: 'Publications' },
   { target: 3, label: 'Projects' },
-  { target: 2, label: 'Startups' },
+  { target: 1, label: 'Startups' },
   { target: 2, label: 'Years Research' },
 ]
 

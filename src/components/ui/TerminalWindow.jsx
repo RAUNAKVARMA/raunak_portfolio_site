@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 
 const command = '$ cat raunak.json'
 
 const jsonOutput = `{
   "role": "AI Engineer & Researcher",
-  "focus": ["LLMs", "Multi-Agent Systems", "Computer Vision"],
-  "certified": "Project Manager - BITSOM",
-  "publications": 4,
-  "startups": 2,
-  "status": "Ready to build 🚀"
+  "education": "B.Tech CSE, MUJ (2023–2027)",
+  "focus": ["LLMs", "RAG", "Multi-Agent Systems"],
+  "publications": 5,
+  "startups": 1,
+  "status": "AI Intern @ EY"
 }`
 
 function TerminalWindow() {
