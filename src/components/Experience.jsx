@@ -1,18 +1,30 @@
-import { motion } from 'framer-motion'
+﻿import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 
 const timeline = [
   {
-    role: 'AI/ML & Data Science Intern',
-    company: 'Zalima Development',
-    period: 'Mar 2026 - Present',
+    role: 'AI Intern',
+    company: 'EY (Ernst & Young), Gurgaon',
+    period: 'May 2026 - Present',
+    tag: 'Enterprise AI',
+    bullets: [
+      'Built and evaluated ML models for enterprise use cases, improving data-driven decision workflows.',
+      'Developed scalable data pipelines and preprocessing systems for analytics applications.',
+      'Delivered AI solutions aligned with business objectives in consulting-driven environments.',
+    ],
+    tech: ['Python', 'ML Models', 'Data Pipelines'],
+  },
+  {
+    role: 'AI/ML Intern',
+    company: 'Zalima Development Pvt. Ltd.',
+    period: 'Mar 2026 - Apr 2026',
     tag: 'AI/ML Intern',
     bullets: [
-      'Built model evaluation pipelines for applied ML use-cases across internal products.',
-      'Automated data quality checks and feature extraction workflows for research iteration.',
-      'Collaborated with engineering teams to productionize experiments into measurable outcomes.',
+      'Built and optimized ML models for structured datasets, improving prediction reliability and performance.',
+      'Designed preprocessing pipelines and deployed models in production environments.',
+      'Improved model performance through feature engineering and iterative evaluation techniques.',
     ],
-    tech: ['Python', 'Data Science', 'Model Evaluation'],
+    tech: ['Python', 'Feature Engineering', 'Model Deployment'],
   },
   {
     role: 'Co-Founder',
@@ -20,47 +32,22 @@ const timeline = [
     period: 'Aug 2024 - Present',
     tag: 'Startup Leadership',
     bullets: [
-      'Co-led product strategy for wireless EV charging systems under AIC ecosystem.',
-      'Designed technical roadmap spanning simulation, hardware integration, and ML optimization.',
-      'Built cross-functional momentum across research, prototyping, and stakeholder presentations.',
+      'Leading development of wireless EV charging systems with focus on efficiency and real-world deployment.',
+      'Architected system design integrating hardware and AI-based optimization strategies.',
+      'Driving product development lifecycle from research and prototyping to deployment.',
     ],
-    tech: ['Product Strategy', 'EV Tech', 'ML Optimization'],
-  },
-  {
-    role: 'Backend Developer Intern',
-    company: 'Eastri',
-    period: 'Mar - Jun 2025',
-    tag: 'Backend Dev',
-    bullets: [
-      'Developed RESTful APIs and service modules for core platform workflows.',
-      'Improved endpoint reliability with robust validation and error-handling layers.',
-      'Contributed to deployment-ready backend architecture and API documentation.',
-    ],
-    tech: ['Node.js', 'REST APIs', 'Service Architecture'],
+    tech: ['EV Tech', 'System Design', 'ML Optimization'],
   },
   {
     role: 'Campus Ambassador',
     company: 'Techfest, IIT Bombay',
-    period: 'May - Dec 2024',
+    period: 'May 2024 - Dec 2024',
     tag: 'Community',
     bullets: [
-      'Represented Techfest initiatives and drove participation across campus chapters.',
-      'Coordinated technical events and outreach campaigns with student teams.',
-      'Strengthened industry-academia engagement through curated event activations.',
+      'Led outreach and promotional campaigns, increasing campus-level engagement and participation.',
+      'Strengthened communication and leadership through event execution and coordination.',
     ],
     tech: ['Leadership', 'Events', 'Communication'],
-  },
-  {
-    role: 'Industrial Trainee',
-    company: 'My Equation',
-    period: 'Feb - Apr 2024',
-    tag: 'Industrial Training',
-    bullets: [
-      'Completed practical modules on EV systems and software simulation tooling.',
-      'Performed structured analysis of charging models and design performance.',
-      'Presented findings with simulation-backed recommendations for system tuning.',
-    ],
-    tech: ['Simulation', 'EV Systems', 'Analytics'],
   },
 ]
 
@@ -91,7 +78,7 @@ function Experience() {
 
                 <div className="flex flex-wrap items-center gap-3">
                   <h3 className="font-heading text-2xl font-bold">
-                    {item.role} - {item.company}
+                    {item.role} — {item.company}
                   </h3>
                   <span className="font-mono text-sm text-accentSecondary">{item.period}</span>
                   <span className="rounded-full border border-accentPrimary/40 bg-accentPrimary/10 px-3 py-1 text-xs text-accentPrimary">
