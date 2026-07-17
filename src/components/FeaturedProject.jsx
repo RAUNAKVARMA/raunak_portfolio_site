@@ -68,11 +68,16 @@ function FeaturedProject() {
 
         <figure className="pointer-events-none absolute right-0 top-1/2 z-[1] hidden w-[min(52%,640px)] -translate-y-1/2 pr-6 lg:block xl:pr-10">
           <div className="overflow-hidden border border-white/[0.12] bg-black shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
-            <img
-              src="/images/cosmic-rag-hero.png"
-              alt="Cosmic RAG — retrieval-augmented knowledge assistant landing page"
+            <video
+              src="/videos/cosmic-rag-demo.mp4"
+              poster="/images/cosmic-rag-hero.png"
+              aria-label="Cosmic RAG retrieval-augmented knowledge assistant demonstration"
               className="aspect-video w-full object-cover object-center"
-              loading="lazy"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
             />
           </div>
           <figcaption className="mt-3 text-right font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">

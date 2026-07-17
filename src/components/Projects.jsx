@@ -35,8 +35,9 @@ const projects = [
     ],
     liveUrl: 'https://et-t-project-doqi.vercel.app/',
     repoUrl: 'https://github.com/RAUNAKVARMA/et-t-project',
-    image: '/images/cosmic-rag-hero.png',
-    imageAlt: 'Cosmic RAG knowledge portal landing page',
+    video: '/videos/cosmic-rag-demo.mp4',
+    poster: '/images/cosmic-rag-hero.png',
+    videoLabel: 'Cosmic RAG knowledge portal demonstration',
   },
   {
     name: 'EcoVerify',
@@ -106,13 +107,18 @@ function ProjectRow({ project }) {
         <span className="font-mono text-sm text-textSubtle">{project.year}</span>
       </div>
 
-      {project.image && (
+      {project.video && (
         <figure className="mt-8 max-w-3xl overflow-hidden border border-white/[0.12] bg-[#0a0a0a]">
-          <img
-            src={project.image}
-            alt={project.imageAlt ?? project.name}
+          <video
+            src={project.video}
+            poster={project.poster}
+            aria-label={project.videoLabel ?? `${project.name} demonstration`}
             className="aspect-video w-full object-cover object-center"
-            loading="lazy"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
           />
         </figure>
       )}
