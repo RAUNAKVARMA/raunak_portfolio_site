@@ -14,8 +14,9 @@ export function useReducedMotionProfile() {
     enableSmoothScroll: !prefersReducedMotion,
     enableGsapScrub: !prefersReducedMotion,
     enableCustomCursor: !prefersReducedMotion && !isTouchLike,
-    enableParticles: !prefersReducedMotion && !isTouchLike,
+    enableParticles: !prefersReducedMotion,
     enable3DAutoRotation: !prefersReducedMotion,
-    enableHeavyPostFX: !prefersReducedMotion && !isTouchLike,
+    enableHeavyPostFX: !prefersReducedMotion,
+    enableFluidSim: !prefersReducedMotion,
   }
 }

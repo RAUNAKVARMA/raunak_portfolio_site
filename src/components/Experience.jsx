@@ -5,7 +5,7 @@ export const experienceTimeline = [
   {
     role: 'AI Intern',
     company: 'EY (Ernst & Young), Gurgaon',
-    period: 'May 2026 - Present',
+    period: 'May 2026 — Present',
     tag: 'Enterprise AI',
     bullets: [
       'Built and evaluated ML models for enterprise use cases, improving data-driven decision workflows.',
@@ -17,8 +17,8 @@ export const experienceTimeline = [
   {
     role: 'AI/ML Intern',
     company: 'Zalima Development Pvt. Ltd.',
-    period: 'Mar 2026 - Apr 2026',
-    tag: 'AI/ML Intern',
+    period: 'Mar 2026 — Apr 2026',
+    tag: 'AI/ML',
     bullets: [
       'Built and optimized ML models for structured datasets, improving prediction reliability and performance.',
       'Designed preprocessing pipelines and deployed models in production environments.',
@@ -28,8 +28,8 @@ export const experienceTimeline = [
   },
   {
     role: 'Co-Founder',
-    company: 'Rauran Charge',
-    period: 'Aug 2024 - Present',
+    company: 'Rauran Charge (Wireless EV Charging Startup)',
+    period: 'Aug 2024 — Present',
     tag: 'Startup Leadership',
     bullets: [
       'Leading development of wireless EV charging systems with focus on efficiency and real-world deployment.',
@@ -39,9 +39,21 @@ export const experienceTimeline = [
     tech: ['EV Tech', 'System Design', 'ML Optimization'],
   },
   {
+    role: 'Backend Developer Intern',
+    company: 'Eastri',
+    period: 'Apr 2025 — Jun 2025',
+    tag: 'Backend',
+    bullets: [
+      'Built RESTful APIs using Node.js and TypeScript for the Rider module.',
+      'Implemented backend business logic, validation, and scalable API endpoints.',
+      'Tested and optimized backend services for Android applications.',
+    ],
+    tech: ['Node.js', 'TypeScript', 'REST APIs'],
+  },
+  {
     role: 'Campus Ambassador',
     company: 'Techfest, IIT Bombay',
-    period: 'May 2024 - Dec 2024',
+    period: 'May 2024 — Dec 2024',
     tag: 'Community',
     bullets: [
       'Led outreach and promotional campaigns, increasing campus-level engagement and participation.',

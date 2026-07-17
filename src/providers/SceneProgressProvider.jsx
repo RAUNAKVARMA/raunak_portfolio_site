@@ -7,6 +7,7 @@ const defaultState = {
   sectionProgress: {},
   morphProgress: 0,
   contactProgress: 0,
+  sceneVariant: 'home',
 }
 
 const SceneProgressContext = createContext(null)
@@ -18,6 +19,7 @@ export function SceneProgressProvider({ children }) {
   const [sectionProgress, setSectionProgressState] = useState({})
   const [morphProgress, setMorphProgress] = useState(0)
   const [contactProgress, setContactProgress] = useState(0)
+  const [sceneVariant, setSceneVariant] = useState('home')
   const sectionRefs = useRef({})
 
   const registerSection = useCallback((id, el) => {
@@ -46,6 +48,8 @@ export function SceneProgressProvider({ children }) {
       setMorphProgress,
       contactProgress,
       setContactProgress,
+      sceneVariant,
+      setSceneVariant,
       registerSection,
       sectionRefs,
     }),
@@ -56,6 +60,7 @@ export function SceneProgressProvider({ children }) {
       sectionProgress,
       morphProgress,
       contactProgress,
+      sceneVariant,
       registerSection,
       setSectionProgress,
     ],

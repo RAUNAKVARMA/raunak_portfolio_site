@@ -27,8 +27,8 @@ export default function ParticleField({ count = 800 }) {
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.035}
-        color="#818cf8"
+        size={0.045}
+        color="#1c69d4"
         transparent
         opacity={0.45}
         sizeAttenuation

@@ -1,32 +1,82 @@
+import { Link } from 'react-router-dom'
+
+import MStripe from './ui/MStripe'
+
+
+
 const links = [
-  { label: 'Home', href: '#hero' },
-  { label: 'About', href: '#about' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Experience', href: '#experience' },
-  { label: 'Contact', href: '#contact' },
+
+  { label: 'Home', to: '/' },
+
+  { label: 'About', to: '/about' },
+
+  { label: 'Work', to: '/work' },
+
+  { label: 'Experience', to: '/experience' },
+
+  { label: 'Beyond', to: '/beyond' },
+
+  { label: 'Contact', to: '/contact' },
+
 ]
 
+
+
 function Footer() {
+
   return (
-    <footer className="border-t border-white/[0.06] bg-[#030712]/80 py-8 backdrop-blur-sm">
-      <div className="section-container grid items-center gap-3 text-sm text-textMuted md:grid-cols-3">
-        <p className="text-center md:text-left">Built by Raunak Varma</p>
-        <div className="flex flex-wrap items-center justify-center gap-4">
+
+    <footer className="relative bg-black">
+
+      <MStripe />
+
+      <div className="section-container grid items-center gap-6 py-10 text-sm font-light text-textSubtle md:grid-cols-3">
+
+        <p className="text-center font-mono text-[11px] uppercase tracking-[0.2em] md:text-left">
+
+          Raunak Varma
+
+        </p>
+
+        <div className="flex flex-wrap items-center justify-center gap-5">
+
           {links.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
+
+            <Link
+
+              key={link.to}
+
+              to={link.to}
+
               data-cursor-hover="true"
-              className="transition-colors hover:text-indigo-300"
+
+              className="font-mono text-[10px] uppercase tracking-[0.18em] transition-colors hover:text-white"
+
             >
+
               {link.label}
-            </a>
+
+            </Link>
+
           ))}
+
         </div>
-        <p className="text-center md:text-right">© {new Date().getFullYear()} Raunak Varma</p>
+
+        <p className="text-center font-mono text-[10px] uppercase tracking-[0.18em] md:text-right">
+
+          © {new Date().getFullYear()}
+
+        </p>
+
       </div>
+
     </footer>
+
   )
+
 }
 
+
+
 export default Footer
+

@@ -1,9 +1,9 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { RiGithubLine, RiGraduationCapLine, RiLinkedinLine, RiMailLine } from 'react-icons/ri'
 import MagneticButton from './ui/MagneticButton'
-import GlassPanel from './ui/GlassPanel'
 import SectionReveal from './layout/SectionReveal'
+import SectionHeader from './ui/SectionHeader'
 
 const cards = [
   {
@@ -32,9 +32,6 @@ const cards = [
   },
 ]
 
-const fieldClass =
-  'w-full rounded-xl border border-white/[0.12] bg-white/[0.04] px-4 py-3.5 text-[15px] text-textPrimary outline-none transition placeholder:text-textMuted focus:border-indigo-400/50 focus:ring-2 focus:ring-indigo-400/25'
-
 function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -51,18 +48,19 @@ function Contact() {
   }
 
   return (
-    <section id="contact" className="relative py-24">
-      <SectionReveal className="section-container text-center">
-        <div className="relative mb-8" data-reveal>
-          <span className="section-number left-1/2 -translate-x-1/2">06</span>
-          <h2 className="section-title">Let&apos;s Build</h2>
+    <section id="contact" className="relative border-t border-white/[0.08] py-24">
+      <SectionReveal className="section-container">
+        <div className="mb-12" data-reveal>
+          <SectionHeader
+            eyebrow="06 — Contact"
+            title="Let's Build"
+            subtitle="Open to AI engineering roles, research collaborations, and co-founding opportunities."
+            align="center"
+            className="mx-auto items-center text-center"
+          />
         </div>
 
-        <p className="mx-auto max-w-2xl text-lg text-slate-300" data-reveal>
-          Open to AI engineering roles, research collaborations, and co-founding opportunities.
-        </p>
-
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-px bg-white/[0.08] sm:grid-cols-2 lg:grid-cols-4">
           {cards.map((card) => (
             <a
               key={card.label}
@@ -71,23 +69,21 @@ function Contact() {
               rel="noopener noreferrer"
               data-cursor-hover="true"
               data-reveal
-              className="glass-card block p-5 text-left transition-transform duration-300 hover:-translate-y-1"
+              className="block bg-black p-6 transition-colors hover:bg-bgElevated"
             >
-              <card.icon className="text-2xl text-indigo-300" />
-              <p className="mt-3 text-sm text-textMuted">{card.label}</p>
-              <p className="mt-1 break-all font-medium text-textPrimary">{card.value}</p>
+              <card.icon className="text-xl text-textMuted" />
+              <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-textSubtle">{card.label}</p>
+              <p className="mt-2 break-all text-sm font-light text-textPrimary">{card.value}</p>
             </a>
           ))}
         </div>
 
-        <GlassPanel className="relative mx-auto mt-12 max-w-3xl p-6 text-left md:p-8" data-reveal>
-          <p className="mb-4 font-mono text-[10px] font-medium uppercase tracking-[0.35em] text-indigo-300/80">
-            Message
-          </p>
+        <div className="mx-auto mt-12 max-w-3xl border border-white/[0.12] bg-black p-6 md:p-8" data-reveal>
+          <p className="section-eyebrow mb-6">Message</p>
 
           <form onSubmit={handleSubmit} className="grid gap-4">
             <div>
-              <label htmlFor="contact-name" className="mb-1.5 block text-xs font-medium text-textMuted">
+              <label htmlFor="contact-name" className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-textSubtle">
                 Name
               </label>
               <input
@@ -96,11 +92,11 @@ function Contact() {
                 required
                 autoComplete="name"
                 placeholder="Your name"
-                className={fieldClass}
+                className="field-input"
               />
             </div>
             <div>
-              <label htmlFor="contact-email" className="mb-1.5 block text-xs font-medium text-textMuted">
+              <label htmlFor="contact-email" className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-textSubtle">
                 Email
               </label>
               <input
@@ -110,11 +106,11 @@ function Contact() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className={fieldClass}
+                className="field-input"
               />
             </div>
             <div>
-              <label htmlFor="contact-message" className="mb-1.5 block text-xs font-medium text-textMuted">
+              <label htmlFor="contact-message" className="mb-1.5 block font-mono text-[10px] uppercase tracking-wider text-textSubtle">
                 Message
               </label>
               <textarea
@@ -123,14 +119,14 @@ function Contact() {
                 required
                 rows={5}
                 placeholder="Tell me about your project or opportunity…"
-                className={`${fieldClass} min-h-[140px] resize-y leading-relaxed`}
+                className="field-input min-h-[140px] resize-y leading-relaxed"
               />
             </div>
             <div className="pt-1">
               <MagneticButton
                 type="submit"
                 data-cursor-hover="true"
-                className="inline-flex items-center gap-2 bg-indigo-500 px-6 py-3.5 font-semibold text-white shadow-[0_0_32px_rgba(99,102,241,0.35)] hover:bg-indigo-400"
+                className="pill-btn-dark"
               >
                 {isSubmitting && (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -139,7 +135,7 @@ function Contact() {
               </MagneticButton>
             </div>
           </form>
-        </GlassPanel>
+        </div>
       </SectionReveal>
 
       <AnimatePresence>
@@ -148,7 +144,7 @@ function Contact() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 12 }}
-            className="fixed bottom-6 right-6 z-[70] rounded-lg border border-indigo-400/40 bg-bgSecondary px-4 py-3 text-sm text-indigo-200 shadow-glass"
+            className="fixed bottom-6 right-6 z-[70] border border-white/[0.15] bg-black px-4 py-3 font-mono text-xs uppercase tracking-wider text-textMuted"
           >
             Message sent successfully.
           </motion.div>

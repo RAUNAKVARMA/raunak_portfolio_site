@@ -8,6 +8,7 @@ const LERP = { dot: 0.35, ring: 0.12 }
 
 function CustomCursor() {
   const { enableCustomCursor } = useReducedMotionProfile()
+  const [artMode, setArtMode] = useState(false)
 
   const dotRef = useRef(null)
   const ringRef = useRef(null)
@@ -21,7 +22,15 @@ function CustomCursor() {
   const [cursorLabel, setCursorLabel] = useState('')
 
   useEffect(() => {
-    if (!enableCustomCursor) return undefined
+    const sync = () => setArtMode(document.body.classList.contains('art-experience-active'))
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!enableCustomCursor || artMode) return undefined
 
     const cx = window.innerWidth / 2
     const cy = window.innerHeight / 2
@@ -78,9 +87,9 @@ function CustomCursor() {
       window.removeEventListener('mouseover', onMouseOver)
       cancelAnimationFrame(frame)
     }
-  }, [enableCustomCursor])
+  }, [enableCustomCursor, artMode])
 
-  if (!enableCustomCursor) return null
+  if (!enableCustomCursor || artMode) return null
 
   const showLabel = Boolean(cursorLabel)
 

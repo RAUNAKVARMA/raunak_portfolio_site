@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react'
 import { RiArrowRightUpLine, RiExternalLinkLine } from 'react-icons/ri'
 import { gsap, registerGsap } from '../../lib/gsap.client'
 import { experienceTimeline } from '../Experience'
-import { publications } from '../Research'
-import GlassCard from '../ui/GlassCard'
+import { publications } from '../Publications'
 import SectionReveal from '../layout/SectionReveal'
+import SectionHeader from '../ui/SectionHeader'
 import { useReducedMotionProfile } from '../../hooks/useReducedMotionProfile'
 
 function ExperienceTimeline() {
@@ -36,38 +36,45 @@ function ExperienceTimeline() {
   }, [enableGsapScrub])
 
   return (
-    <section id="experience" className="py-24" ref={sectionRef}>
+    <section id="experience" className="border-t border-white/[0.08] py-24" ref={sectionRef}>
       <SectionReveal className="section-container">
-        <div className="relative mb-14" data-reveal>
-          <span className="section-number">04</span>
-          <h2 className="section-title">Experience & Research</h2>
+        <div className="mb-14" data-reveal>
+          <SectionHeader eyebrow="04 — Experience" title="Experience & Research" />
         </div>
 
-        <div className="relative pl-8 md:pl-12">
+        <div className="relative border-l border-white/[0.12] pl-8 md:pl-12">
           <div
             ref={lineRef}
-            className="absolute left-2 top-2 h-[calc(100%-10px)] w-px origin-top bg-gradient-to-b from-indigo-400/80 via-indigo-400/40 to-transparent md:left-4"
+            className="absolute left-0 top-0 h-full w-px origin-top bg-gradient-to-b from-[#1c69d4] via-white/20 to-transparent"
             aria-hidden
           />
 
-          <div className="space-y-8">
+          <div className="divide-y divide-white/[0.08]">
             {experienceTimeline.map((item) => (
-              <GlassCard key={`${item.role}-${item.company}`} className="relative p-6" data-reveal>
-                <span className="absolute -left-[31px] top-8 h-3.5 w-3.5 rounded-full bg-indigo-400 shadow-[0_0_16px_rgba(99,102,241,0.5)] md:-left-[41px]" />
+              <article key={`${item.role}-${item.company}`} className="relative py-10 first:pt-0" data-reveal>
+                <span
+                  className="absolute -left-[37px] top-10 h-2 w-2 bg-white md:-left-[49px]"
+                  aria-hidden
+                />
 
-                <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="font-heading text-xl font-bold sm:text-2xl">
-                    {item.role} — {item.company}
+                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                  <h3 className="font-heading text-lg font-bold uppercase tracking-wide sm:text-xl">
+                    {item.role}
                   </h3>
-                  <span className="font-mono text-sm text-indigo-300/80">{item.period}</span>
-                  <span className="rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-200">
+                  <span className="font-mono text-sm text-textSubtle">— {item.company}</span>
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-4">
+                  <span className="font-mono text-xs text-textSubtle">{item.period}</span>
+                  <span className="border border-white/[0.12] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-textMuted">
                     {item.tag}
                   </span>
                 </div>
 
-                <ul className="mt-4 space-y-2 text-slate-300">
+                <ul className="mt-5 space-y-2 text-sm font-light text-textMuted">
                   {item.bullets.map((bullet) => (
-                    <li key={bullet} className="list-disc pl-1 marker:text-indigo-400">
+                    <li key={bullet} className="flex gap-3">
+                      <span className="mt-2 h-px w-3 shrink-0 bg-white/25" aria-hidden />
                       {bullet}
                     </li>
                   ))}
@@ -77,58 +84,60 @@ function ExperienceTimeline() {
                   {item.tech.map((tech) => (
                     <span
                       key={tech}
-                      className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 font-mono text-[11px] text-textMuted"
+                      className="border border-white/[0.08] px-2.5 py-1 font-mono text-[10px] text-textSubtle"
                     >
                       {tech}
                     </span>
                   ))}
                 </div>
-              </GlassCard>
+              </article>
             ))}
           </div>
         </div>
 
-        <div id="research" className="relative mt-20 pl-8 md:pl-12">
+        <div id="research" className="mt-20 border-t border-white/[0.08] pt-16">
           <div className="mb-10" data-reveal>
-            <h3 className="font-heading text-2xl font-bold text-textPrimary sm:text-3xl">Research & Publications</h3>
+            <SectionHeader eyebrow="Publications" title="Research" />
           </div>
 
-          <div className="space-y-8">
-            {publications.map((group) => (
-              <div key={group.year} className="grid gap-4 md:grid-cols-[100px_1fr]" data-reveal>
-                <div className="flex items-start gap-2">
-                  <span className="mt-2 h-3 w-3 rounded-full bg-indigo-400" />
-                  <span className="font-heading text-3xl text-indigo-300">{group.year}</span>
-                </div>
-                <div className="space-y-4 border-l border-white/[0.08] pl-6">
-                  {group.items.map((paper) => (
-                    <GlassCard key={paper.title} className="p-4">
-                      <h4 className="text-lg font-semibold">{paper.title}</h4>
-                      <p className="mt-1 text-sm text-textMuted">{paper.venue}</p>
-                      <div className="mt-3 flex flex-wrap items-center gap-3">
-                        <span className="inline-block rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 font-mono text-xs text-indigo-200">
-                          {paper.status}
-                        </span>
-                        {paper.links.map((link) => (
-                          <a
-                            key={link.label}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            data-cursor-hover="true"
-                            className="group/link inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 hover:text-indigo-200"
-                          >
-                            <RiExternalLinkLine />
-                            {link.label}
-                            <RiArrowRightUpLine className="transition-transform duration-300 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-                          </a>
-                        ))}
-                      </div>
-                    </GlassCard>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <div className="divide-y divide-white/[0.08] border border-white/[0.08]">
+            {publications.map((group) =>
+              group.items.map((paper) => (
+                <article
+                  key={paper.title}
+                  className="grid gap-4 bg-black p-6 sm:grid-cols-[80px_1fr]"
+                  data-reveal
+                >
+                  <span className="font-mono text-sm text-textSubtle">{group.year}</span>
+                  <div>
+                    <h4 className="font-heading text-base font-semibold leading-snug sm:text-lg">{paper.title}</h4>
+                    <p className="mt-1 text-sm font-light text-textSubtle">{paper.venue}</p>
+                    {paper.summary && (
+                      <p className="mt-3 text-sm font-light italic text-textMuted">{paper.summary}</p>
+                    )}
+                    <div className="mt-4 flex flex-wrap items-center gap-4">
+                      <span className="border border-white/[0.12] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-textMuted">
+                        {paper.status}
+                      </span>
+                      {paper.links.map((link) => (
+                        <a
+                          key={link.label}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-cursor-hover="true"
+                          className="link-accent inline-flex items-center gap-1.5"
+                        >
+                          <RiExternalLinkLine />
+                          {link.label}
+                          <RiArrowRightUpLine />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              )),
+            )}
           </div>
         </div>
       </SectionReveal>

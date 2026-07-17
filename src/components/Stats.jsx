@@ -1,25 +1,25 @@
 ﻿import SectionReveal from './layout/SectionReveal'
-import GlassCard from './ui/GlassCard'
-import AnimatedCounter from './ui/AnimatedCounter'
 
 const stats = [
-  { target: 5, label: 'Publications' },
-  { target: 3, label: 'Projects' },
-  { target: 1, label: 'Startups' },
-  { target: 2, label: 'Years Research' },
+  { target: 5, label: 'Publications', display: '05' },
+  { target: 3, label: 'Projects', display: '03' },
+  { target: 1, label: 'Startups', display: '01' },
+  { target: 2, label: 'Research Yrs', display: '02' },
 ]
 
 function Stats() {
   return (
-    <section className="overflow-hidden border-y border-white/[0.06] py-12">
-      <SectionReveal className="section-container grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="section-surface-alt border-y border-white/[0.12]">
+      <SectionReveal className="section-container grid grid-cols-2 py-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <GlassCard key={stat.label} className="p-6 text-center" data-reveal>
-            <div className="font-heading text-4xl font-bold text-indigo-300 sm:text-5xl">
-              <AnimatedCounter target={stat.target} />
-            </div>
-            <p className="mt-2 text-sm uppercase tracking-wider text-textMuted">{stat.label}</p>
-          </GlassCard>
+          <div
+            key={stat.label}
+            className="border-b border-r border-white/[0.12] px-4 py-10 text-center last:border-r-0 sm:px-6 lg:border-b-0"
+            data-reveal
+          >
+            <p className="font-heading text-3xl font-bold tracking-wide text-white sm:text-4xl">{stat.display}</p>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.28em] text-mBlue">{stat.label}</p>
+          </div>
         ))}
       </SectionReveal>
     </section>

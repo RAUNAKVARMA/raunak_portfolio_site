@@ -1,75 +1,61 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { NavLink, Link } from 'react-router-dom'
 import { RiCloseLine, RiMenu3Line } from 'react-icons/ri'
 
 const links = [
-  { label: 'Home', href: '#hero', section: 'hero' },
-  { label: 'About', href: '#about', section: 'about' },
-  { label: 'Projects', href: '#projects', section: 'projects' },
-  { label: 'Experience', href: '#experience', section: 'experience' },
-  { label: 'Contact', href: '#contact', section: 'contact' },
+  { label: 'Home', to: '/' },
+  { label: 'About', to: '/about' },
+  { label: 'Work', to: '/work' },
+  { label: 'Experience', to: '/experience' },
+  { label: 'Beyond', to: '/beyond' },
+  { label: 'Contact', to: '/contact' },
 ]
 
 function Navbar() {
-  const [activeSection, setActiveSection] = useState('hero')
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  useEffect(() => {
-    const sections = links
-      .map((link) => document.getElementById(link.section))
-      .filter(Boolean)
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id)
-          }
-        })
-      },
-      {
-        rootMargin: '-35% 0px -55% 0px',
-        threshold: 0.1,
-      },
-    )
-
-    sections.forEach((section) => observer.observe(section))
-    return () => observer.disconnect()
-  }, [])
 
   return (
     <>
-      <header className="glass-panel fixed inset-x-4 top-4 z-50 mx-auto max-w-[1240px] rounded-2xl border-white/[0.1] bg-[#030712]/60 sm:inset-x-6 lg:inset-x-8">
-        <div className="flex h-[68px] items-center justify-between px-4 sm:px-6">
-          <a
-            href="#hero"
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-black/80 backdrop-blur-md">
+        <div className="section-container flex h-[72px] items-center justify-between">
+          <Link
+            to="/"
             data-cursor-hover="true"
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-500 font-heading text-lg font-bold text-white shadow-[0_0_24px_rgba(99,102,241,0.35)]"
+            className="font-heading text-sm font-bold uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-70"
+            aria-label="Home"
           >
             RV
-          </a>
+          </Link>
 
-          <nav className="hidden items-center gap-7 md:flex">
+          <nav className="hidden items-center gap-8 md:flex">
             {links.map((link) => (
-              <a
-                key={link.section}
-                href={link.href}
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === '/'}
                 data-cursor-hover="true"
-                aria-current={activeSection === link.section ? 'page' : undefined}
-                className={`text-sm font-medium transition-colors duration-300 ${
-                  activeSection === link.section
-                    ? 'text-indigo-300'
-                    : 'text-textMuted hover:text-textPrimary'
-                }`}
+                className={({ isActive }) =>
+                  `relative font-mono text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 ${
+                    isActive ? 'text-white' : 'text-textSubtle hover:text-white'
+                  }`
+                }
               >
-                {link.label}
-              </a>
+                {({ isActive }) => (
+                  <>
+                    {link.label}
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-[#0066b1] via-[#1c69d4] to-[#e22718]" />
+                    )}
+                  </>
+                )}
+              </NavLink>
             ))}
           </nav>
 
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.1] text-textPrimary md:hidden"
+            className="flex h-10 w-10 items-center justify-center border border-white/25 bg-black text-white md:hidden"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             onClick={() => setMobileOpen((open) => !open)}
           >
@@ -84,22 +70,23 @@ function Navbar() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="glass-panel fixed inset-x-4 top-[88px] z-50 mx-auto max-w-[1240px] p-4 md:hidden"
+            className="fixed inset-x-0 top-[72px] z-50 border-b border-white/[0.12] bg-black md:hidden"
           >
-            <nav className="flex flex-col gap-2">
+            <nav className="section-container flex flex-col py-4">
               {links.map((link) => (
-                <a
-                  key={link.section}
-                  href={link.href}
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.to === '/'}
                   onClick={() => setMobileOpen(false)}
-                  className={`rounded-lg px-4 py-3 text-sm font-medium ${
-                    activeSection === link.section
-                      ? 'bg-indigo-500/15 text-indigo-200'
-                      : 'text-textMuted hover:bg-white/[0.04]'
-                  }`}
+                  className={({ isActive }) =>
+                    `border-b border-white/[0.08] px-2 py-4 font-mono text-[11px] uppercase tracking-[0.22em] last:border-0 ${
+                      isActive ? 'text-white' : 'text-textSubtle'
+                    }`
+                  }
                 >
                   {link.label}
-                </a>
+                </NavLink>
               ))}
             </nav>
           </motion.div>

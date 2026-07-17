@@ -1,12 +1,15 @@
 import { useEffect } from 'react'
-import { gsap, registerGsap } from '../../lib/gsap.client'
+import { useLocation } from 'react-router-dom'
+import { gsap, registerGsap, ScrollTrigger } from '../../lib/gsap.client'
 import { useSceneProgress } from '../../providers/SceneProgressProvider'
 import { useReducedMotionProfile } from '../../hooks/useReducedMotionProfile'
 
 /**
- * Wires GSAP ScrollTrigger scrub for hero→about morph and contact closing beat.
+ * Wires GSAP ScrollTrigger scrub per route: hero->about morph on Home,
+ * and a contact closing beat wherever a #contact section exists.
  */
 export function useScrollSceneTriggers() {
+  const { pathname } = useLocation()
   const { setMorphProgress, setContactProgress } = useSceneProgress()
   const { enableGsapScrub } = useReducedMotionProfile()
 
@@ -14,49 +17,52 @@ export function useScrollSceneTriggers() {
     if (!enableGsapScrub) return undefined
 
     registerGsap()
-    const hero = document.getElementById('hero')
-    const about = document.getElementById('about')
-    const contact = document.getElementById('contact')
 
-    const triggers = []
-    const morphProxy = { value: 0 }
-    const contactProxy = { value: 0 }
+    // Let the new route's DOM paint before measuring.
+    const raf = requestAnimationFrame(() => {
+      const hero = document.getElementById('hero')
+      const about = document.getElementById('about')
+      const contact = document.getElementById('contact')
+      const morphProxy = { value: 0 }
+      const contactProxy = { value: 0 }
 
-    if (hero && about) {
-      const morphTween = gsap.to(morphProxy, {
-        value: 1,
-        ease: 'none',
-        onUpdate: () => setMorphProgress(morphProxy.value),
-        scrollTrigger: {
-          trigger: hero,
-          start: 'top top',
-          endTrigger: about,
-          end: 'top 40%',
-          scrub: 0.8,
-        },
-      })
-      triggers.push(morphTween.scrollTrigger)
-    }
+      if (hero && about) {
+        gsap.to(morphProxy, {
+          value: 1,
+          ease: 'none',
+          onUpdate: () => setMorphProgress(morphProxy.value),
+          scrollTrigger: {
+            trigger: hero,
+            start: 'top top',
+            endTrigger: about,
+            end: 'top 40%',
+            scrub: 0.8,
+          },
+        })
+      }
 
-    if (contact) {
-      const contactTween = gsap.to(contactProxy, {
-        value: 1,
-        ease: 'none',
-        onUpdate: () => setContactProgress(contactProxy.value),
-        scrollTrigger: {
-          trigger: contact,
-          start: 'top 85%',
-          end: 'bottom bottom',
-          scrub: 0.6,
-        },
-      })
-      triggers.push(contactTween.scrollTrigger)
-    }
+      if (contact) {
+        gsap.to(contactProxy, {
+          value: 1,
+          ease: 'none',
+          onUpdate: () => setContactProgress(contactProxy.value),
+          scrollTrigger: {
+            trigger: contact,
+            start: 'top 85%',
+            end: 'bottom bottom',
+            scrub: 0.6,
+          },
+        })
+      }
+
+      ScrollTrigger.refresh()
+    })
 
     return () => {
-      triggers.forEach((t) => t?.kill())
+      cancelAnimationFrame(raf)
+      ScrollTrigger.getAll().forEach((t) => t.kill())
     }
-  }, [enableGsapScrub, setMorphProgress, setContactProgress])
+  }, [enableGsapScrub, pathname, setMorphProgress, setContactProgress])
 }
 
 function ScrollSceneTriggers() {

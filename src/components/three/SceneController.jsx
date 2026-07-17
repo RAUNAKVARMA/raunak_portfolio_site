@@ -4,10 +4,10 @@ import { useReducedMotionProfile } from '../../hooks/useReducedMotionProfile'
 
 export default function SceneController() {
   const scene = useSceneProgressOptional()
-  const { enableCustomCursor } = useReducedMotionProfile()
+  const { prefersReducedMotion } = useReducedMotionProfile()
 
   useEffect(() => {
-    if (!enableCustomCursor || !scene) return undefined
+    if (!scene || prefersReducedMotion) return undefined
 
     const onMove = (event) => {
       const x = (event.clientX / window.innerWidth) * 2 - 1
@@ -17,7 +17,7 @@ export default function SceneController() {
 
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
-  }, [enableCustomCursor, scene])
+  }, [prefersReducedMotion, scene])
 
   useEffect(() => {
     if (!scene) return undefined

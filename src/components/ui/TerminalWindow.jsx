@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const command = '$ cat raunak.json'
 
@@ -27,16 +27,14 @@ function TerminalWindow() {
   }, [fullContent])
 
   return (
-    <div className="glass-card ring-accent overflow-hidden rounded-2xl shadow-card">
-      <div className="flex items-center gap-2 border-b border-borderColor bg-black/40 px-4 py-3">
-        <span className="h-3 w-3 rounded-full bg-red-400" />
-        <span className="h-3 w-3 rounded-full bg-yellow-400" />
-        <span className="h-3 w-3 rounded-full bg-green-400" />
+    <div className="overflow-hidden border border-white/[0.12] bg-black">
+      <div className="flex items-center gap-2 border-b border-white/[0.08] px-4 py-3">
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-textSubtle">Blueprint</span>
       </div>
-      <div className="min-h-[270px] bg-[#070b12] p-5 font-mono text-sm text-indigo-200/90 sm:text-base">
+      <div className="min-h-[270px] bg-[#0a0a0a] p-5 font-mono text-sm text-textMuted sm:text-base">
         <pre className="whitespace-pre-wrap break-words">
           {content}
-          <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-indigo-400 align-middle" />
+          <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-white align-middle" />
         </pre>
       </div>
     </div>

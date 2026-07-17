@@ -1,5 +1,7 @@
-﻿import { RiArrowRightUpLine, RiExternalLinkLine, RiGithubLine } from 'react-icons/ri'
+import { Link } from 'react-router-dom'
+import { RiArrowRightUpLine, RiExternalLinkLine, RiGithubLine, RiPlayCircleLine } from 'react-icons/ri'
 import SectionReveal from './layout/SectionReveal'
+import SectionHeader from './ui/SectionHeader'
 import GlassCard from './ui/GlassCard'
 
 const projects = [
@@ -8,52 +10,68 @@ const projects = [
     subtitle: 'RAG-based LLM Knowledge Assistant',
     year: '2025',
     category: 'LLM Platform',
-    accent: 'bg-indigo-400',
     description:
-      'End-to-end Retrieval-Augmented Generation system for contextual Q&A over custom document datasets, optimized for accuracy and low-latency responses.',
-    metric: '↑25% accuracy, ↓30% latency',
+      'Production Retrieval-Augmented Generation platform for contextual question answering over custom document corpora using semantic search and multi-model LLM orchestration.',
+    metric: 'FastEmbed · FAISS · LiteLLM · Docker',
     bullets: [
-      'Designed ingestion, embedding generation, and semantic retrieval using vector similarity search.',
-      'Engineered prompt pipelines minimizing hallucinations in LLM outputs.',
-      'Deployed on Vercel using Ollama and Groq for fast inference.',
+      'Built an end-to-end RAG pipeline with FastEmbed embeddings, FAISS semantic search, and multi-format document ingestion.',
+      'Implemented LiteLLM-based multi-model routing across Ollama and NVIDIA NIM.',
+      'Developed a FastAPI backend with document upload, source-cited responses, and REST APIs.',
+      'Built a Next.js + TypeScript frontend featuring Three.js, RAG chat, and AI image generation.',
+      'Deployed on Vercel and Render using Docker with persistent FAISS indexing and authentication.',
     ],
-    tech: ['Python', 'LLM APIs', 'Ollama', 'Groq', 'Vector DBs', 'NLP', 'Vercel'],
+    tech: [
+      'Python',
+      'FastAPI',
+      'FastEmbed',
+      'FAISS',
+      'LiteLLM',
+      'Next.js',
+      'TypeScript',
+      'Three.js',
+      'Docker',
+      'Vercel',
+      'Render',
+    ],
     liveUrl: 'https://et-t-project-doqi.vercel.app/',
     repoUrl: 'https://github.com/RAUNAKVARMA/et-t-project',
+    image: '/images/cosmic-rag-hero.png',
+    imageAlt: 'Cosmic RAG knowledge portal landing page',
   },
   {
-    name: 'AI Gesture Virtual Mouse',
-    subtitle: 'Real-time Hand Gesture Recognition',
+    name: 'EcoVerify',
+    subtitle: 'AI-Powered Sustainability Verification Platform',
     year: '2025',
-    category: 'Computer Vision',
-    accent: 'bg-violet-400',
+    category: 'AI Platform',
     description:
-      'Real-time hand gesture recognition system for touchless human-computer interaction with stable landmark detection and low-latency control.',
-    metric: '20–30 FPS, ↓20% false triggers',
+      'Production-ready AI platform for sustainability claim verification and automated environmental assessment.',
+    metric: 'Next.js · AI APIs · Vercel CI/CD',
     bullets: [
-      'Implemented hand tracking using MediaPipe and OpenCV.',
-      'Engineered low-latency gesture-to-action mapping for smooth cursor control.',
-      'Reduced false gesture triggers using filtering and stabilization techniques.',
+      'Engineered an AI-powered sustainability verification pipeline generating structured environmental assessments.',
+      'Built a responsive Next.js application with reusable React components and optimized state management.',
+      'Deployed the platform on Vercel with production-ready CI/CD and optimized performance.',
     ],
-    tech: ['Python', 'OpenCV', 'MediaPipe'],
-    liveUrl: 'https://ai-gesture-virtual-mouse-hjgugnisok8t75yfcxqd7i.streamlit.app/',
-    repoUrl: 'https://github.com/RAUNAKVARMA/AI-Gesture-Virtual-Mouse',
+    tech: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'AI APIs', 'Vercel'],
+    liveUrl: 'https://ecoverify-live.vercel.app/',
+    demoUrl: 'https://drive.google.com/file/d/1JzonseVJQNOt57laBEZZKQ9SUiIBnobc/view?usp=drivesdk',
+    repoUrl: 'https://github.com/RAUNAKVARMA/ecoverify_app',
   },
   {
     name: 'Health Nexus',
     subtitle: 'Secure Health Record Exchange Platform',
     year: '2025',
-    category: 'AI Systems',
-    accent: 'bg-indigo-300',
+    category: 'Healthcare',
     description:
-      'Secure, scalable backend for interoperable medical record exchange across healthcare entities with encrypted data pipelines and role-based access control.',
-    metric: 'Production-grade healthcare backend',
+      'Full-stack health record exchange platform for Smart India Hackathon (Top 50), enabling secure, consent-based sharing of electronic medical records between hospitals and patients.',
+    metric: 'Smart India Hackathon · Top 50',
     bullets: [
-      'Designed encrypted data pipelines and role-based access control for sensitive patient data.',
-      'Developed modular REST APIs enabling real-time access and interoperability.',
-      'Architected system for compliance-focused environments (privacy, integrity, controlled access).',
+      'Built a FastAPI + PostgreSQL backend with JWT authentication, role-based access, and secure REST APIs.',
+      'Implemented consent-based medical record sharing between hospitals and patients.',
+      'Developed Next.js dashboards for Health ID, records, and consent management.',
+      'Deployed on Vercel and Render with managed PostgreSQL.',
     ],
-    tech: ['Node.js', 'REST APIs', 'Secure Data Systems'],
+    tech: ['Next.js', 'React', 'FastAPI', 'PostgreSQL', 'JWT', 'REST APIs', 'Vercel', 'Render'],
+    liveUrl: 'https://health-record-nexus-secure.vercel.app/',
     repoUrl: 'https://github.com/RAUNAKVARMA/health-record-nexus-secure',
   },
 ]
@@ -65,82 +83,132 @@ function LinkButton({ href, icon: Icon, label }) {
       target="_blank"
       rel="noopener noreferrer"
       data-cursor-hover="true"
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-300 hover:text-indigo-200"
+      className="link-accent inline-flex items-center gap-1.5"
     >
       <Icon className="text-base" />
       {label}
-      <RiArrowRightUpLine className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+      <RiArrowRightUpLine />
     </a>
   )
 }
 
-function Projects() {
+function ProjectRow({ project }) {
   return (
-    <section id="projects" className="py-24">
+    <article className="border-b border-white/[0.08] py-10 last:border-b-0" data-reveal>
+      <div className="flex flex-wrap items-baseline justify-between gap-4">
+        <div>
+          <p className="section-eyebrow">{project.category}</p>
+          <h3 className="mt-2 font-heading text-2xl font-bold uppercase tracking-wide sm:text-3xl">
+            {project.name}
+          </h3>
+          <p className="mt-1 font-mono text-xs text-textSubtle">{project.subtitle}</p>
+        </div>
+        <span className="font-mono text-sm text-textSubtle">{project.year}</span>
+      </div>
+
+      {project.image && (
+        <figure className="mt-8 max-w-3xl overflow-hidden border border-white/[0.12] bg-[#0a0a0a]">
+          <img
+            src={project.image}
+            alt={project.imageAlt ?? project.name}
+            className="aspect-video w-full object-cover object-center"
+            loading="lazy"
+          />
+        </figure>
+      )}
+
+      <p className="mt-6 max-w-3xl text-base font-light leading-relaxed text-textMuted">
+        {project.description}
+      </p>
+
+      <ul className="mt-4 max-w-3xl space-y-2 text-sm font-light text-textSubtle">
+        {project.bullets.map((bullet) => (
+          <li key={bullet} className="flex gap-3">
+            <span className="mt-2 h-px w-3 shrink-0 bg-white/30" aria-hidden />
+            {bullet}
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-5 font-mono text-[10px] uppercase tracking-wider text-textSubtle">{project.metric}</p>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        {project.tech.map((item) => (
+          <span
+            key={item}
+            className="border border-white/[0.08] px-2.5 py-1 font-mono text-[10px] text-textSubtle"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center gap-6">
+        {project.liveUrl && (
+          <LinkButton href={project.liveUrl} icon={RiExternalLinkLine} label="Live app" />
+        )}
+        {project.demoUrl && (
+          <LinkButton href={project.demoUrl} icon={RiPlayCircleLine} label="Demo" />
+        )}
+        {project.repoUrl && (
+          <LinkButton href={project.repoUrl} icon={RiGithubLine} label="GitHub" />
+        )}
+      </div>
+    </article>
+  )
+}
+
+function Projects({ preview = false }) {
+  const shown = preview ? projects.slice(0, 2) : projects
+
+  return (
+    <section id="projects" className="section-surface-alt border-t border-white/[0.12] py-24">
       <SectionReveal className="section-container">
-        <div className="relative mb-14" data-reveal>
-          <span className="section-number">02</span>
-          <h2 className="section-title">Selected Work</h2>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {projects.map((project) => (
-            <GlassCard
-              key={project.name}
-              className="group relative overflow-hidden p-6"
-              cursorLabel="View"
-              data-reveal
+        <div className="mb-14 flex flex-wrap items-end justify-between gap-4" data-reveal>
+          <SectionHeader eyebrow="02 — Selected Work" title="Projects" />
+          {preview && (
+            <Link
+              to="/work"
+              data-cursor-hover="true"
+              className="link-accent inline-flex items-center gap-1.5"
             >
-              <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${project.accent}`} />
-                  <span className="font-mono text-xs text-textMuted">{project.category}</span>
-                </div>
-                <span className="rounded-full border border-white/[0.08] px-3 py-1 font-mono text-xs text-textMuted">
-                  {project.year}
-                </span>
-              </div>
-
-              <h3 className="font-heading text-2xl font-bold leading-tight sm:text-3xl">{project.name}</h3>
-              {project.subtitle && (
-                <p className="mt-1 font-mono text-xs text-indigo-300/80">{project.subtitle}</p>
-              )}
-              <p className="mt-4 text-slate-300">{project.description}</p>
-
-              <ul className="mt-4 space-y-1.5 text-sm text-slate-400">
-                {project.bullets.map((bullet) => (
-                  <li key={bullet} className="list-disc pl-1 marker:text-indigo-400">
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
-
-              <span className="mt-5 inline-block rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 font-mono text-xs text-indigo-200">
-                {project.metric}
-              </span>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                {project.tech.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1 font-mono text-[11px] text-textMuted"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                {project.liveUrl && (
-                  <LinkButton href={project.liveUrl} icon={RiExternalLinkLine} label="Live app" />
-                )}
-                {project.repoUrl && (
-                  <LinkButton href={project.repoUrl} icon={RiGithubLine} label="GitHub" />
-                )}
-              </div>
-            </GlassCard>
-          ))}
+              View all work
+              <RiArrowRightUpLine />
+            </Link>
+          )}
         </div>
+
+        {preview ? (
+          <div className="grid gap-px bg-white/[0.12] md:grid-cols-2">
+            {shown.map((project) => (
+              <GlassCard key={project.name} className="bg-[#141414] p-6 sm:p-8" data-reveal>
+                <p className="section-eyebrow">{project.category}</p>
+                <h3 className="mt-3 font-heading text-xl font-bold uppercase tracking-wide sm:text-2xl">
+                  {project.name}
+                </h3>
+                <p className="mt-4 text-sm font-light leading-relaxed text-textMuted">{project.description}</p>
+                <p className="mt-4 font-mono text-[10px] uppercase tracking-wider text-textSubtle">{project.metric}</p>
+                <div className="mt-6 flex flex-wrap gap-4">
+                  {project.liveUrl && (
+                    <LinkButton href={project.liveUrl} icon={RiExternalLinkLine} label="Live" />
+                  )}
+                  {project.demoUrl && (
+                    <LinkButton href={project.demoUrl} icon={RiPlayCircleLine} label="Demo" />
+                  )}
+                  {project.repoUrl && (
+                    <LinkButton href={project.repoUrl} icon={RiGithubLine} label="Code" />
+                  )}
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        ) : (
+          <div className="border-t border-white/[0.08]">
+            {shown.map((project) => (
+              <ProjectRow key={project.name} project={project} />
+            ))}
+          </div>
+        )}
       </SectionReveal>
     </section>
   )

@@ -21,7 +21,7 @@ function MagneticButton({
     >
       <Component
         {...props}
-        className={`rounded-xl transition-all duration-300 ease-neural ${className}`}
+        className={`transition-all duration-300 ease-neural ${className}`}
       >
         {children}
       </Component>

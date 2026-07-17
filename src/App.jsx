@@ -1,41 +1,25 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import Stats from './components/Stats'
-import About from './components/About'
-import ScrollProgressBar from './components/ui/ScrollProgressBar'
-import SceneLayer from './components/ui/SceneLayer'
-import SceneController from './components/three/SceneController'
-import ScrollSceneTriggers from './components/three/ScrollSceneTriggers'
-import CustomCursor from './components/ui/CustomCursor'
-import Footer from './components/Footer'
+import RootLayout from './components/layout/RootLayout'
 import { SceneProgressProvider } from './providers/SceneProgressProvider'
 import { SmoothScrollProvider } from './providers/SmoothScrollProvider'
-import { useReducedMotionProfile } from './hooks/useReducedMotionProfile'
 
-const Projects = lazy(() => import('./components/Projects'))
-const ExperienceTimeline = lazy(() => import('./components/sections/ExperienceTimeline'))
-const Achievements = lazy(() => import('./components/Achievements'))
-const Skills = lazy(() => import('./components/Skills'))
-const Certifications = lazy(() => import('./components/Certifications'))
-const Contact = lazy(() => import('./components/Contact'))
+const HomePage = lazy(() => import('./pages/HomePage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const WorkPage = lazy(() => import('./pages/WorkPage'))
+const ExperiencePage = lazy(() => import('./pages/ExperiencePage'))
+const BeyondPage = lazy(() => import('./pages/BeyondPage'))
+const ArtExperiencePage = lazy(() => import('./pages/ArtExperiencePage'))
+const ContactPage = lazy(() => import('./pages/ContactPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
-function SectionSkeleton({ height = 'h-[260px]' }) {
+function PageFallback() {
   return (
-    <div className={`section-container ${height} animate-pulse rounded-2xl border border-borderColor bg-white/[0.02]`} />
+    <div className="section-container flex min-h-[60vh] items-center justify-center">
+      <div className="h-8 w-8 animate-pulse border border-white/20 bg-white/[0.04]" />
+    </div>
   )
-}
-
-function CursorBodyClass() {
-  const { enableCustomCursor } = useReducedMotionProfile()
-
-  useEffect(() => {
-    document.body.classList.toggle('custom-cursor-active', enableCustomCursor)
-    return () => document.body.classList.remove('custom-cursor-active')
-  }, [enableCustomCursor])
-
-  return null
 }
 
 function App() {
@@ -43,47 +27,74 @@ function App() {
     <MotionConfig reducedMotion="user">
       <SceneProgressProvider>
         <SmoothScrollProvider>
-          <CursorBodyClass />
-          <SceneController />
-          <ScrollSceneTriggers />
-          <div className="relative z-10">
-            <a href="#main-content" className="skip-to-main">
-              Skip to main content
-            </a>
-            <SceneLayer />
-            <div className="pointer-events-none fixed inset-0 z-[1] bg-ambient" aria-hidden />
-            <div className="noise-overlay" />
-            <CustomCursor />
-            <ScrollProgressBar />
-            <Navbar />
-
-            <main id="main-content" className="relative z-10" tabIndex={-1}>
-              <Hero />
-              <About />
-              <Stats />
-
-              <Suspense fallback={<SectionSkeleton />}>
-                <Skills />
-              </Suspense>
-              <Suspense fallback={<SectionSkeleton />}>
-                <Projects />
-              </Suspense>
-              <Suspense fallback={<SectionSkeleton height="h-[480px]" />}>
-                <ExperienceTimeline />
-              </Suspense>
-              <Suspense fallback={<SectionSkeleton />}>
-                <Achievements />
-              </Suspense>
-              <Suspense fallback={<SectionSkeleton />}>
-                <Certifications />
-              </Suspense>
-              <Suspense fallback={<SectionSkeleton />}>
-                <Contact />
-              </Suspense>
-            </main>
-
-            <Footer />
-          </div>
+          <Routes>
+            <Route element={<RootLayout />}>
+              <Route
+                index
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <HomePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="about"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <AboutPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="work"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <WorkPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="experience"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ExperiencePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="beyond"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <BeyondPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="beyond/art"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ArtExperiencePage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="contact"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <ContactPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <NotFoundPage />
+                  </Suspense>
+                }
+              />
+            </Route>
+          </Routes>
         </SmoothScrollProvider>
       </SceneProgressProvider>
     </MotionConfig>
