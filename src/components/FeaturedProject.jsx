@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { RiArrowRightUpLine } from 'react-icons/ri'
+import AutoPlayVideo from './ui/AutoPlayVideo'
 import MStripe from './ui/MStripe'
 
 const specs = [
@@ -48,6 +49,20 @@ function FeaturedProject() {
             ))}
           </div>
 
+          <figure className="relative z-[1] mt-10 w-full max-w-xl lg:hidden">
+            <div className="overflow-hidden border border-white/[0.12] bg-black shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
+              <AutoPlayVideo
+                src="/videos/cosmic-rag-demo.mp4"
+                poster="/images/cosmic-rag-hero.png"
+                aria-label="Cosmic RAG retrieval-augmented knowledge assistant demonstration"
+                className="aspect-video w-full object-cover object-center"
+              />
+            </div>
+            <figcaption className="mt-3 font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">
+              Live product · Cosmic RAG
+            </figcaption>
+          </figure>
+
           <div className="mt-10 flex flex-wrap items-center gap-6 pb-12">
             <a
               href="https://et-t-project-doqi.vercel.app/"
@@ -68,16 +83,11 @@ function FeaturedProject() {
 
         <figure className="pointer-events-none absolute right-0 top-1/2 z-[1] hidden w-[min(52%,640px)] -translate-y-1/2 pr-6 lg:block xl:pr-10">
           <div className="overflow-hidden border border-white/[0.12] bg-black shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
-            <video
+            <AutoPlayVideo
               src="/videos/cosmic-rag-demo.mp4"
               poster="/images/cosmic-rag-hero.png"
               aria-label="Cosmic RAG retrieval-augmented knowledge assistant demonstration"
               className="aspect-video w-full object-cover object-center"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
             />
           </div>
           <figcaption className="mt-3 text-right font-mono text-[10px] uppercase tracking-[0.22em] text-white/35">

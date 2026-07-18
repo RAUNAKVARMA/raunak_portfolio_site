@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { RiArrowRightUpLine, RiExternalLinkLine, RiGithubLine, RiPlayCircleLine } from 'react-icons/ri'
 import SectionReveal from './layout/SectionReveal'
+import AutoPlayVideo from './ui/AutoPlayVideo'
 import SectionHeader from './ui/SectionHeader'
 import GlassCard from './ui/GlassCard'
 
@@ -109,16 +110,11 @@ function ProjectRow({ project }) {
 
       {project.video && (
         <figure className="mt-8 max-w-3xl overflow-hidden border border-white/[0.12] bg-[#0a0a0a]">
-          <video
+          <AutoPlayVideo
             src={project.video}
             poster={project.poster}
             aria-label={project.videoLabel ?? `${project.name} demonstration`}
             className="aspect-video w-full object-cover object-center"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
           />
         </figure>
       )}
