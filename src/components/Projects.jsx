@@ -57,6 +57,8 @@ const projects = [
     liveUrl: 'https://ecoverify-live.vercel.app/',
     demoUrl: 'https://drive.google.com/file/d/1JzonseVJQNOt57laBEZZKQ9SUiIBnobc/view?usp=drivesdk',
     repoUrl: 'https://github.com/RAUNAKVARMA/ecoverify_app',
+    video: '/videos/ecoverify-demo.mp4',
+    videoLabel: 'EcoVerify sustainability verification platform demonstration',
   },
   {
     name: 'Health Nexus',
