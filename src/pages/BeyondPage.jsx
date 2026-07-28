@@ -9,7 +9,7 @@ function BeyondPage() {
   useDocumentTitle('Beyond Work')
 
   return (
-    <div className="bg-black">
+    <div className="beyond-studio min-h-screen pb-16">
       <InterestsHero />
       <HobbyGrid />
       <ArtSection />

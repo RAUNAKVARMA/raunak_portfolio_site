@@ -340,3 +340,865 @@ body.art-experience-active main {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ── Beyond / Studio of Vincent Lowe tokens (scoped) ─────────────────────── */
+.beyond-studio {
+  --studio-surface: #000000;
+  --studio-text: #ffffff;
+  --studio-text-muted: #a3a3a3;
+  --studio-border: #e5e7eb;
+  --studio-border-muted: rgba(229, 231, 235, 0.28);
+  --studio-font-size: 12px;
+  --studio-line-height: 16px;
+  --studio-space-1: 4px;
+  --studio-space-2: 8px;
+  --studio-space-3: 12px;
+  --studio-space-4: 16px;
+  --studio-space-5: 24px;
+  --studio-space-6: 32px;
+  --studio-space-7: 48px;
+  --studio-radius: 0;
+  --studio-motion: 120ms linear;
+
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  font-family: 'Fragment Mono', ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--studio-font-size);
+  font-weight: 400;
+  line-height: var(--studio-line-height);
+}
+
+.beyond-studio :focus-visible {
+  outline: 2px solid var(--studio-text);
+  outline-offset: 2px;
+}
+
+.beyond-studio .studio-container {
+  @apply mx-auto w-full max-w-[920px] px-4 sm:px-6;
+}
+
+.beyond-studio .studio-eyebrow {
+  margin: 0;
+  color: var(--studio-text-muted);
+  font-size: var(--studio-font-size);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: var(--studio-line-height);
+  text-transform: uppercase;
+}
+
+.beyond-studio .studio-title {
+  margin: var(--studio-space-3) 0 0;
+  color: var(--studio-text);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 28px;
+}
+
+@media (min-width: 640px) {
+  .beyond-studio .studio-title {
+    font-size: 28px;
+    line-height: 32px;
+  }
+}
+
+.beyond-studio .studio-lede {
+  margin: var(--studio-space-4) 0 0;
+  max-width: 42rem;
+  color: var(--studio-text-muted);
+  font-size: var(--studio-font-size);
+  line-height: 18px;
+}
+
+.beyond-studio .studio-rule {
+  border: 0;
+  border-top: 1px solid var(--studio-border-muted);
+  margin: 0;
+}
+
+.beyond-studio .studio-section {
+  padding: var(--studio-space-7) 0;
+  border-top: 1px solid var(--studio-border-muted);
+}
+
+.beyond-studio .studio-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--studio-space-2) var(--studio-space-5);
+  margin-top: var(--studio-space-5);
+  color: var(--studio-text-muted);
+}
+
+.beyond-studio .studio-meta dt,
+.beyond-studio .studio-meta dd {
+  margin: 0;
+  font-size: var(--studio-font-size);
+  line-height: var(--studio-line-height);
+}
+
+.beyond-studio .studio-meta dt {
+  color: var(--studio-text);
+}
+
+.beyond-studio .studio-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--studio-border-muted);
+}
+
+.beyond-studio .studio-table th,
+.beyond-studio .studio-table td {
+  padding: var(--studio-space-3) var(--studio-space-4);
+  border-bottom: 1px solid var(--studio-border-muted);
+  text-align: left;
+  vertical-align: top;
+  font-size: var(--studio-font-size);
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.beyond-studio .studio-table th {
+  color: var(--studio-text-muted);
+  border-bottom-color: var(--studio-border-muted);
+}
+
+.beyond-studio .studio-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.beyond-studio .studio-table a {
+  color: var(--studio-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.beyond-studio .studio-table a:hover {
+  color: var(--studio-text-muted);
+}
+
+.beyond-studio .studio-table a:active {
+  opacity: 0.8;
+}
+
+.beyond-studio .studio-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 var(--studio-space-3);
+  border: 1px solid var(--studio-border-muted);
+  color: var(--studio-text);
+  background: transparent;
+  font-size: var(--studio-font-size);
+  line-height: var(--studio-line-height);
+  transition:
+    background-color var(--studio-motion),
+    color var(--studio-motion),
+    border-color var(--studio-motion);
+}
+
+.beyond-studio .studio-chip:hover {
+  border-color: var(--studio-border);
+  background: var(--studio-text);
+  color: var(--studio-surface);
+}
+
+.beyond-studio .studio-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--studio-space-2);
+  min-height: 32px;
+  color: var(--studio-text);
+  font-size: var(--studio-font-size);
+  line-height: var(--studio-line-height);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--studio-motion), opacity var(--studio-motion);
+}
+
+.beyond-studio .studio-link:hover {
+  color: var(--studio-text-muted);
+}
+
+.beyond-studio .studio-link:active {
+  opacity: 0.75;
+}
+
+.beyond-studio .studio-link[aria-disabled='true'],
+.beyond-studio .studio-link:disabled {
+  color: var(--studio-text-muted);
+  pointer-events: none;
+  text-decoration: none;
+  opacity: 0.5;
+}
+
+.beyond-studio .studio-panel {
+  border: 1px solid var(--studio-border-muted);
+  background: var(--studio-surface);
+  padding: var(--studio-space-5);
+}
+
+.beyond-studio .studio-index {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--studio-border-muted);
+}
+
+.beyond-studio .studio-index-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: var(--studio-space-4);
+  padding: var(--studio-space-4);
+  border-bottom: 1px solid var(--studio-border-muted);
+  background: var(--studio-surface);
+  transition: background-color var(--studio-motion);
+}
+
+.beyond-studio .studio-index-item:last-child {
+  border-bottom: 0;
+}
+
+.beyond-studio .studio-index-item:hover {
+  background: #0a0a0a;
+}
+
+.beyond-studio .studio-index-item:focus-within {
+  background: #0a0a0a;
+}
+
+.beyond-studio .studio-index-item button:focus-visible {
+  outline: 2px solid var(--studio-text);
+  outline-offset: 2px;
+}
+
+.beyond-studio .studio-index-num {
+  color: var(--studio-text-muted);
+}
+
+.beyond-studio .studio-index-title {
+  margin: 0;
+  color: var(--studio-text);
+  font-size: var(--studio-font-size);
+  font-weight: 400;
+  line-height: var(--studio-line-height);
+}
+
+.beyond-studio .studio-index-body {
+  margin: var(--studio-space-2) 0 0;
+  color: var(--studio-text-muted);
+  font-size: var(--studio-font-size);
+  line-height: 18px;
+}
+
+.beyond-studio .studio-sketch-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--studio-border-muted);
+}
+
+@media (min-width: 640px) {
+  .beyond-studio .studio-sketch-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.beyond-studio .studio-sketch {
+  position: relative;
+  min-height: 180px;
+  border-right: 1px solid var(--studio-border-muted);
+  border-bottom: 1px solid var(--studio-border-muted);
+  overflow: hidden;
+  background: var(--studio-surface);
+}
+
+@media (min-width: 640px) {
+  .beyond-studio .studio-sketch:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .beyond-studio .studio-sketch {
+    border-bottom: 0;
+  }
+}
+
+.beyond-studio .studio-sketch img {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  object-fit: cover;
+  opacity: 0.88;
+  filter: grayscale(0.35);
+  transition:
+    opacity var(--studio-motion),
+    filter var(--studio-motion);
+}
+
+@media (max-width: 640px) {
+  .beyond-studio .studio-sketch {
+    min-height: 220px;
+    border-right: 0;
+    border-bottom: 1px solid var(--studio-border-muted);
+  }
+
+  .beyond-studio .studio-sketch:last-child {
+    border-bottom: 0;
+  }
+
+  .beyond-studio .studio-sketch img {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+.beyond-studio .studio-sketch:hover img,
+.beyond-studio .studio-sketch:focus-within img {
+  opacity: 1;
+  filter: grayscale(0);
+}
+
+.beyond-studio .studio-sketch figcaption {
+  position: absolute;
+  left: var(--studio-space-3);
+  bottom: var(--studio-space-3);
+  color: var(--studio-text);
+  background: rgba(0, 0, 0, 0.72);
+  padding: 2px 6px;
+}
+
+/* ── Cinematic garage ───────────────────────────────────────────────────── */
+.garage-root {
+  --garage-gold: #ca8a04;
+  color-scheme: dark;
+}
+
+.garage-gold-watermark {
+  color: var(--garage-gold);
+  text-shadow: 0 0 60px rgba(202, 138, 4, 0.28);
+}
+
+.garage-m4-watermark {
+  color: #1c69d4;
+  text-shadow:
+    0 0 40px rgba(28, 105, 212, 0.55),
+    0 0 90px rgba(28, 105, 212, 0.35);
+  opacity: 0.92;
+}
+
+.garage-gold-year {
+  color: var(--garage-gold);
+}
+
+.garage-m4-year {
+  color: #1c69d4;
+  text-shadow: 0 0 28px rgba(28, 105, 212, 0.4);
+}
+
+.garage-valour-watermark {
+  color: #00a86b;
+  text-shadow:
+    0 0 40px rgba(0, 168, 107, 0.5),
+    0 0 90px rgba(0, 111, 60, 0.35);
+  opacity: 0.92;
+}
+
+.garage-valour-year {
+  color: #00a86b;
+  text-shadow: 0 0 28px rgba(0, 168, 107, 0.4);
+}
+
+.garage-stage-glow {
+  background: radial-gradient(
+    ellipse 65% 50% at 50% 42%,
+    rgba(202, 138, 4, 0.14),
+    transparent 68%
+  );
+}
+
+.garage-stage[data-car='m4'] .garage-stage-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 44%,
+    rgba(28, 105, 212, 0.28),
+    transparent 70%
+  );
+}
+
+.garage-stage[data-car='valour'] .garage-stage-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 44%,
+    rgba(0, 168, 107, 0.3),
+    transparent 70%
+  );
+}
+
+.garage-lambo-watermark {
+  color: #3b82f6;
+  text-shadow:
+    0 0 40px rgba(59, 130, 246, 0.55),
+    0 0 90px rgba(37, 99, 235, 0.35);
+  opacity: 0.92;
+}
+
+.garage-lambo-year {
+  color: #3b82f6;
+  text-shadow: 0 0 28px rgba(59, 130, 246, 0.4);
+}
+
+.garage-stage[data-car='aventador'] .garage-stage-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 44%,
+    rgba(59, 130, 246, 0.3),
+    transparent 70%
+  );
+}
+
+.garage-porsche-watermark {
+  color: #c8d0dc;
+  text-shadow:
+    0 0 40px rgba(200, 208, 220, 0.35),
+    0 0 90px rgba(168, 180, 196, 0.22);
+  opacity: 0.9;
+}
+
+.garage-porsche-year {
+  color: #c8f000;
+  text-shadow: 0 0 28px rgba(200, 240, 0, 0.35);
+}
+
+.garage-stage[data-car='spyder'] .garage-stage-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 44%,
+    rgba(200, 208, 220, 0.22),
+    transparent 70%
+  );
+}
+
+.garage-supra-watermark {
+  color: #e87722;
+  text-shadow:
+    0 0 40px rgba(232, 119, 34, 0.55),
+    0 0 90px rgba(255, 106, 26, 0.3);
+  opacity: 0.92;
+}
+
+.garage-supra-year {
+  color: #e87722;
+  text-shadow: 0 0 28px rgba(232, 119, 34, 0.4);
+}
+
+.garage-stage[data-car='supra'] .garage-stage-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 44%,
+    rgba(232, 119, 34, 0.3),
+    transparent 70%
+  );
+}
+
+.garage-ferrari-watermark {
+  color: #e22718;
+  text-shadow:
+    0 0 40px rgba(226, 39, 24, 0.55),
+    0 0 90px rgba(255, 40, 30, 0.28);
+  opacity: 0.92;
+}
+
+.garage-ferrari-year {
+  color: #e22718;
+  text-shadow: 0 0 28px rgba(226, 39, 24, 0.4);
+}
+
+.garage-stage[data-car='stradale'] .garage-stage-glow {
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 44%,
+    rgba(226, 39, 24, 0.32),
+    transparent 70%
+  );
+}
+
+.garage-hairline {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.garage-rail {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
+}
+
+.garage-stage {
+  content-visibility: auto;
+  contain-intrinsic-size: 100svh;
+  contain: layout paint style;
+}
+
+.garage-intro {
+  content-visibility: auto;
+  contain-intrinsic-size: 100svh;
+}
+
+.garage-intro-video-el {
+  opacity: 1;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.garage-intro-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(0, 0, 0, 0.08) 28%,
+    rgba(0, 0, 0, 0.35) 55%,
+    rgba(0, 0, 0, 0.82) 78%,
+    #000 100%
+  );
+}
+
+.garage-intro-base {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 0%, rgba(202, 138, 4, 0.06), transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(3, 3, 3, 0.35) 0%,
+      rgba(3, 3, 3, 0.2) 28%,
+      rgba(0, 0, 0, 0.55) 58%,
+      rgba(0, 0, 0, 0.92) 100%
+    );
+}
+
+.garage-intro-orb {
+  background: radial-gradient(circle, rgba(202, 138, 4, 0.22) 0%, transparent 68%);
+  filter: blur(8px);
+}
+
+.garage-intro-orb-2 {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+  filter: blur(4px);
+}
+
+.garage-intro-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 35%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 35%, #000 20%, transparent 75%);
+}
+
+.garage-intro-vignette {
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.25) 0%,
+      transparent 18%,
+      rgba(0, 0, 0, 0.35) 52%,
+      rgba(0, 0, 0, 0.88) 78%,
+      #000 100%
+    ),
+    radial-gradient(ellipse 90% 70% at 50% 40%, transparent 35%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.garage-intro-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.garage-intro-watermark-fill {
+  color: rgba(255, 255, 255, 0.12);
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+}
+
+.garage-intro-watermark-stroke {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(202, 138, 4, 0.35);
+  -webkit-mask-image: linear-gradient(to bottom, #000 10%, transparent 85%);
+  mask-image: linear-gradient(to bottom, #000 10%, transparent 85%);
+}
+
+.garage-intro-horizon {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(202, 138, 4, 0.15) 18%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(202, 138, 4, 0.15) 82%,
+    transparent 100%
+  );
+  box-shadow: 0 0 40px 2px rgba(202, 138, 4, 0.25);
+  transform-origin: center;
+}
+
+.garage-intro-roster-item {
+  position: relative;
+}
+
+.garage-intro-roster-item::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 1px;
+  width: 0;
+  background: var(--garage-gold);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.garage-intro-roster-item:hover::after {
+  width: 100%;
+}
+
+.garage-music-bars span {
+  display: block;
+  height: 100%;
+  transform-origin: bottom;
+  animation: garage-music-bar 0.85s ease-in-out infinite;
+}
+
+.garage-music-bars span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.garage-music-bars span:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.garage-music-bars span:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+@keyframes garage-music-bar {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.garage-hotwheels {
+  background:
+    radial-gradient(ellipse 70% 50% at 18% 20%, rgba(232, 119, 34, 0.14), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 88% 70%, rgba(202, 138, 4, 0.08), transparent 55%),
+    linear-gradient(180deg, #050505 0%, #090909 45%, #030303 100%);
+}
+
+.garage-hotwheels-atmosphere {
+  background:
+    linear-gradient(120deg, transparent 0%, rgba(232, 119, 34, 0.05) 42%, transparent 70%),
+    radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.03), transparent 45%);
+}
+
+.garage-hotwheels-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(180deg, transparent, black 18%, black 82%, transparent);
+}
+
+.garage-hotwheels-flame {
+  background: radial-gradient(circle, rgba(232, 119, 34, 0.28), transparent 70%);
+}
+
+.garage-hotwheels-frame-glow {
+  background: radial-gradient(circle at center, rgba(232, 119, 34, 0.18), transparent 68%);
+}
+
+.garage-hotwheels-stat {
+  transition: border-color 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
+}
+
+.garage-f1 {
+  background:
+    radial-gradient(ellipse 60% 45% at 72% 18%, rgba(225, 6, 0, 0.16), transparent 58%),
+    radial-gradient(ellipse 40% 35% at 12% 80%, rgba(225, 6, 0, 0.08), transparent 55%),
+    linear-gradient(180deg, #040404 0%, #080808 50%, #020202 100%);
+}
+
+.garage-f1-atmosphere {
+  background:
+    linear-gradient(105deg, transparent 0%, rgba(225, 6, 0, 0.05) 48%, transparent 72%),
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.03), transparent 40%);
+}
+
+.garage-f1-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 3px
+  );
+}
+
+.garage-f1-timing {
+  background: linear-gradient(90deg, #e10600 0%, #ff4d3a 45%, transparent 100%);
+}
+
+.garage-f1-stage-glow {
+  background: radial-gradient(circle at center, rgba(225, 6, 0, 0.18), transparent 68%);
+}
+
+.garage-f1-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.garage-f1-live-dot.is-live {
+  background: #e10600;
+  box-shadow: 0 0 0 0 rgba(225, 6, 0, 0.55);
+  animation: garage-f1-pulse 1.4s ease-out infinite;
+}
+
+.garage-f1-chip {
+  transition: border-color 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
+}
+
+.garage-hamilton {
+  background: #000000;
+}
+
+.garage-hamilton-stage-glow {
+  background:
+    radial-gradient(
+      ellipse 55% 42% at 50% 58%,
+      rgba(225, 6, 0, 0.38),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 70% 55% at 50% 44%,
+      rgba(225, 6, 0, 0.18),
+      transparent 72%
+    );
+}
+
+.garage-hamilton-watermark {
+  color: #e10600;
+  text-shadow:
+    0 0 40px rgba(225, 6, 0, 0.45),
+    0 0 90px rgba(255, 40, 30, 0.22);
+  opacity: 0.9;
+}
+
+.garage-hamilton-scan {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.035) 3px
+  );
+  mask-image: linear-gradient(180deg, transparent, black 20%, black 80%, transparent);
+}
+
+.garage-hamilton-story-glow {
+  background:
+    radial-gradient(ellipse 50% 40% at 20% 0%, rgba(225, 6, 0, 0.1), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 90% 80%, rgba(225, 6, 0, 0.06), transparent 55%);
+}
+
+.garage-hamilton-collage {
+  background: #ffffff;
+}
+
+.garage-hamilton-collage img {
+  image-rendering: auto;
+}
+
+.garage-hamilton-overlay {
+  background: rgba(0, 0, 0, 0.76);
+}
+
+.garage-hamilton-vignette {
+  background:
+    radial-gradient(ellipse 70% 60% at 70% 45%, rgba(225, 6, 0, 0.16), transparent 62%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0%, transparent 48%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 30%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+.garage-hamilton-car-glow {
+  background: radial-gradient(circle at center, rgba(225, 6, 0, 0.34), transparent 68%);
+  filter: blur(18px);
+}
+
+.garage-hamilton-copy-panel {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.garage-hamilton-readable {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 2px 24px rgba(0, 0, 0, 0.75);
+}
+
+.garage-hamilton-stat {
+  transition: border-color 0.25s var(--ease-out-expo), transform 0.25s var(--ease-out-expo);
+}
+
+.garage-hamilton-timeline {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(225, 6, 0, 0.35) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.garage-hamilton-chapters {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.garage-hamilton-chapters::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .garage-hamilton-stage {
+    touch-action: pan-y;
+  }
+
+  .garage-hamilton-watermark {
+    text-shadow:
+      0 0 24px rgba(225, 6, 0, 0.35),
+      0 0 48px rgba(255, 40, 30, 0.12);
+  }
+
+  .garage-hamilton-scan {
+    display: none;
+  }
+
+  .garage-hamilton-stat {
+    min-height: 88px;
+  }
+}
+
+@keyframes garage-f1-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(225, 6, 0, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(225, 6, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(225, 6, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garage-gold-watermark {
+    text-shadow: none;
+  }
+
+  .garage-music-bars span {
+    animation: none;
+    transform: scaleY(0.7);
+  }
+
+  .garage-intro-grain {
+    opacity: 0.15;
+  }
+
+  .garage-f1-live-dot.is-live {
+    animation: none;
+  }
+}

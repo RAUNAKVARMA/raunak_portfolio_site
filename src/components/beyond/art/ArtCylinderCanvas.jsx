@@ -1,47 +1,66 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import * as THREE from 'three'
-import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
 import VortexBackground from './VortexBackground'
 
 /**
  * Full-bleed image pages + strong twin side vortices.
- * DRAWING text is baked into each page so the warp pulls it like Canyon.
  */
-function ArtScene({ active }) {
+function ArtScene({ active, intensity }) {
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <VortexBackground active={active} intensity={1.35} />
+      <VortexBackground active={active} intensity={intensity} />
     </>
   )
 }
 
-function ArtCylinderCanvas({ active = true, paused = false }) {
-  const { prefersReducedMotion } = useReducedMotionProfile()
-  const isActive = active && !paused && !prefersReducedMotion
+function ArtCylinderCanvas({
+  active = true,
+  paused = false,
+  mobileLite = false,
+  onContextLost,
+}) {
+  const isActive = active && !paused
+  const intensity = mobileLite ? 1.05 : 1.35
+  const dpr = mobileLite ? [1, 1.25] : [1, 2]
 
   return (
     <Canvas
-      className="absolute inset-0 h-full w-full"
-      camera={{ position: [0, 0, 5], fov: 40, near: 0.1, far: 80 }}
-      dpr={[1, 2]}
+      className="absolute inset-0 block h-full w-full"
+      camera={{ position: [0, 0, 5], fov: mobileLite ? 48 : 40, near: 0.1, far: 80 }}
+      dpr={dpr}
       gl={{
         alpha: false,
-        antialias: true,
-        powerPreference: 'high-performance',
+        antialias: !mobileLite,
+        powerPreference: mobileLite ? 'default' : 'high-performance',
         stencil: false,
+        failIfMajorPerformanceCaveat: false,
       }}
       onCreated={({ gl }) => {
         gl.setClearColor(0x000000, 1)
         gl.toneMapping = THREE.NoToneMapping
         gl.outputColorSpace = THREE.SRGBColorSpace
+        const canvas = gl.domElement
+        canvas.style.width = '100%'
+        canvas.style.height = '100%'
+        canvas.style.display = 'block'
+        if (onContextLost) {
+          canvas.addEventListener(
+            'webglcontextlost',
+            (event) => {
+              event.preventDefault()
+              onContextLost()
+            },
+            false,
+          )
+        }
       }}
       frameloop={isActive ? 'always' : 'demand'}
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'pan-y', width: '100%', height: '100%' }}
     >
       <Suspense fallback={null}>
-        <ArtScene active={isActive} />
+        <ArtScene active={isActive} intensity={intensity} />
       </Suspense>
     </Canvas>
   )

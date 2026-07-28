@@ -1,112 +1,73 @@
-import SectionReveal from '../layout/SectionReveal'
-
-import SectionHeader from '../ui/SectionHeader'
-
-
-
 const shelf = [
-
   { title: 'Deep Learning', by: 'Goodfellow, Bengio, Courville', tag: 'Foundations' },
-
   { title: 'The Pragmatic Programmer', by: 'Hunt & Thomas', tag: 'Craft' },
-
   { title: 'Sapiens', by: 'Yuval Noah Harari', tag: 'Perspective' },
-
   { title: 'Zero to One', by: 'Peter Thiel', tag: 'Startups' },
-
   { title: 'A Brief History of Time', by: 'Stephen Hawking', tag: 'Space' },
-
   { title: "Can't Hurt Me", by: 'David Goggins', tag: 'Mindset' },
-
   { title: 'The Theory of Everything', by: 'Stephen Hawking', tag: 'Physics' },
-
   { title: 'Atomic Habits', by: 'James Clear', tag: 'Productivity' },
-
 ]
 
-
-
-const topics = ['Agentic systems', 'RL from human feedback', 'Systems design', 'Space exploration', 'Automotive design', 'Chess theory']
-
-
+const topics = [
+  'Agentic systems',
+  'RL from human feedback',
+  'Systems design',
+  'Space exploration',
+  'Automotive design',
+  'Chess theory',
+]
 
 function Reading() {
-
   return (
+    <section className="studio-section" aria-labelledby="reading-heading">
+      <div className="studio-container grid gap-10 lg:grid-cols-2">
+        <div>
+          <p className="studio-eyebrow">Reading</p>
+          <h2 id="reading-heading" className="studio-title">
+            On my shelf
+          </h2>
+          <p className="studio-lede">Reference list. Long titles wrap; tags stay pinned.</p>
 
-    <section className="border-t border-white/[0.08] py-20">
-
-      <SectionReveal className="section-container grid gap-12 lg:grid-cols-2">
-
-        <div data-reveal>
-
-          <SectionHeader eyebrow="Reading" title="On My Shelf" className="mb-8" />
-
-          <div className="divide-y divide-white/[0.08] border border-white/[0.08]">
-
-            {shelf.map((book) => (
-
-              <div key={book.title} className="flex items-center justify-between gap-4 bg-black p-5">
-
-                <div>
-
-                  <h3 className="font-heading text-base font-semibold">{book.title}</h3>
-
-                  <p className="mt-1 text-sm font-light text-textSubtle">{book.by}</p>
-
-                </div>
-
-                <span className="shrink-0 border border-white/[0.12] px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-textMuted">
-
-                  {book.tag}
-
-                </span>
-
-              </div>
-
-            ))}
-
+          <div className="mt-6 overflow-x-auto">
+            <table className="studio-table min-w-[320px]">
+              <caption className="sr-only">Books currently on my shelf</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Title</th>
+                  <th scope="col">Author</th>
+                  <th scope="col">Tag</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shelf.map((book) => (
+                  <tr key={book.title}>
+                    <td>{book.title}</td>
+                    <td className="text-[color:var(--studio-text-muted)]">{book.by}</td>
+                    <td>{book.tag}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
         </div>
 
+        <div>
+          <p className="studio-eyebrow">Curiosity</p>
+          <h2 className="studio-title">Currently exploring</h2>
+          <p className="studio-lede">Topics under active attention. Empty state: none — always reading.</p>
 
-
-        <div data-reveal>
-
-          <SectionHeader eyebrow="Curiosity" title="Currently Exploring" className="mb-8" />
-
-          <div className="flex flex-wrap gap-2">
-
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Topics currently exploring">
             {topics.map((topic) => (
-
-              <span
-
-                key={topic}
-
-                className="border border-white/[0.1] px-3 py-2 font-mono text-[10px] uppercase tracking-wider text-textMuted"
-
-              >
-
-                {topic}
-
-              </span>
-
+              <li key={topic}>
+                <span className="studio-chip">{topic}</span>
+              </li>
             ))}
-
-          </div>
-
+          </ul>
         </div>
-
-      </SectionReveal>
-
+      </div>
     </section>
-
   )
-
 }
 
-
-
 export default Reading
-

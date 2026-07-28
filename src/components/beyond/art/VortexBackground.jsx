@@ -189,6 +189,7 @@ function VortexBackground({ active, intensity = 1.35 }) {
     mat.uniforms.uTime.value = state.clock.elapsedTime
     mat.uniforms.uScroll.value = artScrollState.position
     mat.uniforms.uPageCount.value = pageCountRef.current
+    mat.uniforms.uAspect.value = Math.max(viewport.width / Math.max(viewport.height, 0.001), 0.2)
   })
 
   // Cover viewport edge-to-edge

@@ -8,6 +8,7 @@ const ROUTE_VARIANT = {
   '/work': 'work',
   '/experience': 'experience',
   '/beyond': 'beyond',
+  '/beyond/cars': 'beyond',
   '/beyond/art': 'beyond',
   '/contact': 'contact',
 }

@@ -1,8 +1,9 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { RiArrowRightUpLine } from 'react-icons/ri'
-import SectionReveal from '../../layout/SectionReveal'
-import SectionHeader from '../../ui/SectionHeader'
-import MStripe from '../../ui/MStripe'
+import ArtCylinderCanvas from './ArtCylinderCanvas'
+import { artScrollState } from './artScrollState'
+import WebGLErrorBoundary from '../../ui/WebGLErrorBoundary'
+import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
 
 const SKETCH_TILES = [
   { label: 'Astro', image: '/images/art-vortex-astro.png' },
@@ -10,88 +11,123 @@ const SKETCH_TILES = [
   { label: 'Concept', image: '/images/art-vortex-concept.png' },
 ]
 
+function VortexFallback({ className = '' }) {
+  return (
+    <div className={`absolute inset-0 ${className}`.trim()} aria-hidden>
+      <img
+        src="/images/art-vortex-astro.png"
+        alt=""
+        className="h-full w-full object-cover object-center"
+        loading="eager"
+        decoding="async"
+      />
+      <div className="absolute inset-0 bg-black/45" />
+    </div>
+  )
+}
+
 /**
- * Normal Beyond art teaser — Enter Art opens immersive twin-vortex experience.
+ * Beyond art section — vortex preview that stays visible on phones
+ * (image base layer + optional WebGL when the block is on screen).
  */
 function ArtSection() {
+  const previewRef = useRef(null)
+  const [inView, setInView] = useState(false)
+  const [webglOk, setWebglOk] = useState(true)
+  const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
+
+  // Phones always get a visible image; WebGL enhances when allowed.
+  const tryLiveVortex = inView && webglOk && !prefersReducedMotion
+
+  useEffect(() => {
+    const node = previewRef.current
+    if (!node) return undefined
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.05, rootMargin: '120px 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!tryLiveVortex) {
+      artScrollState.enabled = false
+      artScrollState.velocity = 0
+      return undefined
+    }
+
+    artScrollState.enabled = true
+    return () => {
+      artScrollState.enabled = false
+      artScrollState.velocity = 0
+    }
+  }, [tryLiveVortex])
+
   return (
-    <section className="border-t border-white/[0.08]" aria-labelledby="art-section-title">
-      <div className="relative min-h-[62vh] overflow-hidden bg-black">
-        <img
-          src="/images/art-vortex-astro.png"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-55"
-          loading="lazy"
-        />
+    <section className="studio-section" aria-labelledby="art-section-title">
+      <div className="studio-container">
+        <p className="studio-eyebrow">Art</p>
+        <h2 id="art-section-title" className="studio-title">
+          Drawing
+        </h2>
+        <p className="studio-lede">
+          Twin-vortex visual field — scroll-warped studies from space, machines, and graphite.
+          Enter the full-screen experience when ready.
+        </p>
+
+        {/* Explicit height so absolute WebGL/image layers don't collapse on mobile */}
         <div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_80%_70%_at_50%_50%,rgba(8,40,80,0.35),rgba(0,0,0,0.88))]"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-40"
-          style={{
-            background:
-              'radial-gradient(circle at 18% 50%, rgba(28,105,212,0.35), transparent 42%), radial-gradient(circle at 82% 50%, rgba(0,80,140,0.3), transparent 42%)',
-          }}
-          aria-hidden
-        />
+          ref={previewRef}
+          className="relative mt-6 h-[min(70dvh,560px)] min-h-[280px] w-full overflow-hidden border border-[color:var(--studio-border-muted)] bg-black"
+        >
+          <VortexFallback />
 
-        <div className="section-container relative z-10 flex min-h-[62vh] flex-col justify-center py-20">
-          <p className="section-eyebrow">Beyond Work — Art</p>
-          <h2
-            id="art-section-title"
-            className="mt-5 max-w-2xl font-heading text-[clamp(2rem,6vw,3.75rem)] font-bold uppercase leading-[0.95] tracking-[0.05em]"
-          >
-            Drawing
-          </h2>
-          <p className="mt-5 max-w-md text-base font-light leading-relaxed text-textMuted">
-            Enter a full-screen twin-vortex experience — revolving letters, warped atmosphere,
-            then come back to the site anytime.
-          </p>
+          {tryLiveVortex && (
+            <WebGLErrorBoundary fallback={null}>
+              <div className="absolute inset-0 z-[1]">
+                <ArtCylinderCanvas
+                  active
+                  mobileLite={isTouchLike}
+                  onContextLost={() => setWebglOk(false)}
+                />
+              </div>
+            </WebGLErrorBoundary>
+          )}
 
-          <Link
-            to="/beyond/art"
-            data-cursor-hover="true"
-            className="ghost-btn mt-10 w-fit"
-          >
-            Enter Art
-            <RiArrowRightUpLine />
-          </Link>
-        </div>
-
-        <MStripe />
-      </div>
-
-      <SectionReveal className="section-container py-16">
-        <div className="mb-8" data-reveal>
-          <SectionHeader
-            eyebrow="Art"
-            title="Sketches & Studies"
-            subtitle="Space, machines, and sketches — the visuals that feed the vortex."
+          <div
+            className="pointer-events-none absolute inset-0 z-[2] bg-[linear-gradient(to_top,rgba(0,0,0,0.82)_0%,rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.35)_100%)]"
+            aria-hidden
           />
+
+          <div className="absolute inset-x-0 bottom-0 z-[3] flex flex-col items-start p-4 sm:p-7">
+            <p className="studio-eyebrow !text-white/75">Beyond Work — Art</p>
+            <p className="mt-2 max-w-md text-[12px] leading-[18px] text-white/85">
+              {tryLiveVortex
+                ? 'Live twin vortices. Open immersive mode for full scroll warp.'
+                : 'Vortex field preview. Open immersive mode for the full experience.'}
+            </p>
+            <Link
+              to="/beyond/art"
+              className="studio-link pointer-events-auto mt-4 min-h-11 items-center !text-white hover:!text-white/70"
+              data-cursor-hover="true"
+            >
+              Enter art experience →
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-px bg-white/[0.08] sm:grid-cols-3">
+        <h3 className="studio-eyebrow mt-10">Sketches &amp; studies</h3>
+        <div className="studio-sketch-grid mt-4">
           {SKETCH_TILES.map((tile) => (
-            <div
-              key={tile.label}
-              data-reveal
-              className="group relative flex min-h-[220px] items-end overflow-hidden bg-[#0a0a0a] p-4 sm:min-h-[280px]"
-            >
-              <img
-                src={tile.image}
-                alt={tile.label}
-                className="absolute inset-0 h-full w-full object-cover object-top opacity-75 transition-all duration-700 group-hover:scale-[1.03] group-hover:opacity-95"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(to top,rgba(0,0,0,0.85),transparent_55%)]" />
-              <p className="relative font-mono text-[10px] uppercase tracking-[0.22em] text-textMuted transition-colors group-hover:text-white">
-                {tile.label}
-              </p>
-            </div>
+            <figure key={tile.label} className="studio-sketch">
+              <img src={tile.image} alt={`${tile.label} sketch study`} loading="lazy" />
+              <figcaption>{tile.label}</figcaption>
+            </figure>
           ))}
         </div>
-      </SectionReveal>
+      </div>
     </section>
   )
 }

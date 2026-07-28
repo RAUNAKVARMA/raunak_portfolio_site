@@ -33,7 +33,7 @@ function ArtExperience() {
   const lenisRef = useLenis()
   const touchY = useRef(null)
   const [effectOn, setEffectOn] = useState(true)
-  const { prefersReducedMotion } = useReducedMotionProfile()
+  const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
   const useStatic = prefersReducedMotion
 
   useEffect(() => {
@@ -128,7 +128,7 @@ function ArtExperience() {
         <ImmersiveFallback />
       ) : (
         <WebGLErrorBoundary fallback={<ImmersiveFallback />}>
-          <ArtCylinderCanvas active paused={!effectOn} />
+          <ArtCylinderCanvas active paused={!effectOn} mobileLite={isTouchLike} />
         </WebGLErrorBoundary>
       )}
 

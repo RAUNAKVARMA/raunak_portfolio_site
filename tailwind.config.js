@@ -24,6 +24,16 @@ export default {
         body: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Syne', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        studio: [
+          'Fragment Mono',
+          'ui-sans-serif',
+          'system-ui',
+          'sans-serif',
+          'Apple Color Emoji',
+          'Segoe UI Emoji',
+          'Segoe UI Symbol',
+          'Noto Color Emoji',
+        ],
       },
       letterSpacing: {
         cinematic: '0.22em',
