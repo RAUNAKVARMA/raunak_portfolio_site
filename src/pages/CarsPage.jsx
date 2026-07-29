@@ -289,7 +289,7 @@ function CarsPage() {
       <FavoriteCarsShowcase onEnter={() => setGarageMusicReady(true)} />
       <HotWheelsSection />
       <div ref={f1SectionRef}>
-        <F1Section active={f1InView} />
+        <F1Section />
       </div>
       <HamiltonSection />
 

@@ -11,10 +11,11 @@ const EASE = [0.16, 1, 0.3, 1]
 const F1_RED = '#E10600'
 
 /**
- * F1 childhood clip — muted autoplay (iOS/Android), full length from t=0, loops while in view.
- * No controls / no pause UI.
+ * F1 childhood clip — muted autoplay (iOS/Android), loops while in view.
+ * Does NOT depend on the parent passing `active`; uses its own IntersectionObserver
+ * so it can start immediately when it enters the viewport even on first load.
  */
-function F1Section({ active = false }) {
+function F1Section() {
   const reducedMotion = useReducedMotion()
   const sectionRef = useRef(null)
   const videoRef = useRef(null)
@@ -32,6 +33,7 @@ function F1Section({ active = false }) {
     const video = videoRef.current
     if (!video) return undefined
 
+    // Required for iOS Safari muted inline autoplay
     video.muted = true
     video.defaultMuted = true
     video.playsInline = true
@@ -45,65 +47,76 @@ function F1Section({ active = false }) {
     video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback')
 
     let cancelled = false
+    let inView = false
 
     const tryPlay = () => {
-      if (cancelled || !video || reducedMotion) return
-      if (!active) return
+      if (cancelled || reducedMotion || !inView) return
       video.muted = true
       video.playsInline = true
       video.play().catch(() => {
-        /* Retry on next gesture / canplay */
+        // Will retry on canplay / next user gesture
       })
     }
 
+    // Resume if OS / browser pauses us
     const onPause = () => {
-      if (cancelled || reducedMotion || !active) return
+      if (cancelled || reducedMotion || !inView) return
+      if (document.visibilityState === 'hidden') return
       window.requestAnimationFrame(() => {
-        if (!cancelled && active) tryPlay()
+        if (!cancelled && inView) tryPlay()
       })
     }
 
-    const onEnded = () => {
-      if (cancelled || !active) return
-      try {
-        video.currentTime = 0
-      } catch {
-        /* */
-      }
-      tryPlay()
+    // Watch visibility so it plays the moment it scrolls into view
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting
+        if (inView) {
+          tryPlay()
+        } else {
+          video.pause()
+        }
+      },
+      { threshold: 0.05 },
+    )
+
+    const onPageShow = () => tryPlay()
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tryPlay()
+      else video.pause()
     }
 
-    if (reducedMotion) {
-      video.pause()
-    } else if (active) {
-      tryPlay()
-    } else {
-      video.pause()
-    }
-
+    io.observe(video)
     video.addEventListener('loadeddata', tryPlay)
     video.addEventListener('canplay', tryPlay)
     video.addEventListener('loadedmetadata', tryPlay)
     video.addEventListener('pause', onPause)
-    video.addEventListener('ended', onEnded)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') tryPlay()
-    })
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('pageshow', onPageShow)
+    // First user gesture unlocks audio context on iOS; piggyback to kick video
     window.addEventListener('pointerdown', tryPlay, { passive: true })
     window.addEventListener('touchstart', tryPlay, { passive: true })
 
+    // Kick immediately — if it's already in view on mount
+    if (video.getBoundingClientRect().top < window.innerHeight) {
+      inView = true
+      tryPlay()
+    }
+
     return () => {
       cancelled = true
+      io.disconnect()
       video.removeEventListener('loadeddata', tryPlay)
       video.removeEventListener('canplay', tryPlay)
       video.removeEventListener('loadedmetadata', tryPlay)
       video.removeEventListener('pause', onPause)
-      video.removeEventListener('ended', onEnded)
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('pageshow', onPageShow)
       window.removeEventListener('pointerdown', tryPlay)
       window.removeEventListener('touchstart', tryPlay)
       video.pause()
     }
-  }, [active, reducedMotion])
+  }, [reducedMotion])
 
   return (
     <section
@@ -141,7 +154,7 @@ function F1Section({ active = false }) {
             >
               <video
                 ref={videoRef}
-                src="/videos/f1-childhood.mp4?v=5"
+                src="/videos/f1-childhood.mp4"
                 className="h-full w-full object-cover"
                 autoPlay
                 muted
