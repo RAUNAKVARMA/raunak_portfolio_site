@@ -333,7 +333,7 @@ function HamiltonFerrariCanvas({
       <Canvas
         className="absolute inset-0 block h-full w-full"
         camera={{ position: cam, fov: mobileLite ? 36 : 30, near: 0.1, far: 80 }}
-        dpr={mobileLite ? [1, 1.15] : [1, 1.75]}
+        dpr={mobileLite ? [1, 1.5] : [1, 1.75]}
         gl={{
           alpha: true,
           antialias: !mobileLite,

@@ -109,6 +109,10 @@ function CarScene({
   // BMW: iconic M product shot — low env wash, blue silhouette, hot LEDs
   // Aston: British Racing Green — green rim, warm gold accents
   // Porsche: GT Silver — cool studio, Porsche-red rim
+  // On mobile the per-car accent lights are skipped, so boost base values for Porsche
+  // (silver paint needs more key light or it looks black)
+  const mobilePorscheBrightness = mobileLite && isPorsche ? 1.55 : 1
+
   const ambient = isFerrari
     ? 0.12
     : isSupra
@@ -122,7 +126,7 @@ function CarScene({
             : isAston
               ? 0.12
               : isPorsche
-                ? 0.14
+                ? 0.14 * mobilePorscheBrightness
                 : boosted
                   ? 0.5
                   : 0.4
@@ -139,7 +143,7 @@ function CarScene({
             : isAston
               ? 0.14
               : isPorsche
-                ? 0.16
+                ? 0.16 * mobilePorscheBrightness
                 : boosted
                   ? 0.48
                   : 0.38
@@ -156,7 +160,7 @@ function CarScene({
             : isAston
               ? 1.9
               : isPorsche
-                ? 1.75
+                ? 1.75 * mobilePorscheBrightness
                 : boosted
                   ? 1.9
                   : 1.65
@@ -173,7 +177,7 @@ function CarScene({
             : isAston
               ? 0.5
               : isPorsche
-                ? 0.42
+                ? 0.42 * mobilePorscheBrightness
                 : boosted
                   ? 0.8
                   : 0.55
@@ -190,7 +194,7 @@ function CarScene({
             : isAston
               ? 1.55
               : isPorsche
-                ? 1.35
+                ? 1.35 * mobilePorscheBrightness
                 : boosted
                   ? 1.25
                   : 0.95
@@ -461,19 +465,19 @@ function CarScene({
           />
         </>
       )}
-      {!mobileLite && isPorsche && (
+      {isPorsche && (
         <>
           {/* Cool silver studio — acid-yellow accents, no red wash */}
-          <directionalLight position={[5.5, 1.8, -4]} intensity={0.85} color="#C8D0DC" />
-          <directionalLight position={[-5, 2.2, -3.2]} intensity={0.65} color="#A8B4C4" />
-          <directionalLight position={[0, 5, 4.5]} intensity={0.7} color="#ffffff" />
-          <directionalLight position={[3.5, 1.6, -5]} intensity={0.4} color="#D4E157" />
-          <pointLight position={[0, 0.14, 0]} intensity={0.9} distance={4} color="#B8C0CC" />
-          <pointLight position={[0.9, 1.4, 2.1]} intensity={1.35} distance={6.5} color="#eef0f5" />
-          <pointLight position={[-0.7, 1.15, -2]} intensity={0.75} distance={5.5} color="#C8F000" />
+          <directionalLight position={[5.5, 1.8, -4]} intensity={0.85 * mobilePorscheBrightness} color="#C8D0DC" />
+          <directionalLight position={[-5, 2.2, -3.2]} intensity={0.65 * mobilePorscheBrightness} color="#A8B4C4" />
+          <directionalLight position={[0, 5, 4.5]} intensity={0.7 * mobilePorscheBrightness} color="#ffffff" />
+          {!mobileLite && <directionalLight position={[3.5, 1.6, -5]} intensity={0.4} color="#D4E157" />}
+          <pointLight position={[0, 0.14, 0]} intensity={0.9 * mobilePorscheBrightness} distance={4} color="#B8C0CC" />
+          <pointLight position={[0.9, 1.4, 2.1]} intensity={1.35 * mobilePorscheBrightness} distance={6.5} color="#eef0f5" />
+          {!mobileLite && <pointLight position={[-0.7, 1.15, -2]} intensity={0.75} distance={5.5} color="#C8F000" />}
           <spotLight
             position={[0, 8, -1.2]}
-            intensity={1.6}
+            intensity={1.6 * mobilePorscheBrightness}
             angle={0.28}
             penumbra={0.9}
             color="#f8f9fc"
@@ -599,7 +603,8 @@ function CarStageCanvas({
   const isBmw = /bmw|m4/i.test(modelUrl)
   const isAston = /aston|valour/i.test(modelUrl)
   const isPorsche = /porsche|918|spyder/i.test(modelUrl)
-  const dpr = mobileLite ? [1, 1] : [1, 1.35]
+  // [1,1.5] on mobile — keeps quality without saturating the GPU like [1,2]
+  const dpr = mobileLite ? [1, 1.5] : [1, 1.5]
 
   return (
     <Canvas
