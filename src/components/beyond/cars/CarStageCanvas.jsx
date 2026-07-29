@@ -1,6 +1,6 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
+import { ContactShadows, Environment, OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import CarModel from './CarModel'
 
@@ -36,6 +36,51 @@ function CameraIntro({ active, reducedMotion, playIntro }) {
   })
 
   return null
+}
+
+function WarmAndSwap({ url, onReady }) {
+  useGLTF(url)
+  useEffect(() => {
+    onReady()
+  }, [url, onReady])
+  return null
+}
+
+/** Keep showing the current car while the next GLB warms — avoids blank/hang on swap. */
+function ModelSwap({ modelUrl, active, reducedMotion, playIntro, onReady }) {
+  const [displayedUrl, setDisplayedUrl] = useState(modelUrl)
+
+  useEffect(() => {
+    if (modelUrl === displayedUrl) return
+    try {
+      useGLTF.preload(modelUrl)
+    } catch {
+      /* */
+    }
+  }, [modelUrl, displayedUrl])
+
+  const boosted = /bmw|m4|aston|valour|lamborghini|aventador|porsche|918|spyder|supra|toyota|ferrari/i.test(
+    displayedUrl,
+  )
+
+  return (
+    <>
+      <CarModel
+        key={displayedUrl}
+        url={displayedUrl}
+        targetSize={boosted ? 4.55 : 4.15}
+        playReveal={false}
+        reducedMotion={reducedMotion || !playIntro}
+        active={active}
+        onReady={onReady}
+      />
+      {modelUrl !== displayedUrl ? (
+        <Suspense fallback={null}>
+          <WarmAndSwap url={modelUrl} onReady={() => setDisplayedUrl(modelUrl)} />
+        </Suspense>
+      ) : null}
+    </>
+  )
 }
 
 function CarScene({
@@ -239,7 +284,7 @@ function CarScene({
         }
       />
       <ambientLight
-        intensity={ambient}
+        intensity={mobileLite ? ambient + 0.18 : ambient}
         color={
           isFerrari
             ? '#e8a090'
@@ -258,7 +303,7 @@ function CarScene({
       />
       <directionalLight
         position={[4.5, 7, 5]}
-        intensity={keyLight}
+        intensity={mobileLite ? keyLight * 1.15 : keyLight}
         color={
           isFerrari
             ? '#fff8f5'
@@ -297,7 +342,7 @@ function CarScene({
         }
       />
       <directionalLight position={[0, 2.5, -6]} intensity={rimIntensity} color={rimColor} />
-      {isFerrari && (
+      {!mobileLite && isFerrari && (
         <>
           {/* Rosso silhouette — product-shot edges + underglow */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.25} color="#ff2222" />
@@ -317,7 +362,7 @@ function CarScene({
           />
         </>
       )}
-      {isSupra && (
+      {!mobileLite && isSupra && (
         <>
           {/* F&F orange silhouette + neon green tribal accents */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.15} color="#ff6a1a" />
@@ -337,7 +382,7 @@ function CarScene({
           />
         </>
       )}
-      {isLambo && (
+      {!mobileLite && isLambo && (
         <>
           {/* Blu silhouette + Lambo Y-gold accents */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.15} color="#3B82F6" />
@@ -357,7 +402,7 @@ function CarScene({
           />
         </>
       )}
-      {isBugatti && (
+      {!mobileLite && isBugatti && (
         <>
           {/* Noire gold silhouette — soft exterior only, no cabin neon */}
           <directionalLight position={[5, 1.8, -4]} intensity={0.95} color="#E8B84A" />
@@ -374,7 +419,7 @@ function CarScene({
           />
         </>
       )}
-      {isBmw && (
+      {!mobileLite && isBmw && (
         <>
           {/* M-stripe silhouette + NFS underglow */}
           <directionalLight position={[5.5, 1.8, -4]} intensity={1.25} color="#1C69D4" />
@@ -396,7 +441,7 @@ function CarScene({
           />
         </>
       )}
-      {isAston && (
+      {!mobileLite && isAston && (
         <>
           {/* BRG silhouette + champagne gold — punchier so green doesn't go muddy */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.35} color="#1ad67a" />
@@ -416,7 +461,7 @@ function CarScene({
           />
         </>
       )}
-      {isPorsche && (
+      {!mobileLite && isPorsche && (
         <>
           {/* Cool silver studio — acid-yellow accents, no red wash */}
           <directionalLight position={[5.5, 1.8, -4]} intensity={0.85} color="#C8D0DC" />
@@ -435,35 +480,37 @@ function CarScene({
           />
         </>
       )}
-      <spotLight
-        position={[1.5, 8, 3]}
-        intensity={spot}
-        angle={
-          isFerrari || isLambo || isBugatti || isBmw || isAston || isPorsche ? 0.48 : 0.42
-        }
-        penumbra={
-          isFerrari || isSupra || isLambo || isBugatti || isBmw || isAston || isPorsche
-            ? 0.85
-            : 0.7
-        }
-        color={
-          isFerrari
-            ? '#ffe8e0'
-            : isSupra
-              ? '#ffc090'
-              : isLambo
-                ? '#ffffff'
-                : isBugatti
-                  ? '#fff0d8'
-                  : isBmw
-                    ? '#eef4ff'
-                    : isAston
-                      ? '#e8fff0'
-                      : isPorsche
-                        ? '#f4f4f8'
-                        : '#ffe9a8'
-        }
-      />
+      {!mobileLite ? (
+        <spotLight
+          position={[1.5, 8, 3]}
+          intensity={spot}
+          angle={
+            isFerrari || isLambo || isBugatti || isBmw || isAston || isPorsche ? 0.48 : 0.42
+          }
+          penumbra={
+            isFerrari || isSupra || isLambo || isBugatti || isBmw || isAston || isPorsche
+              ? 0.85
+              : 0.7
+          }
+          color={
+            isFerrari
+              ? '#ffe8e0'
+              : isSupra
+                ? '#ffc090'
+                : isLambo
+                  ? '#ffffff'
+                  : isBugatti
+                    ? '#fff0d8'
+                    : isBmw
+                      ? '#eef4ff'
+                      : isAston
+                        ? '#e8fff0'
+                        : isPorsche
+                          ? '#f4f4f8'
+                          : '#ffe9a8'
+          }
+        />
+      ) : null}
       {!mobileLite && active && (
         <Environment
           preset={envPreset}
@@ -471,12 +518,11 @@ function CarScene({
           resolution={128}
         />
       )}
-      <CarModel
-        url={modelUrl}
-        targetSize={isBmw || isAston || isLambo || isPorsche || isSupra || isFerrari ? 4.55 : 4.15}
-        playReveal={playIntro && active}
-        reducedMotion={reducedMotion}
+      <ModelSwap
+        modelUrl={modelUrl}
         active={active}
+        reducedMotion={reducedMotion}
+        playIntro={playIntro}
         onReady={onReady}
       />
       {!mobileLite && (
@@ -505,9 +551,14 @@ function CarScene({
         makeDefault
         enablePan={false}
         enableZoom={false}
-        enableRotate={!mobileLite}
-        enableDamping={!mobileLite}
-        dampingFactor={0.08}
+        enableRotate={!reducedMotion}
+        enableDamping
+        dampingFactor={mobileLite ? 0.12 : 0.08}
+        rotateSpeed={mobileLite ? 0.7 : 1}
+        touches={{
+          ONE: THREE.TOUCH.ROTATE,
+          TWO: THREE.TOUCH.DOLLY_PAN,
+        }}
         minPolarAngle={Math.PI / 3.15}
         maxPolarAngle={Math.PI / 2.02}
         autoRotate={autoRotate}
@@ -548,11 +599,7 @@ function CarStageCanvas({
   const isBmw = /bmw|m4/i.test(modelUrl)
   const isAston = /aston|valour/i.test(modelUrl)
   const isPorsche = /porsche|918|spyder/i.test(modelUrl)
-  const dpr = mobileLite
-    ? [1, 1.15]
-    : isLambo || isBugatti || isFerrari || isBmw || isAston || isPorsche
-      ? [1, 1.85]
-      : [1, 1.65]
+  const dpr = mobileLite ? [1, 1] : [1, 1.35]
 
   return (
     <Canvas
@@ -569,11 +616,11 @@ function CarStageCanvas({
       }}
       frameloop={active ? 'always' : 'never'}
       style={{
-        touchAction: mobileLite ? 'pan-y' : 'none',
+        touchAction: 'none',
         width: '100%',
         height: '100%',
         background: 'transparent',
-        pointerEvents: mobileLite ? 'none' : 'auto',
+        pointerEvents: 'auto',
       }}
       onCreated={({ gl }) => {
         gl.setClearColor(0x000000, 0)
@@ -597,6 +644,7 @@ function CarStageCanvas({
         gl.domElement.style.display = 'block'
         gl.domElement.style.width = '100%'
         gl.domElement.style.height = '100%'
+        gl.domElement.style.touchAction = 'none'
       }}
     >
       <Suspense fallback={null}>

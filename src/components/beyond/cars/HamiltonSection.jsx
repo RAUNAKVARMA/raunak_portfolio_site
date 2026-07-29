@@ -359,7 +359,7 @@ function HamiltonSection() {
           }
           aria-hidden
         >
-          <p className="garage-hamilton-watermark font-heading text-[clamp(3.4rem,18vw,13rem)] font-bold uppercase leading-none tracking-[-0.06em]">
+          <p className="garage-hamilton-watermark mx-auto max-w-full truncate font-heading text-[clamp(2.6rem,15vw,13rem)] font-bold uppercase leading-none tracking-[-0.06em] sm:text-[clamp(3.4rem,18vw,13rem)]">
             HAMILTON
           </p>
         </motion.div>
@@ -371,7 +371,7 @@ function HamiltonSection() {
               active={inView}
               autoRotate={!orbitPaused && !reducedMotion}
               mobileLite={isTouchLike}
-              allowOrbit={!isTouchLike}
+              allowOrbit={!reducedMotion}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -397,7 +397,7 @@ function HamiltonSection() {
             </span>
           </motion.div>
 
-          {!isTouchLike && (
+          {!reducedMotion && (
             <motion.button
               type="button"
               data-cursor-hover="true"
@@ -408,7 +408,7 @@ function HamiltonSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08, duration: 0.5, ease: EASE }}
             >
-              {orbitPaused ? 'Resume orbit' : 'Drag to orbit · Pause'}
+              {orbitPaused ? 'Resume orbit' : isTouchLike ? 'Drag to orbit' : 'Drag to orbit · Pause'}
             </motion.button>
           )}
         </div>
@@ -427,7 +427,7 @@ function HamiltonSection() {
                 </motion.p>
                 <h2
                   id="hamilton-heading"
-                  className="mt-2 font-heading text-[clamp(1.45rem,5.2vw,2.7rem)] font-bold tracking-tight text-white"
+                  className="mt-2 break-words font-heading text-[clamp(1.25rem,5.2vw,2.7rem)] font-bold tracking-tight text-white"
                 >
                   <SplitWords
                     text="Inspired by Lewis Hamilton"
@@ -436,7 +436,7 @@ function HamiltonSection() {
                     stagger={0.07}
                   />
                 </h2>
-                <div className="mt-3 max-w-prose font-studio text-[13px] leading-[21px] text-white/88 sm:font-display sm:text-[clamp(1.05rem,2.2vw,1.35rem)] sm:font-semibold sm:leading-snug sm:tracking-tight">
+                <div className="mt-3 max-w-prose overflow-hidden break-words font-studio text-[12px] leading-[20px] text-white/88 sm:font-display sm:text-[clamp(1.05rem,2.2vw,1.35rem)] sm:font-semibold sm:leading-snug sm:tracking-tight sm:text-[13px] sm:leading-[21px]">
                   <FadeWords
                     text="I started watching Formula 1 in 2016 because of Lewis Hamilton. What began as admiration for a driver grew into a passion for the sport and a mindset that continues to inspire me."
                     reducedMotion={Boolean(reducedMotion)}
@@ -447,7 +447,7 @@ function HamiltonSection() {
               </div>
 
               <motion.p
-                className="font-heading text-[clamp(2.6rem,14vw,5rem)] font-bold leading-none tracking-tight text-[color:var(--f1-red)]"
+                className="shrink-0 font-heading text-[clamp(2.1rem,12vw,5rem)] font-bold leading-none tracking-tight text-[color:var(--f1-red)]"
                 initial={reducedMotion ? false : { opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}

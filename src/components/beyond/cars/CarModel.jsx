@@ -1836,48 +1836,18 @@ function CarModel({
     if (!group.current) return
 
     scene.traverse((obj) => {
-      if (obj.isMesh) {
-        obj.castShadow = true
-        obj.receiveShadow = true
-        const box = new THREE.Box3().setFromObject(obj)
-        const size = box.getSize(new THREE.Vector3())
-        const flatSpan = Math.max(size.x, size.z)
-        const isFlatGround =
-          (size.y < 0.08 && flatSpan > 3.5) || (size.y < 0.2 && flatSpan > 5)
-        const platformName =
-          /ground|floor|shadow|plane|platform|podium|stand|plinth|Base_Geo/i.test(
-            obj.name || '',
-          )
-        if (isFlatGround || platformName) {
-          obj.visible = false
-          return
-        }
-        if (
-          !/bugatti|ferrari|lamborghini|aventador|supra|toyota|bmw|m4|aston|valour|porsche|918|spyder/i.test(
-            url,
-          )
-        ) {
-          const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-          mats.forEach((mat) => prepareMaterial(mat))
-        }
+      if (!obj.isMesh) return
+      obj.castShadow = false
+      obj.receiveShadow = false
+      // Name-only platform cull — avoid per-mesh Box3 (was a major hitch on each car)
+      if (
+        /ground|floor|shadow|plane|platform|podium|stand|plinth|Base_Geo|Base_Material/i.test(
+          obj.name || '',
+        )
+      ) {
+        obj.visible = false
       }
     })
-
-    if (/bugatti/i.test(url)) {
-      applyBugattiMaterials(scene)
-    } else if (/ferrari/i.test(url)) {
-      applyFerrariMaterials(scene)
-    } else if (/lamborghini|aventador/i.test(url)) {
-      applyLamborghiniMaterials(scene)
-    } else if (/supra|toyota/i.test(url)) {
-      applySupraMaterials(scene)
-    } else if (/bmw|m4/i.test(url)) {
-      applyBmwMaterials(scene)
-    } else if (/aston|valour/i.test(url)) {
-      applyAstonMaterials(scene)
-    } else if (/porsche|918|spyder/i.test(url)) {
-      applyRebuiltMaterials(scene, rebuildPorscheMaterial)
-    }
 
     group.current.position.set(0, 0, 0)
     group.current.rotation.set(0, 0, 0)
@@ -1915,6 +1885,41 @@ function CarModel({
         onReady?.()
       }
     })
+
+    // Material rebuilds are expensive — run after first paint so scroll/swap don't hitch
+    if (!scene.userData.garagePolished) {
+      const polish = () => {
+        if (scene.userData.garagePolished) return
+        if (/bugatti/i.test(url)) {
+          applyBugattiMaterials(scene)
+        } else if (/ferrari/i.test(url)) {
+          applyFerrariMaterials(scene)
+        } else if (/lamborghini|aventador/i.test(url)) {
+          applyLamborghiniMaterials(scene)
+        } else if (/supra|toyota/i.test(url)) {
+          applySupraMaterials(scene)
+        } else if (/bmw|m4/i.test(url)) {
+          applyBmwMaterials(scene)
+        } else if (/aston|valour/i.test(url)) {
+          applyAstonMaterials(scene)
+        } else if (/porsche|918|spyder/i.test(url)) {
+          applyRebuiltMaterials(scene, rebuildPorscheMaterial)
+        } else {
+          scene.traverse((obj) => {
+            if (!obj.isMesh) return
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+            mats.forEach((mat) => prepareMaterial(mat))
+          })
+        }
+        scene.userData.garagePolished = true
+      }
+      const ric = window.requestIdleCallback
+      if (typeof ric === 'function') {
+        ric(polish, { timeout: 900 })
+      } else {
+        window.setTimeout(polish, 48)
+      }
+    }
   }, [scene, targetSize, url, onReady]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trigger entrance when playReveal turns on

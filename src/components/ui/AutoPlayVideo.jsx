@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Muted inline video that autoplays reliably (Safari/Chrome/mobile).
- * Pauses when off-screen to keep the page smooth.
+ * Muted inline video that autoplays reliably on iOS Safari + Android Chrome.
+ * Kept muted + playsInline (required for mobile autoplay policies).
+ * No controls — resumes itself if the OS or browser pauses it while visible.
  */
 function AutoPlayVideo({
   src,
   poster,
   className = '',
   'aria-label': ariaLabel,
+  /** When false, keep playing even off-screen (cinematic backgrounds). */
   pauseWhenHidden = true,
+  loop = true,
 }) {
   const videoRef = useRef(null)
 
@@ -20,20 +23,29 @@ function AutoPlayVideo({
     video.muted = true
     video.defaultMuted = true
     video.playsInline = true
+    video.loop = loop
+    video.controls = false
+    video.disablePictureInPicture = true
     video.setAttribute('muted', '')
     video.setAttribute('playsinline', '')
     video.setAttribute('webkit-playsinline', '')
     video.setAttribute('x5-playsinline', '')
+    video.setAttribute('x5-video-player-type', 'h5')
+    video.setAttribute('x5-video-player-fullscreen', 'false')
+    video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback')
 
     let cancelled = false
+    let visible = true
 
     const tryPlay = () => {
       if (cancelled || !video) return
+      if (pauseWhenHidden && !visible) return
       video.muted = true
+      video.playsInline = true
       const playPromise = video.play()
       if (playPromise?.catch) {
         playPromise.catch(() => {
-          /* Autoplay can still be blocked; retried on visibility/interaction. */
+          /* Autoplay can still be blocked until a user gesture; retried below. */
         })
       }
     }
@@ -46,18 +58,35 @@ function AutoPlayVideo({
     const onPointer = () => tryPlay()
 
     const onPause = () => {
-      // Keep cinematic bg videos playing even if something else pauses them
-      if (!pauseWhenHidden && !cancelled) tryPlay()
+      // Never leave a bg video paused while it should be running
+      if (cancelled) return
+      if (pauseWhenHidden && !visible) return
+      if (document.visibilityState === 'hidden' && pauseWhenHidden) return
+      // iOS sometimes pauses mid-play — nudge it back on the next frame
+      window.requestAnimationFrame(() => {
+        if (!cancelled) tryPlay()
+      })
+    }
+
+    const onEnded = () => {
+      if (!loop || cancelled) return
+      try {
+        video.currentTime = 0
+      } catch {
+        /* */
+      }
+      tryPlay()
     }
 
     tryPlay()
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) tryPlay()
+        visible = entry.isIntersecting
+        if (visible) tryPlay()
         else if (pauseWhenHidden) video.pause()
       },
-      { threshold: 0.05, rootMargin: '10% 0px' },
+      { threshold: 0.02, rootMargin: '20% 0px' },
     )
     observer.observe(video)
 
@@ -65,9 +94,14 @@ function AutoPlayVideo({
     video.addEventListener('loadeddata', tryPlay)
     video.addEventListener('canplay', tryPlay)
     video.addEventListener('loadedmetadata', tryPlay)
+    video.addEventListener('playing', () => {
+      video.muted = true
+    })
     video.addEventListener('pause', onPause)
-    window.addEventListener('pointerdown', onPointer, { once: true, passive: true })
-    window.addEventListener('touchstart', onPointer, { once: true, passive: true })
+    video.addEventListener('ended', onEnded)
+    window.addEventListener('pointerdown', onPointer, { passive: true })
+    window.addEventListener('touchstart', onPointer, { passive: true })
+    window.addEventListener('pageshow', tryPlay)
 
     return () => {
       cancelled = true
@@ -77,11 +111,13 @@ function AutoPlayVideo({
       video.removeEventListener('canplay', tryPlay)
       video.removeEventListener('loadedmetadata', tryPlay)
       video.removeEventListener('pause', onPause)
+      video.removeEventListener('ended', onEnded)
       window.removeEventListener('pointerdown', onPointer)
       window.removeEventListener('touchstart', onPointer)
+      window.removeEventListener('pageshow', tryPlay)
       video.pause()
     }
-  }, [src, pauseWhenHidden])
+  }, [src, pauseWhenHidden, loop])
 
   return (
     <video
@@ -92,9 +128,11 @@ function AutoPlayVideo({
       className={className}
       autoPlay
       muted
-      loop
+      loop={loop}
       playsInline
       preload="auto"
+      controls={false}
+      controlsList="nodownload nofullscreen noremoteplayback"
       disablePictureInPicture
       disableRemotePlayback
     />

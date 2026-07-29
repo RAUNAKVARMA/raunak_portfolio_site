@@ -1170,6 +1170,35 @@ body.art-experience-active main {
   .garage-hamilton-stat {
     min-height: 88px;
   }
+
+  .garage-stage {
+    overflow: hidden;
+  }
+
+  .garage-gold-watermark,
+  .garage-m4-watermark,
+  .garage-valour-watermark,
+  .garage-lambo-watermark,
+  .garage-porsche-watermark,
+  .garage-supra-watermark,
+  .garage-ferrari-watermark {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .garage-intro {
+    overflow-x: hidden;
+  }
+
+  .garage-intro-watermark-fill {
+    max-width: 100%;
+  }
+
+  .garage-f1-stage {
+    max-width: 100%;
+  }
 }
 
 @keyframes garage-f1-pulse {

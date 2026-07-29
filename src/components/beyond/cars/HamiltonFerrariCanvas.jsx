@@ -293,8 +293,13 @@ function HamiltonFerrariScene({ reducedMotion, autoRotate, mobileLite, allowOrbi
         enablePan={false}
         enableZoom={false}
         enableRotate={allowOrbit}
-        enableDamping={!mobileLite}
-        dampingFactor={0.075}
+        enableDamping
+        dampingFactor={mobileLite ? 0.12 : 0.075}
+        rotateSpeed={mobileLite ? 0.7 : 1}
+        touches={{
+          ONE: THREE.TOUCH.ROTATE,
+          TWO: THREE.TOUCH.DOLLY_PAN,
+        }}
         minPolarAngle={Math.PI / 3.4}
         maxPolarAngle={Math.PI / 2.05}
         autoRotate={autoRotate && !reducedMotion}
@@ -339,11 +344,11 @@ function HamiltonFerrariCanvas({
         }}
         frameloop={active ? 'always' : 'never'}
         style={{
-          touchAction: mobileLite && !allowOrbit ? 'pan-y' : 'none',
+          touchAction: allowOrbit ? 'none' : 'pan-y',
           width: '100%',
           height: '100%',
           background: 'transparent',
-          pointerEvents: mobileLite && !allowOrbit ? 'none' : 'auto',
+          pointerEvents: allowOrbit ? 'auto' : 'none',
         }}
         onCreated={({ gl }) => {
           gl.setClearColor(0x000000, 0)
@@ -353,13 +358,14 @@ function HamiltonFerrariCanvas({
           gl.domElement.style.display = 'block'
           gl.domElement.style.width = '100%'
           gl.domElement.style.height = '100%'
+          if (allowOrbit) gl.domElement.style.touchAction = 'none'
         }}
       >
         <HamiltonFerrariScene
           reducedMotion={reducedMotion}
           autoRotate={autoRotate && active && !reducedMotion}
           mobileLite={mobileLite}
-          allowOrbit={allowOrbit && !mobileLite}
+          allowOrbit={allowOrbit && !reducedMotion}
         />
       </Canvas>
     </WebGLErrorBoundary>

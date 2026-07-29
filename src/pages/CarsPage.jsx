@@ -91,6 +91,7 @@ function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
             poster="/videos/garage-intro-poster.jpg"
             aria-label=""
             pauseWhenHidden={false}
+            loop
             className="garage-intro-video-el absolute inset-0 h-full w-full object-cover object-center"
           />
         )}
@@ -98,9 +99,9 @@ function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
 
       <div className="garage-intro-scrim pointer-events-none absolute inset-0 z-[1]" aria-hidden />
 
-      <div className="pointer-events-none absolute inset-x-0 top-[8%] z-[2] flex h-[42%] items-start justify-center overflow-hidden pt-6 sm:pt-10" aria-hidden>
+      <div className="pointer-events-none absolute inset-x-0 top-[8%] z-[2] flex h-[36%] items-start justify-center overflow-hidden px-2 pt-6 sm:h-[42%] sm:pt-10" aria-hidden>
         <motion.p
-          className="garage-intro-watermark-fill select-none font-display text-[clamp(4.5rem,20vw,11rem)] font-bold uppercase leading-none tracking-[-0.08em]"
+          className="garage-intro-watermark-fill max-w-full select-none truncate font-display text-[clamp(3.25rem,18vw,11rem)] font-bold uppercase leading-none tracking-[-0.08em]"
           initial={reducedMotion ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: EASE }}
@@ -121,10 +122,10 @@ function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
               Interests — {tag} · The Garage
             </motion.p>
 
-            <h1 className="mt-6 font-display text-[clamp(2.75rem,9vw,5.75rem)] font-bold leading-[0.92] tracking-[-0.03em] text-white">
+            <h1 className="mt-5 break-words font-display text-[clamp(2.25rem,10vw,5.75rem)] font-bold leading-[0.95] tracking-[-0.03em] text-white sm:mt-6 sm:leading-[0.92]">
               <SplitWords text="Built on" delay={0.16} reducedMotion={reducedMotion} />
               <br />
-              <span className="relative inline-block">
+              <span className="relative inline-block max-w-full">
                 <SplitWords text="obsession" delay={0.3} reducedMotion={reducedMotion} />
                 <motion.span
                   className="inline-block text-[color:var(--garage-gold)]"
@@ -138,7 +139,7 @@ function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
             </h1>
 
             <motion.p
-              className="mt-6 font-display text-[clamp(1.35rem,3.4vw,2.1rem)] font-semibold tracking-tight text-white"
+              className="mt-5 break-words font-display text-[clamp(1.2rem,5vw,2.1rem)] font-semibold tracking-tight text-white sm:mt-6"
               initial={reducedMotion ? false : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.48, duration: 0.55, ease: EASE }}
@@ -147,7 +148,7 @@ function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
             </motion.p>
 
             <motion.p
-              className="mt-5 max-w-md font-studio text-[13px] leading-[22px] text-white/55 sm:text-[14px]"
+              className="mt-4 max-w-md break-words font-studio text-[13px] leading-[21px] text-white/55 sm:mt-5 sm:text-[14px] sm:leading-[22px]"
               initial={reducedMotion ? false : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.62, duration: 0.5, ease: EASE }}
@@ -248,17 +249,18 @@ function CarsPage() {
     threshold: 0.2,
     rootMargin: '-5% 0px -5% 0px',
   })
+  const [garageMusicReady, setGarageMusicReady] = useState(false)
   useDocumentTitle('Cars — Beyond')
 
   useEffect(() => {
-    // Warm only the first model during intro — others preload in the showcase
+    // Don't fight the intro video — warm first car only after a quiet delay
     const timer = window.setTimeout(() => {
       try {
         useGLTF.preload(favoriteCars[0]?.modelUrl)
       } catch {
         /* */
       }
-    }, 1400)
+    }, 2800)
     return () => window.clearTimeout(timer)
   }, [])
 
@@ -277,14 +279,14 @@ function CarsPage() {
 
   return (
     <div className="garage-root min-h-screen bg-black" style={{ ['--garage-gold']: GOLD }}>
-      <GarageMusic suspended={f1InView} />
+      {garageMusicReady ? <GarageMusic suspended={f1InView} /> : null}
       <GarageIntro
         tag={cars.tag}
         reducedMotion={Boolean(reducedMotion)}
         onJumpToCar={jumpToCar}
       />
 
-      <FavoriteCarsShowcase />
+      <FavoriteCarsShowcase onEnter={() => setGarageMusicReady(true)} />
       <HotWheelsSection />
       <div ref={f1SectionRef}>
         <F1Section active={f1InView} />
