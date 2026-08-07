@@ -161,4 +161,18 @@ export const editingClips = [
     poster: '/videos/editing/posters/edit-22.jpg',
     note: 'Close beat',
   },
+  {
+    id: 'edit-24',
+    title: 'Cut 24',
+    src: '/videos/editing/edit-24.mp4',
+    poster: '/videos/editing/posters/edit-24.jpg',
+    note: 'Fresh cut',
+  },
+  {
+    id: 'edit-25',
+    title: 'Cut 25',
+    src: '/videos/editing/edit-25.mp4',
+    poster: '/videos/editing/posters/edit-25.jpg',
+    note: 'Closing pass',
+  },
 ]
