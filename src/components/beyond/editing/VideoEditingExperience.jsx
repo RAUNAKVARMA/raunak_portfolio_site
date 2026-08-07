@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { editingClips } from '../../../data/editingClips'
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle'
+import { useIsMobileOrTouch } from '../../../hooks/useIsMobileOrTouch'
 import { useLenis } from '../../../providers/SmoothScrollProvider'
 
-/** Orbit paths through depth — Felix Brady floating collage feel. */
-const PATHS = [
+const PATHS_DESKTOP = [
   { x: -18, y: 8, rx: 8, ry: -6, w: 42 },
   { x: 22, y: -10, rx: 4, ry: 8, w: 28 },
   { x: 8, y: 18, rx: 12, ry: -2, w: 24 },
@@ -19,6 +19,15 @@ const PATHS = [
   { x: -4, y: -8, rx: 11, ry: 3, w: 36 },
 ]
 
+/** Same gallery language, frames kept on-phone. */
+const PATHS_MOBILE = [
+  { x: 0, y: 2, rx: 6, ry: -2, w: 86 },
+  { x: -10, y: -6, rx: 4, ry: 4, w: 72 },
+  { x: 10, y: 8, rx: 8, ry: -3, w: 70 },
+  { x: -6, y: 10, rx: 5, ry: 3, w: 76 },
+  { x: 8, y: -8, rx: 7, ry: -4, w: 68 },
+]
+
 function clamp(n, a, b) {
   return Math.min(b, Math.max(a, n))
 }
@@ -28,35 +37,34 @@ function smoothstep(edge0, edge1, x) {
   return t * t * (3 - 2 * t)
 }
 
-/**
- * Continuous depth gallery matching Felix Brady scroll world:
- * layered translucent frames fly toward the camera; click / › opens cinema.
- * @see https://graceful-lebkuchen-fac26a.netlify.app/
- */
 function VideoEditingExperience() {
   useDocumentTitle('Video Editing')
   const navigate = useNavigate()
   const lenisRef = useLenis()
+  const isMobile = useIsMobileOrTouch()
+
   const stageRef = useRef(null)
   const cinemaRef = useRef(null)
   const progressRef = useRef(0)
   const targetRef = useRef(0)
   const rafRef = useRef(0)
+  const touchRef = useRef({ y: null, x: null, moved: false })
 
-  const [mode, setMode] = useState('world') // world | cinema
+  const [mode, setMode] = useState('world')
   const [progress, setProgress] = useState(0)
   const [cinemaIndex, setCinemaIndex] = useState(0)
   const [muted, setMuted] = useState(true)
   const [infosOpen, setInfosOpen] = useState(false)
   const [isFs, setIsFs] = useState(false)
+  const [fsSupported, setFsSupported] = useState(true)
 
   const total = editingClips.length
-  const spacing = 1 // progress units between clips
+  const spacing = 1
   const maxProgress = Math.max(0.001, (total - 1) * spacing)
+  const paths = isMobile ? PATHS_MOBILE : PATHS_DESKTOP
 
   const focusIndex = useMemo(() => {
-    const raw = progress / spacing
-    return clamp(Math.round(raw), 0, total - 1)
+    return clamp(Math.round(progress / spacing), 0, total - 1)
   }, [progress, spacing, total])
 
   const focusClip = editingClips[focusIndex]
@@ -66,10 +74,12 @@ function VideoEditingExperience() {
     setCinemaIndex(index)
     setMode('cinema')
     setInfosOpen(false)
+    touchRef.current.moved = false
   }
 
   const closeCinema = () => {
     if (document.fullscreenElement) document.exitFullscreen?.()
+    if (document.webkitFullscreenElement) document.webkitExitFullscreen?.()
     setMode('world')
     setInfosOpen(false)
   }
@@ -81,7 +91,13 @@ function VideoEditingExperience() {
     [total],
   )
 
-  // Lock page scroll / Lenis while immersive
+  const stepWorld = useCallback(
+    (dir) => {
+      targetRef.current = clamp(targetRef.current + dir * spacing, 0, maxProgress)
+    },
+    [maxProgress, spacing],
+  )
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
@@ -104,43 +120,51 @@ function VideoEditingExperience() {
     }
   }, [lenisRef])
 
-  // Smooth lerp of scroll progress
+  useEffect(() => {
+    setFsSupported(
+      Boolean(document.fullscreenEnabled || document.webkitFullscreenEnabled),
+    )
+  }, [])
+
   useEffect(() => {
     if (mode !== 'world') return undefined
-
     const tick = () => {
-      const current = progressRef.current
-      const target = targetRef.current
-      const next = current + (target - current) * 0.085
+      const next = progressRef.current + (targetRef.current - progressRef.current) * (isMobile ? 0.12 : 0.085)
       progressRef.current = next
       setProgress(next)
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [mode])
+  }, [mode, isMobile])
 
   useEffect(() => {
     if (mode !== 'world') return undefined
 
     const onWheel = (e) => {
       e.preventDefault()
-      const delta = e.deltaY * 0.0022
-      targetRef.current = clamp(targetRef.current + delta, 0, maxProgress)
+      targetRef.current = clamp(targetRef.current + e.deltaY * 0.0022, 0, maxProgress)
     }
 
-    let touchY = null
     const onTouchStart = (e) => {
-      touchY = e.touches[0]?.clientY ?? null
+      const t = e.touches[0]
+      if (!t) return
+      touchRef.current = { y: t.clientY, x: t.clientX, moved: false }
     }
+
     const onTouchMove = (e) => {
-      if (touchY == null) return
-      const y = e.touches[0]?.clientY
-      if (y == null) return
-      e.preventDefault()
-      const delta = (touchY - y) * 0.008
-      touchY = y
-      targetRef.current = clamp(targetRef.current + delta, 0, maxProgress)
+      const start = touchRef.current
+      const t = e.touches[0]
+      if (start.y == null || !t) return
+      const dy = start.y - t.clientY
+      const dx = Math.abs(t.clientX - (start.x ?? t.clientX))
+      if (Math.abs(dy) > 8 || dx > 8) touchRef.current.moved = true
+      if (Math.abs(dy) >= dx) {
+        e.preventDefault()
+        targetRef.current = clamp(targetRef.current + dy * (isMobile ? 0.014 : 0.008), 0, maxProgress)
+        touchRef.current.y = t.clientY
+        touchRef.current.x = t.clientX
+      }
     }
 
     window.addEventListener('wheel', onWheel, { passive: false })
@@ -151,7 +175,7 @@ function VideoEditingExperience() {
       window.removeEventListener('touchstart', onTouchStart)
       window.removeEventListener('touchmove', onTouchMove)
     }
-  }, [mode, maxProgress])
+  }, [mode, maxProgress, isMobile])
 
   useEffect(() => {
     if (mode !== 'cinema') return undefined
@@ -165,16 +189,22 @@ function VideoEditingExperience() {
   }, [mode, cinemaIndex, muted])
 
   useEffect(() => {
-    const onFs = () => setIsFs(Boolean(document.fullscreenElement))
+    const onFs = () =>
+      setIsFs(Boolean(document.fullscreenElement || document.webkitFullscreenElement))
     document.addEventListener('fullscreenchange', onFs)
-    return () => document.removeEventListener('fullscreenchange', onFs)
+    document.addEventListener('webkitfullscreenchange', onFs)
+    return () => {
+      document.removeEventListener('fullscreenchange', onFs)
+      document.removeEventListener('webkitfullscreenchange', onFs)
+    }
   }, [])
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
-        if (document.fullscreenElement) {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
           document.exitFullscreen?.()
+          document.webkitExitFullscreen?.()
           return
         }
         if (mode === 'cinema') {
@@ -186,12 +216,12 @@ function VideoEditingExperience() {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault()
         if (mode === 'cinema') stepCinema(1)
-        else targetRef.current = clamp(targetRef.current + spacing, 0, maxProgress)
+        else stepWorld(1)
       }
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault()
         if (mode === 'cinema') stepCinema(-1)
-        else targetRef.current = clamp(targetRef.current - spacing, 0, maxProgress)
+        else stepWorld(-1)
       }
       if (mode === 'cinema' && (e.key === 'm' || e.key === 'M')) setMuted((v) => !v)
       if (e.key === 'i' || e.key === 'I') setInfosOpen((v) => !v)
@@ -202,48 +232,58 @@ function VideoEditingExperience() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [focusIndex, maxProgress, mode, navigate, spacing, stepCinema])
+  }, [focusIndex, mode, navigate, stepCinema, stepWorld])
 
   const toggleFullscreen = async () => {
     const node = stageRef.current
+    const video = cinemaRef.current
     if (!node) return
     try {
-      if (!document.fullscreenElement) await node.requestFullscreen?.()
-      else await document.exitFullscreen?.()
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        await (document.exitFullscreen?.() || document.webkitExitFullscreen?.())
+        return
+      }
+      if (node.requestFullscreen) {
+        await node.requestFullscreen()
+        return
+      }
+      if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen()
     } catch {
       /* */
     }
   }
 
+  const zScale = isMobile ? 280 : 420
+  const visibleWindow = isMobile ? 1.65 : 2.35
+
   const frames = editingClips.map((clip, i) => {
-    const path = PATHS[i % PATHS.length]
+    const path = paths[i % paths.length]
     const depth = i * spacing - progress
-    // depth 0 = focus plane; negative = past camera; positive = ahead
-    const z = depth * -420
-    const drift = depth * 28
-    const visible = Math.abs(depth) < 2.35
-    const near = 1 - clamp(Math.abs(depth) / 1.85, 0, 1)
-    const opacity = smoothstep(0.05, 0.95, near) * (0.35 + near * 0.65)
-    const scale = 0.72 + near * 0.38
-    const blur = clamp((Math.abs(depth) - 0.35) * 4.5, 0, 10)
+    const z = depth * -zScale
+    const drift = depth * (isMobile ? 14 : 28)
+    const visible = Math.abs(depth) < visibleWindow
+    const near = 1 - clamp(Math.abs(depth) / (isMobile ? 1.45 : 1.85), 0, 1)
+    const opacity = smoothstep(0.05, 0.95, near) * (0.4 + near * 0.6)
+    const scale = (isMobile ? 0.82 : 0.72) + near * (isMobile ? 0.28 : 0.38)
+    const blur = isMobile ? 0 : clamp((Math.abs(depth) - 0.35) * 4.5, 0, 10)
+    const rx = isMobile ? path.rx * 0.45 : path.rx
+    const ry = isMobile ? path.ry * 0.45 : path.ry
 
     return {
       clip,
       i,
       visible,
       near,
-      opacity,
-      blur,
       style: {
         width: `${path.w}vw`,
-        maxWidth: '560px',
+        maxWidth: isMobile ? '92vw' : '560px',
         opacity,
         filter: blur > 0.4 ? `blur(${blur}px)` : 'none',
         transform: `
           translate(-50%, -50%)
-          translate3d(calc(${path.x}vw + ${drift * (path.x >= 0 ? 0.35 : -0.25)}px), calc(${path.y}vh + ${depth * 18}px), ${z}px)
-          rotateX(${path.rx + depth * 4}deg)
-          rotateY(${path.ry + depth * -3}deg)
+          translate3d(calc(${path.x}vw + ${drift * (path.x >= 0 ? 0.25 : -0.2)}px), calc(${path.y}vh + ${depth * (isMobile ? 10 : 18)}px), ${z}px)
+          rotateX(${rx + depth * (isMobile ? 2 : 4)}deg)
+          rotateY(${ry + depth * (isMobile ? -1.5 : -3)}deg)
           scale(${scale})
         `,
         zIndex: Math.round(1000 - Math.abs(depth) * 100),
@@ -253,7 +293,10 @@ function VideoEditingExperience() {
   })
 
   return (
-    <div ref={stageRef} className={`felix-root${mode === 'cinema' ? ' is-cinema' : ''}`}>
+    <div
+      ref={stageRef}
+      className={`felix-root${mode === 'cinema' ? ' is-cinema' : ''}${isMobile ? ' is-mobile' : ''}`}
+    >
       {mode === 'world' ? (
         <div className="felix-world">
           <header className="felix-chrome felix-chrome-top">
@@ -275,7 +318,11 @@ function VideoEditingExperience() {
 
           {infosOpen ? (
             <aside className="felix-infos" aria-label="About these edits">
-              <p>Scroll to move through the reel. Press › or click a frame to watch.</p>
+              <p>
+                {isMobile
+                  ? 'Swipe up / down to move through the reel. Tap a frame to watch.'
+                  : 'Scroll to move through the reel. Press › or click a frame to watch.'}
+              </p>
             </aside>
           ) : null}
 
@@ -288,6 +335,7 @@ function VideoEditingExperience() {
           <div className="felix-depth" aria-label="Editing depth gallery">
             {frames.map((frame) => {
               if (!frame.visible && !frame.isFocus) return null
+              const shouldPlay = isMobile ? frame.isFocus : frame.near > 0.25
               return (
                 <button
                   key={frame.clip.id}
@@ -295,7 +343,13 @@ function VideoEditingExperience() {
                   className={`felix-card${frame.isFocus ? ' is-focus' : ''}`}
                   style={frame.style}
                   data-cursor-hover="true"
-                  onClick={() => openCinema(frame.i)}
+                  onClick={() => {
+                    if (touchRef.current.moved) {
+                      touchRef.current.moved = false
+                      return
+                    }
+                    openCinema(frame.i)
+                  }}
                   aria-label={`Open ${frame.clip.title}`}
                 >
                   <video
@@ -303,8 +357,8 @@ function VideoEditingExperience() {
                     muted
                     loop
                     playsInline
-                    autoPlay={frame.near > 0.25}
-                    preload={frame.near > 0.15 ? 'auto' : 'metadata'}
+                    autoPlay={shouldPlay}
+                    preload={frame.isFocus || frame.near > 0.4 ? 'auto' : 'metadata'}
                     aria-hidden
                   />
                   {frame.isFocus ? (
@@ -319,36 +373,28 @@ function VideoEditingExperience() {
 
           <div className="felix-chrome felix-chrome-bottom">
             <div className="felix-chrome-left">
-              <button
-                type="button"
-                className="felix-text-btn"
-                data-cursor-hover="true"
-                onClick={() => {
-                  targetRef.current = clamp(targetRef.current - spacing, 0, maxProgress)
-                }}
-              >
+              <button type="button" className="felix-text-btn" data-cursor-hover="true" onClick={() => stepWorld(-1)}>
                 Prev
               </button>
-              <button
-                type="button"
-                className="felix-text-btn"
-                data-cursor-hover="true"
-                onClick={() => {
-                  targetRef.current = clamp(targetRef.current + spacing, 0, maxProgress)
-                }}
-              >
+              <button type="button" className="felix-text-btn" data-cursor-hover="true" onClick={() => stepWorld(1)}>
                 Next
               </button>
             </div>
             <button
               type="button"
-              className="felix-text-btn"
+              className="felix-text-btn felix-text-btn-strong"
               data-cursor-hover="true"
               onClick={() => openCinema(focusIndex)}
             >
               Watch
             </button>
           </div>
+
+          {isMobile ? (
+            <p className="felix-mobile-hint" aria-hidden>
+              Swipe to browse · Tap to play
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -364,6 +410,7 @@ function VideoEditingExperience() {
             muted={muted}
             autoPlay
             preload="auto"
+            controls={false}
             aria-label={cinemaClip.title}
           />
 
@@ -412,14 +459,50 @@ function VideoEditingExperience() {
               >
                 {muted ? 'Unmute' : 'Mute'}
               </button>
-              <button type="button" className="felix-text-btn" data-cursor-hover="true" onClick={toggleFullscreen}>
-                {isFs ? 'Minimize' : 'Fullscreen'}
-              </button>
+              {fsSupported || cinemaRef.current?.webkitEnterFullscreen ? (
+                <button type="button" className="felix-text-btn" data-cursor-hover="true" onClick={toggleFullscreen}>
+                  {isFs ? 'Minimize' : 'Fullscreen'}
+                </button>
+              ) : null}
             </div>
           </div>
 
-          <button type="button" className="felix-hit felix-hit-left" aria-label="Previous cut" onClick={() => stepCinema(-1)} />
-          <button type="button" className="felix-hit felix-hit-right" aria-label="Next cut" onClick={() => stepCinema(1)} />
+          {isMobile ? (
+            <div
+              className="felix-cinema-swipe"
+              onTouchStart={(e) => {
+                touchRef.current = {
+                  y: e.touches[0]?.clientY ?? null,
+                  x: e.touches[0]?.clientX ?? null,
+                  moved: false,
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startX = touchRef.current.x
+                const endX = e.changedTouches[0]?.clientX
+                if (startX == null || endX == null) return
+                const dx = endX - startX
+                if (Math.abs(dx) < 48) return
+                stepCinema(dx < 0 ? 1 : -1)
+              }}
+              aria-hidden
+            />
+          ) : (
+            <>
+              <button
+                type="button"
+                className="felix-hit felix-hit-left"
+                aria-label="Previous cut"
+                onClick={() => stepCinema(-1)}
+              />
+              <button
+                type="button"
+                className="felix-hit felix-hit-right"
+                aria-label="Next cut"
+                onClick={() => stepCinema(1)}
+              />
+            </>
+          )}
         </div>
       ) : null}
     </div>
