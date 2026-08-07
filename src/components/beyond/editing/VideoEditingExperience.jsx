@@ -57,12 +57,47 @@ function VideoEditingExperience() {
   const [infosOpen, setInfosOpen] = useState(false)
   const [isFs, setIsFs] = useState(false)
   const [fsSupported, setFsSupported] = useState(true)
+  const [postersReady, setPostersReady] = useState(false)
 
   const total = editingClips.length
   const spacing = 1
   const maxProgress = Math.max(0.001, (total - 1) * spacing)
   const paths = isMobile ? PATHS_MOBILE : PATHS_DESKTOP
 
+  // Warm the browser cache so swipe-mounted cards paint instantly
+  useEffect(() => {
+    let cancelled = false
+    const links = []
+    const preloadFirst = editingClips.slice(0, 4)
+    preloadFirst.forEach((clip) => {
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'image'
+      link.href = clip.poster
+      document.head.appendChild(link)
+      links.push(link)
+    })
+
+    Promise.all(
+      editingClips.map(
+        (clip) =>
+          new Promise((resolve) => {
+            const img = new Image()
+            img.decoding = 'async'
+            img.onload = () => resolve()
+            img.onerror = () => resolve()
+            img.src = clip.poster
+          }),
+      ),
+    ).then(() => {
+      if (!cancelled) setPostersReady(true)
+    })
+
+    return () => {
+      cancelled = true
+      links.forEach((link) => link.remove())
+    }
+  }, [])
   const focusIndex = useMemo(() => {
     return clamp(Math.round(progress / spacing), 0, total - 1)
   }, [progress, spacing, total])
@@ -254,7 +289,8 @@ function VideoEditingExperience() {
   }
 
   const zScale = isMobile ? 280 : 420
-  const visibleWindow = isMobile ? 1.65 : 2.35
+  // Keep a few neighbors mounted so posters never flash-load mid-swipe
+  const visibleWindow = isMobile ? 2.4 : 2.35
 
   const frames = editingClips.map((clip, i) => {
     const path = paths[i % paths.length]
@@ -295,8 +331,14 @@ function VideoEditingExperience() {
   return (
     <div
       ref={stageRef}
-      className={`felix-root${mode === 'cinema' ? ' is-cinema' : ''}${isMobile ? ' is-mobile' : ''}`}
+      className={`felix-root${mode === 'cinema' ? ' is-cinema' : ''}${isMobile ? ' is-mobile' : ''}${postersReady ? ' posters-ready' : ''}`}
     >
+      {/* Always in DOM — caches every thumb so cards paint from memory */}
+      <div className="felix-poster-cache" aria-hidden>
+        {editingClips.map((clip) => (
+          <img key={`cache-${clip.id}`} src={clip.poster} alt="" decoding="async" />
+        ))}
+      </div>
       {mode === 'world' ? (
         <div className="felix-world">
           <header className="felix-chrome felix-chrome-top">
@@ -334,8 +376,10 @@ function VideoEditingExperience() {
 
           <div className="felix-depth" aria-label="Editing depth gallery">
             {frames.map((frame) => {
-              if (!frame.visible && !frame.isFocus) return null
-              const shouldPlay = isMobile ? frame.isFocus : frame.near > 0.25
+              // Mobile keeps every card mounted so posters never remount mid-swipe
+              if (!isMobile && !frame.visible && !frame.isFocus) return null
+              // Phone: posters only in the reel (live video in cinema). Desktop: soft-play near cards.
+              const shouldPlay = !isMobile && frame.near > 0.25
               return (
                 <button
                   key={frame.clip.id}
@@ -358,23 +402,27 @@ function VideoEditingExperience() {
                       src={frame.clip.poster}
                       alt=""
                       draggable={false}
-                      loading={frame.isFocus || frame.near > 0.35 ? 'eager' : 'lazy'}
-                      decoding="async"
+                      loading="eager"
+                      decoding={frame.isFocus || Math.abs(frame.i - focusIndex) <= 1 ? 'sync' : 'async'}
+                      fetchPriority={frame.isFocus || Math.abs(frame.i - focusIndex) <= 1 ? 'high' : 'low'}
                     />
                     {shouldPlay ? (
                       <video
                         key={`${frame.clip.id}-live`}
+                        className="felix-card-video"
                         src={frame.clip.src}
                         poster={frame.clip.poster}
                         muted
                         loop
                         playsInline
                         autoPlay
-                        preload="auto"
+                        preload="metadata"
                         controls={false}
                         controlsList="nodownload nofullscreen noremoteplayback"
                         disablePictureInPicture
                         disableRemotePlayback
+                        onPlaying={(e) => e.currentTarget.classList.add('is-ready')}
+                        onLoadedData={(e) => e.currentTarget.classList.add('is-ready')}
                         ref={(el) => {
                           if (!el) return
                           el.muted = true

@@ -1908,6 +1908,20 @@ body.editing-experience-active main {
   pointer-events: none;
 }
 
+.felix-poster-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
 .felix-card-poster,
 .felix-card video {
   display: block;
@@ -1920,13 +1934,23 @@ body.editing-experience-active main {
 .felix-card-poster {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 2;
+  background: #0a0a0a;
+  transform: translateZ(0);
 }
 
-.felix-card video {
-  position: relative;
+.felix-card-video {
+  position: absolute;
+  inset: 0;
   z-index: 1;
+  opacity: 0;
   background: transparent;
+  transition: opacity 0.2s ease;
+}
+
+.felix-card-video.is-ready {
+  z-index: 3;
+  opacity: 1;
 }
 
 .felix-card video::-webkit-media-controls,
@@ -1952,6 +1976,7 @@ body.editing-experience-active main {
   position: absolute;
   top: 0.85rem;
   left: 50%;
+  z-index: 4;
   transform: translateX(-50%);
   font-size: 18px;
   line-height: 1;
