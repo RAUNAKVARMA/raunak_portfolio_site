@@ -8,7 +8,11 @@ const interests = [
 
 function BeyondTeaser() {
   return (
-    <section className="beyond-studio border-t border-[color:var(--studio-border-muted)]" aria-labelledby="beyond-teaser-title">
+    <section
+      data-fluid-zone="soft"
+      className="beyond-studio border-t border-[color:var(--studio-border-muted)]"
+      aria-labelledby="beyond-teaser-title"
+    >
       <div className="studio-section">
         <div className="studio-container">
           <p className="studio-eyebrow">Beyond Work</p>

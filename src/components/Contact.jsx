@@ -48,7 +48,11 @@ function Contact() {
   }
 
   return (
-    <section id="contact" className="relative border-t border-white/[0.08] py-24">
+    <section
+      id="contact"
+      data-fluid-zone="soft"
+      className="relative border-t border-white/[0.08] py-24"
+    >
       <SectionReveal className="section-container">
         <div className="mb-12" data-reveal>
           <SectionHeader

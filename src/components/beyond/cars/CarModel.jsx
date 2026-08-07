@@ -2,6 +2,9 @@ import { useLayoutEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { ensureDracoDecoder } from './carGltf'
+
+ensureDracoDecoder()
 
 function fixMaterialMaps(material) {
   if (!material) return
@@ -1804,6 +1807,7 @@ function CarModel({
   playReveal = true,
   reducedMotion = false,
   active = true,
+  mobileLite = false,
   onReady,
 }) {
   const group = useRef(null)
@@ -1812,7 +1816,7 @@ function CarModel({
   const readyFired = useRef(false)
   const baseY = useRef(0)
   const lastPlay = useRef(false)
-  const { scene } = useGLTF(url)
+  const { scene } = useGLTF(url, true)
 
   const applyRestPose = () => {
     if (!group.current) return
@@ -1849,25 +1853,43 @@ function CarModel({
       }
     })
 
-    group.current.position.set(0, 0, 0)
-    group.current.rotation.set(0, 0, 0)
-    group.current.scale.set(1, 1, 1)
-    group.current.updateMatrixWorld(true)
+    const cached = scene.userData.garageFit
+    if (cached && cached.targetSize === targetSize) {
+      group.current.position.set(cached.x, cached.y, cached.z)
+      group.current.rotation.set(0, 0, 0)
+      group.current.userData.fitScale = cached.scale
+      group.current.scale.setScalar(cached.scale)
+      baseY.current = cached.y
+    } else {
+      group.current.position.set(0, 0, 0)
+      group.current.rotation.set(0, 0, 0)
+      group.current.scale.set(1, 1, 1)
+      group.current.updateMatrixWorld(true)
 
-    const box = new THREE.Box3().setFromObject(group.current)
-    const size = box.getSize(new THREE.Vector3())
-    const maxDim = Math.max(size.x, size.y, size.z, 0.001)
-    const scale = targetSize / maxDim
-    group.current.userData.fitScale = scale
-    group.current.scale.setScalar(scale)
-    group.current.updateMatrixWorld(true)
+      const box = new THREE.Box3().setFromObject(group.current)
+      const size = box.getSize(new THREE.Vector3())
+      const maxDim = Math.max(size.x, size.y, size.z, 0.001)
+      const scale = targetSize / maxDim
+      group.current.userData.fitScale = scale
+      group.current.scale.setScalar(scale)
+      group.current.updateMatrixWorld(true)
 
-    const bounds = new THREE.Box3().setFromObject(group.current)
-    const center = bounds.getCenter(new THREE.Vector3())
-    group.current.position.x -= center.x
-    group.current.position.z -= center.z
-    group.current.position.y -= bounds.min.y
-    baseY.current = group.current.position.y
+      const bounds = new THREE.Box3().setFromObject(group.current)
+      const center = bounds.getCenter(new THREE.Vector3())
+      group.current.position.x -= center.x
+      group.current.position.z -= center.z
+      group.current.position.y -= bounds.min.y
+      baseY.current = group.current.position.y
+
+      scene.userData.garageFit = {
+        targetSize,
+        scale,
+        x: group.current.position.x,
+        y: group.current.position.y,
+        z: group.current.position.z,
+      }
+    }
+
     fitted.current = true
     readyFired.current = false
 
@@ -1886,10 +1908,19 @@ function CarModel({
       }
     })
 
-    // Material rebuilds are expensive — run after first paint so scroll/swap don't hitch
+    // Material polish after first paint. On mobileLite: cheap colorSpace only (no Physical rebuild).
     if (!scene.userData.garagePolished) {
       const polish = () => {
         if (scene.userData.garagePolished) return
+        if (mobileLite) {
+          scene.traverse((obj) => {
+            if (!obj.isMesh) return
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+            mats.forEach((mat) => prepareMaterial(mat))
+          })
+          scene.userData.garagePolished = true
+          return
+        }
         if (/bugatti/i.test(url)) {
           applyBugattiMaterials(scene)
         } else if (/ferrari/i.test(url)) {
@@ -1915,12 +1946,12 @@ function CarModel({
       }
       const ric = window.requestIdleCallback
       if (typeof ric === 'function') {
-        ric(polish, { timeout: 900 })
+        ric(polish, { timeout: mobileLite ? 1400 : 900 })
       } else {
-        window.setTimeout(polish, 48)
+        window.setTimeout(polish, mobileLite ? 120 : 48)
       }
     }
-  }, [scene, targetSize, url, onReady]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scene, targetSize, url, onReady, mobileLite, playReveal, reducedMotion]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trigger entrance when playReveal turns on
   useLayoutEffect(() => {

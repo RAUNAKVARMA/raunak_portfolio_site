@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom'
 import MagneticButton from './ui/MagneticButton'
 import MStripe from './ui/MStripe'
 import Starfield from './ui/Starfield'
-import FluidCanvas from './ui/FluidCanvas'
 import { useSceneProgress } from '../providers/SceneProgressProvider'
 
 const EASE = [0.16, 1, 0.3, 1]
@@ -43,10 +42,13 @@ function Hero() {
   }, [])
 
   return (
-    <section id="hero" className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-transparent">
+    <section
+      id="hero"
+      data-fluid-zone="rich"
+      className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden bg-transparent"
+    >
       <Starfield />
       <div className="pointer-events-none absolute inset-0 hero-atmosphere opacity-30" aria-hidden />
-      <FluidCanvas />
       <div className="pointer-events-none absolute inset-0 hero-vignette z-[6]" aria-hidden />
 
       <div className="pointer-events-none absolute right-6 top-28 z-10 hidden font-mono text-[10px] uppercase tracking-[0.22em] text-white/40 lg:block">

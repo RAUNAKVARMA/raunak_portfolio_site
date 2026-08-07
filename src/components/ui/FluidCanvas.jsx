@@ -1,81 +1,251 @@
 import { useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useReducedMotionProfile } from '../../hooks/useReducedMotionProfile'
 import { createFluidSimulation } from '../../lib/webglFluid'
 
-function FluidFallback() {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 opacity-40"
-      aria-hidden
-      style={{
-        background:
-          'radial-gradient(ellipse 80% 60% at 70% 40%, rgba(28,105,212,0.25), transparent 60%), radial-gradient(ellipse 50% 40% at 20% 70%, rgba(136,51,255,0.12), transparent 55%)',
-      }}
-    />
-  )
+/** Soft palette for mid-page / contact beats. */
+const SOFT_FLUID_OPTIONS = {
+  SIM_RESOLUTION: 96,
+  DYE_RESOLUTION: 512,
+  DENSITY_DISSIPATION: 1.25,
+  VELOCITY_DISSIPATION: 0.28,
+  PRESSURE_ITERATIONS: 12,
+  CURL: 20,
+  SPLAT_RADIUS: 0.2,
+  SPLAT_FORCE: 4200,
+  BLOOM: true,
+  BLOOM_ITERATIONS: 4,
+  BLOOM_RESOLUTION: 128,
+  BLOOM_INTENSITY: 0.45,
+  SUNRAYS: false,
+  SHADING: true,
+  COLORFUL: true,
 }
 
+/** Rich home-hero settings. */
+const RICH_FLUID_OPTIONS = {
+  SIM_RESOLUTION: 128,
+  DYE_RESOLUTION: 768,
+  DENSITY_DISSIPATION: 1.05,
+  VELOCITY_DISSIPATION: 0.22,
+  PRESSURE_ITERATIONS: 16,
+  CURL: 28,
+  SPLAT_RADIUS: 0.24,
+  SPLAT_FORCE: 5200,
+  BLOOM: true,
+  BLOOM_ITERATIONS: 6,
+  BLOOM_RESOLUTION: 128,
+  BLOOM_INTENSITY: 0.6,
+  SUNRAYS: false,
+  SHADING: true,
+  COLORFUL: true,
+}
+
+const PEAK_OPACITY = {
+  rich: 0.62,
+  soft: 0.4,
+}
+
+const ZONE_SELECTOR = '[data-fluid-zone]'
+
+function peakFor(zone) {
+  const key = zone?.dataset?.fluidZone === 'rich' ? 'rich' : 'soft'
+  return PEAK_OPACITY[key]
+}
+
+function zoneUnderPointer(clientX, clientY) {
+  const zones = document.querySelectorAll(ZONE_SELECTOR)
+  for (const el of zones) {
+    const r = el.getBoundingClientRect()
+    if (
+      clientX >= r.left &&
+      clientX <= r.right &&
+      clientY >= r.top &&
+      clientY <= r.bottom
+    ) {
+      return el
+    }
+  }
+  return null
+}
+
+/**
+ * Site fluid overlay driven by `[data-fluid-zone="rich"|"soft"]` markers.
+ * Strong inside tagged immersive beats; fades as those sections leave the viewport.
+ * Not forced onto every page intro — only curated zones.
+ */
 function FluidCanvas() {
   const canvasRef = useRef(null)
   const simRef = useRef(null)
-  const { prefersReducedMotion } = useReducedMotionProfile()
+  const visibilityRef = useRef(0)
+  const acceptSplatRef = useRef(false)
+  const { pathname } = useLocation()
+  const { prefersReducedMotion, isTouchLike, enableFluidSim } = useReducedMotionProfile()
+
+  const heavyRoute =
+    pathname.startsWith('/beyond/cars') ||
+    pathname.startsWith('/beyond/art') ||
+    pathname.startsWith('/beyond/space') ||
+    pathname.startsWith('/beyond/editing')
+  const canRun = enableFluidSim && !isTouchLike && !heavyRoute && !prefersReducedMotion
 
   useEffect(() => {
-    if (prefersReducedMotion) return undefined
+    if (!canRun) return undefined
 
     const canvas = canvasRef.current
-    const hero = document.getElementById('hero')
-    if (!canvas || !hero) return undefined
+    if (!canvas) return undefined
 
-    // Lively Wallpaper "Fluids" defaults (Pavel Dobryakov engine)
-    const sim = createFluidSimulation(canvas)
+    let rafFade = 0
+    let stopTimer = 0
+    let destroyed = false
+    let currentMode = null
+    let sim = null
 
-    simRef.current = sim
-    sim.start()
+    const setVisual = (visibility) => {
+      visibilityRef.current = visibility
+      canvas.style.opacity = String(visibility)
+      canvas.style.visibility = visibility > 0.01 ? 'visible' : 'hidden'
+    }
 
-    const onPointerMove = (event) => {
-      const rect = canvas.getBoundingClientRect()
-      if (
-        event.clientX < rect.left ||
-        event.clientX > rect.right ||
-        event.clientY < rect.top ||
-        event.clientY > rect.bottom
-      ) {
+    const ensureSim = (mode) => {
+      if (sim && currentMode === mode) return sim
+      if (sim) {
+        sim.destroy()
+        sim = null
+        simRef.current = null
+      }
+      currentMode = mode
+      sim = createFluidSimulation(
+        canvas,
+        mode === 'rich' ? RICH_FLUID_OPTIONS : SOFT_FLUID_OPTIONS,
+      )
+      simRef.current = sim
+      sim.start()
+      return sim
+    }
+
+    const pauseSoon = () => {
+      window.clearTimeout(stopTimer)
+      stopTimer = window.setTimeout(() => {
+        if (destroyed || visibilityRef.current > 0.02) return
+        acceptSplatRef.current = false
+        if (sim) {
+          sim.stop()
+        }
+      }, 900)
+    }
+
+    const resumeSim = () => {
+      window.clearTimeout(stopTimer)
+      if (sim) sim.start()
+    }
+
+    const recompute = () => {
+      const zones = document.querySelectorAll(ZONE_SELECTOR)
+      if (!zones.length) {
+        acceptSplatRef.current = false
+        setVisual(0)
+        pauseSoon()
         return
       }
-      sim.splatAt(event.clientX, event.clientY, rect)
+
+      const vh = window.innerHeight || 1
+      let bestVis = 0
+      let bestMode = 'soft'
+
+      zones.forEach((el) => {
+        const rect = el.getBoundingClientRect()
+        const visible = Math.min(rect.bottom, vh) - Math.max(rect.top, 0)
+        if (visible <= 0) return
+
+        const ratio = Math.min(1, Math.max(0, visible / Math.min(rect.height || vh, vh)))
+        // Soften exit: insist the zone still occupies a useful slice of the first screen.
+        const occupy = Math.min(1, Math.max(0, visible / vh))
+        const score = ratio * (0.35 + 0.65 * occupy)
+        const mode = el.dataset.fluidZone === 'rich' ? 'rich' : 'soft'
+        const weighted = score * (mode === 'rich' ? 1 : 0.85)
+
+        if (weighted > bestVis) {
+          bestVis = weighted
+          bestMode = mode
+        }
+      })
+
+      const opacity = bestVis > 0.04 ? bestVis * peakFor({ dataset: { fluidZone: bestMode } }) : 0
+      acceptSplatRef.current = opacity > 0.06
+
+      if (opacity > 0.04) {
+        ensureSim(bestMode)
+        resumeSim()
+      } else {
+        pauseSoon()
+      }
+
+      cancelAnimationFrame(rafFade)
+      rafFade = requestAnimationFrame(() => setVisual(opacity))
+    }
+
+    // Defer first measure until route content mounts.
+    const boot = window.setTimeout(recompute, 40)
+
+    const onScrollOrResize = () => recompute()
+    window.addEventListener('scroll', onScrollOrResize, { passive: true })
+    window.addEventListener('resize', onScrollOrResize, { passive: true })
+
+    const mo = new MutationObserver(() => recompute())
+    mo.observe(document.getElementById('main-content') || document.body, {
+      childList: true,
+      subtree: true,
+    })
+
+    const onPointerMove = (event) => {
+      if (!acceptSplatRef.current || !simRef.current) return
+      if (!zoneUnderPointer(event.clientX, event.clientY)) return
+      const rect = canvas.getBoundingClientRect()
+      simRef.current.splatAt(event.clientX, event.clientY, rect)
     }
 
     const onPointerDown = (event) => {
+      if (!acceptSplatRef.current || !simRef.current) return
+      if (!zoneUnderPointer(event.clientX, event.clientY)) return
       const rect = canvas.getBoundingClientRect()
-      sim.splatAt(event.clientX, event.clientY, rect)
+      simRef.current.splatAt(event.clientX, event.clientY, rect)
     }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true })
     window.addEventListener('pointerdown', onPointerDown, { passive: true })
 
     const ro = new ResizeObserver(() => {
-      sim.resize()
+      simRef.current?.resize()
+      recompute()
     })
     ro.observe(canvas)
 
+    setVisual(0)
+
     return () => {
+      destroyed = true
+      window.clearTimeout(boot)
+      window.clearTimeout(stopTimer)
+      cancelAnimationFrame(rafFade)
+      mo.disconnect()
       ro.disconnect()
+      window.removeEventListener('scroll', onScrollOrResize)
+      window.removeEventListener('resize', onScrollOrResize)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerDown)
-      sim.destroy()
+      sim?.destroy()
       simRef.current = null
     }
-  }, [prefersReducedMotion])
+  }, [canRun, pathname])
 
-  if (prefersReducedMotion) {
-    return <FluidFallback />
-  }
+  if (!canRun) return null
 
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none absolute inset-0 z-[5] h-full w-full [mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.12)_30%,black_46%,black_100%)]"
+      className="pointer-events-none fixed inset-0 z-[35] h-full w-full mix-blend-screen transition-opacity duration-500 ease-out"
+      style={{ opacity: 0, visibility: 'hidden' }}
       aria-hidden
     />
   )

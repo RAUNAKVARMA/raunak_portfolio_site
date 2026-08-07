@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useGLTF } from '@react-three/drei'
 import {
   motion,
   useReducedMotion,
 } from 'framer-motion'
 import FavoriteCarsShowcase from '../components/beyond/cars/FavoriteCarsShowcase'
 import F1Section from '../components/beyond/cars/F1Section'
+import GarageEntryOverlay from '../components/beyond/cars/GarageEntryOverlay'
 import GarageMusic from '../components/beyond/cars/GarageMusic'
 import HamiltonSection from '../components/beyond/cars/HamiltonSection'
 import HotWheelsSection from '../components/beyond/cars/HotWheelsSection'
+import { preloadCar } from '../components/beyond/cars/carGltf'
 import AutoPlayVideo from '../components/ui/AutoPlayVideo'
 import { favoriteCars } from '../data/favoriteCars'
 import { getInterestById } from '../data/interests'
@@ -90,7 +91,7 @@ function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
             src="/videos/garage-intro.mp4"
             poster="/videos/garage-intro-poster.jpg"
             aria-label=""
-            pauseWhenHidden={false}
+            pauseWhenHidden
             loop
             className="garage-intro-video-el absolute inset-0 h-full w-full object-cover object-center"
           />
@@ -250,19 +251,17 @@ function CarsPage() {
     rootMargin: '-5% 0px -5% 0px',
   })
   const [garageMusicReady, setGarageMusicReady] = useState(false)
+  const [entryDone, setEntryDone] = useState(false)
   useDocumentTitle('Cars — Beyond')
 
+  // Entry overlay warms cars 0–2; quiet fallback if needed after reveal
   useEffect(() => {
-    // Don't fight the intro video — warm first car only after a quiet delay
+    if (!entryDone) return undefined
     const timer = window.setTimeout(() => {
-      try {
-        useGLTF.preload(favoriteCars[0]?.modelUrl)
-      } catch {
-        /* */
-      }
-    }, 2800)
+      preloadCar(favoriteCars[0]?.modelUrl)
+    }, 400)
     return () => window.clearTimeout(timer)
-  }, [])
+  }, [entryDone])
 
   const jumpToCar = (id) => {
     const el = document.getElementById(`garage-${id}`)
@@ -279,6 +278,7 @@ function CarsPage() {
 
   return (
     <div className="garage-root min-h-screen bg-black" style={{ ['--garage-gold']: GOLD }}>
+      {!entryDone ? <GarageEntryOverlay onComplete={() => setEntryDone(true)} /> : null}
       {garageMusicReady ? <GarageMusic suspended={f1InView} /> : null}
       <GarageIntro
         tag={cars.tag}

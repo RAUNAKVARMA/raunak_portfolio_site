@@ -39,7 +39,8 @@ function F1Section() {
     video.playsInline = true
     video.loop = true
     video.controls = false
-    video.preload = 'auto'
+    // Start on metadata only — upgrade to auto once near/in view to avoid bandwidth fight
+    video.preload = 'metadata'
     video.setAttribute('muted', '')
     video.setAttribute('playsinline', '')
     video.setAttribute('webkit-playsinline', '')
@@ -48,11 +49,20 @@ function F1Section() {
 
     let cancelled = false
     let inView = false
+    let near = false
 
     const tryPlay = () => {
       if (cancelled || reducedMotion || !inView) return
       video.muted = true
       video.playsInline = true
+      if (video.preload !== 'auto') {
+        video.preload = 'auto'
+        try {
+          video.load()
+        } catch {
+          /* */
+        }
+      }
       video.play().catch(() => {
         // Will retry on canplay / next user gesture
       })
@@ -80,6 +90,17 @@ function F1Section() {
       { threshold: 0.05 },
     )
 
+    // Warm buffer when approaching (not full auto until closer)
+    const nearIo = new IntersectionObserver(
+      ([entry]) => {
+        near = entry.isIntersecting
+        if (near && video.preload === 'metadata') {
+          video.preload = 'auto'
+        }
+      },
+      { rootMargin: '40% 0px 40% 0px', threshold: 0 },
+    )
+
     const onPageShow = () => tryPlay()
     const onVisibility = () => {
       if (document.visibilityState === 'visible') tryPlay()
@@ -87,6 +108,7 @@ function F1Section() {
     }
 
     io.observe(video)
+    nearIo.observe(video)
     video.addEventListener('loadeddata', tryPlay)
     video.addEventListener('canplay', tryPlay)
     video.addEventListener('loadedmetadata', tryPlay)
@@ -106,6 +128,7 @@ function F1Section() {
     return () => {
       cancelled = true
       io.disconnect()
+      nearIo.disconnect()
       video.removeEventListener('loadeddata', tryPlay)
       video.removeEventListener('canplay', tryPlay)
       video.removeEventListener('loadedmetadata', tryPlay)
@@ -160,7 +183,7 @@ function F1Section() {
                 muted
                 playsInline
                 loop
-                preload="auto"
+                preload="metadata"
                 controls={false}
                 controlsList="nodownload nofullscreen noremoteplayback"
                 disablePictureInPicture

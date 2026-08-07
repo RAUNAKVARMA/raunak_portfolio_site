@@ -6,6 +6,7 @@ import SceneLayer from '../ui/SceneLayer'
 import SceneController from '../three/SceneController'
 import ScrollSceneTriggers from '../three/ScrollSceneTriggers'
 import CustomCursor from '../ui/CustomCursor'
+import FluidCanvas from '../ui/FluidCanvas'
 import ScrollProgressBar from '../ui/ScrollProgressBar'
 import PageTransition from './PageTransition'
 import { useSceneProgress } from '../../providers/SceneProgressProvider'
@@ -58,6 +59,7 @@ function RootLayout() {
       <SceneController />
       <ScrollSceneTriggers />
       <SceneLayer />
+      <FluidCanvas />
       <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(28,105,212,0.08),transparent_60%)]" aria-hidden />
       <div className="noise-overlay" />
       <CustomCursor />

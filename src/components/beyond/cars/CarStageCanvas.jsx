@@ -3,6 +3,9 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows, Environment, OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import CarModel from './CarModel'
+import { ensureDracoDecoder, preloadCar } from './carGltf'
+
+ensureDracoDecoder()
 
 const CAM_START = new THREE.Vector3(5.2, 1.9, 3.8)
 const CAM_END = new THREE.Vector3(3.35, 1.05, 4.75)
@@ -39,7 +42,7 @@ function CameraIntro({ active, reducedMotion, playIntro }) {
 }
 
 function WarmAndSwap({ url, onReady }) {
-  useGLTF(url)
+  useGLTF(url, true)
   useEffect(() => {
     onReady()
   }, [url, onReady])
@@ -47,16 +50,12 @@ function WarmAndSwap({ url, onReady }) {
 }
 
 /** Keep showing the current car while the next GLB warms — avoids blank/hang on swap. */
-function ModelSwap({ modelUrl, active, reducedMotion, playIntro, onReady }) {
+function ModelSwap({ modelUrl, active, reducedMotion, playIntro, mobileLite, onReady }) {
   const [displayedUrl, setDisplayedUrl] = useState(modelUrl)
 
   useEffect(() => {
     if (modelUrl === displayedUrl) return
-    try {
-      useGLTF.preload(modelUrl)
-    } catch {
-      /* */
-    }
+    preloadCar(modelUrl)
   }, [modelUrl, displayedUrl])
 
   const boosted = /bmw|m4|aston|valour|lamborghini|aventador|porsche|918|spyder|supra|toyota|ferrari/i.test(
@@ -72,6 +71,7 @@ function ModelSwap({ modelUrl, active, reducedMotion, playIntro, onReady }) {
         playReveal={false}
         reducedMotion={reducedMotion || !playIntro}
         active={active}
+        mobileLite={mobileLite}
         onReady={onReady}
       />
       {modelUrl !== displayedUrl ? (
@@ -101,6 +101,17 @@ function CarScene({
   const isPorsche = /porsche|918|spyder/i.test(modelUrl)
   const boosted =
     isBugatti || isFerrari || isLambo || isSupra || isBmw || isAston || isPorsche
+
+  // Defer expensive brand lights + Environment until after first paint
+  const [richLights, setRichLights] = useState(false)
+  useEffect(() => {
+    if (mobileLite) {
+      setRichLights(false)
+      return undefined
+    }
+    const timer = window.setTimeout(() => setRichLights(true), 220)
+    return () => window.clearTimeout(timer)
+  }, [modelUrl, mobileLite])
 
   // Ferrari: iconic Rosso — studio env, red rim silhouette, color-first paint
   // Supra: vivid orange, softer wash so paint doesn't fade
@@ -346,7 +357,7 @@ function CarScene({
         }
       />
       <directionalLight position={[0, 2.5, -6]} intensity={rimIntensity} color={rimColor} />
-      {!mobileLite && isFerrari && (
+      {!mobileLite && richLights && isFerrari && (
         <>
           {/* Rosso silhouette — product-shot edges + underglow */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.25} color="#ff2222" />
@@ -366,7 +377,7 @@ function CarScene({
           />
         </>
       )}
-      {!mobileLite && isSupra && (
+      {!mobileLite && richLights && isSupra && (
         <>
           {/* F&F orange silhouette + neon green tribal accents */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.15} color="#ff6a1a" />
@@ -386,7 +397,7 @@ function CarScene({
           />
         </>
       )}
-      {!mobileLite && isLambo && (
+      {!mobileLite && richLights && isLambo && (
         <>
           {/* Blu silhouette + Lambo Y-gold accents */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.15} color="#3B82F6" />
@@ -406,7 +417,7 @@ function CarScene({
           />
         </>
       )}
-      {!mobileLite && isBugatti && (
+      {!mobileLite && richLights && isBugatti && (
         <>
           {/* Noire gold silhouette — soft exterior only, no cabin neon */}
           <directionalLight position={[5, 1.8, -4]} intensity={0.95} color="#E8B84A" />
@@ -423,7 +434,7 @@ function CarScene({
           />
         </>
       )}
-      {!mobileLite && isBmw && (
+      {!mobileLite && richLights && isBmw && (
         <>
           {/* M-stripe silhouette + NFS underglow */}
           <directionalLight position={[5.5, 1.8, -4]} intensity={1.25} color="#1C69D4" />
@@ -445,7 +456,7 @@ function CarScene({
           />
         </>
       )}
-      {!mobileLite && isAston && (
+      {!mobileLite && richLights && isAston && (
         <>
           {/* BRG silhouette + champagne gold — punchier so green doesn't go muddy */}
           <directionalLight position={[5.5, 1.7, -4]} intensity={1.35} color="#1ad67a" />
@@ -515,11 +526,11 @@ function CarScene({
           }
         />
       ) : null}
-      {!mobileLite && active && (
+      {!mobileLite && richLights && active && (
         <Environment
           preset={envPreset}
           environmentIntensity={envIntensity}
-          resolution={128}
+          resolution={64}
         />
       )}
       <ModelSwap
@@ -527,9 +538,10 @@ function CarScene({
         active={active}
         reducedMotion={reducedMotion}
         playIntro={playIntro}
+        mobileLite={mobileLite}
         onReady={onReady}
       />
-      {!mobileLite && (
+      {!mobileLite && richLights && (
         <ContactShadows
           position={[0, 0.002, 0]}
           opacity={

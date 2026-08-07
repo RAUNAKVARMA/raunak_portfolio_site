@@ -1,12 +1,15 @@
 function InterestsHero() {
   return (
-    <header className="pb-12 pt-28 sm:pt-32">
+    <header
+      data-fluid-zone="soft"
+      className="relative flex min-h-[min(52svh,28rem)] flex-col justify-end pb-12 pt-28 sm:pt-32"
+    >
       <div className="studio-container">
         <p className="studio-eyebrow">Beyond Work</p>
         <h1 className="studio-title">The person behind the code</h1>
         <p className="studio-lede">
-          Cars, space, drawing, cricket — the obsessions that sit alongside models and papers.
-          Documentation of interests, studies, and values outside shipping product.
+          Cars, space, drawing, cricket, video editing — the obsessions that sit alongside models and
+          papers. Documentation of interests, studies, and values outside shipping product.
         </p>
 
         <dl className="studio-meta" aria-label="Section metadata">

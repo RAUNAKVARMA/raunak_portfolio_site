@@ -22,7 +22,13 @@ export const interestEntries = [
     id: 'space',
     tag: '02',
     title: 'Space',
+    path: '/beyond/space',
     blurb: 'Orbits, launches, and the frontier — the same wonder that pulls me toward research.',
+    story: [
+      'I got curious about space in 8th standard. Not as a school topic — as something I could not stop opening. Night after night I disappeared into YouTube: launches, black holes, how gravity bends light, how a universe that looks quiet is still moving.',
+      'By 11th, fondness had turned into study. I worked through special and general relativity as far as I could push them from textbooks and late-night explainers. Stephen Hawking’s The Theory of Everything stayed on my desk through that stretch. For a while the future felt obvious: I wanted to become an astrophysicist.',
+      'I never really left that orbit. I still listen to Neil deGrasse Tyson’s podcasts a lot — StarTalk, with Chuck and the puns included. The jokes land. The wonder stays. Engineering took the career path, but space is still the first place my mind goes when I need to feel small in a good way.',
+    ],
   },
   {
     id: 'drawing',
@@ -37,10 +43,15 @@ export const interestEntries = [
     blurb: 'Weekend matches, batting order debates, and following every series.',
   },
   {
-    id: 'chess',
+    id: 'editing',
     tag: '05',
-    title: 'Chess',
-    blurb: 'Slow, deliberate strategy — pattern-hunting in 64 squares.',
+    title: 'Video Editing',
+    path: '/beyond/editing',
+    blurb: 'Cutting rhythm, pacing, and mood — short-form edits shaped frame by frame.',
+    story: [
+      'Video editing is where timing becomes the craft — finding the cut that makes a moment land.',
+      'This reel is a living stack of pieces I’ve edited; open it fullscreen and step through Prev / Next like a cinema strip.',
+    ],
   },
   {
     id: 'music',

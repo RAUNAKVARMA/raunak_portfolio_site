@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useGLTF } from '@react-three/drei'
 import {
   motion,
   useReducedMotion,
@@ -12,6 +11,7 @@ import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
 import { useLenis } from '../../../providers/SmoothScrollProvider'
 import WebGLErrorBoundary from '../../ui/WebGLErrorBoundary'
 import CarStageCanvas from './CarStageCanvas'
+import { preloadCar } from './carGltf'
 
 const GOLD = '#CA8A04'
 const EASE = [0.16, 1, 0.3, 1]
@@ -92,10 +92,9 @@ function GarageRail({ activeId, onSelect }) {
 }
 
 /**
- * One full-viewport stage per car (original scroll). Smoothness rules:
- * - Only the active stage mounts a WebGL canvas (never 7 contexts).
- * - Next car GLB is preloaded in the background (no canvas).
- * - Inactive stages are plain DOM — scroll stays free.
+ * One full-viewport stage per car.
+ * Hold-until-ready: outgoing canvas stays mounted until incoming fires onReady
+ * (at most 2 WebGL contexts during a swap — never blank between cars).
  */
 function CarStage({
   car,
@@ -104,7 +103,11 @@ function CarStage({
   onActive,
   reducedMotion,
   isActive,
+  isDisplayed,
+  isIncoming,
+  isWarming,
   onNear,
+  onReady,
 }) {
   const ref = useRef(null)
   const [inView, setInView] = useState(index === 0)
@@ -113,9 +116,13 @@ function CarStage({
   const entrancePlayed = useRef(false)
   const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
 
-  // Single live canvas — biggest smoothness win in this layout
-  const mountCanvas = isActive && !prefersReducedMotion
-  const renderLive = isActive && inView
+  // Hold outgoing + mount incoming + warm next (≤2–3 contexts briefly)
+  const mountCanvas =
+    (isDisplayed || isIncoming || isWarming) && !prefersReducedMotion
+  const renderLive =
+    mountCanvas &&
+    ((isActive && inView) || (isIncoming && inView) || (isWarming && !isActive))
+  const showCar = revealed && (isDisplayed || isActive || isIncoming)
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -182,14 +189,14 @@ function CarStage({
     return () => window.clearTimeout(timer)
   }, [index, reducedMotion, prefersReducedMotion])
 
-  // Reset reveal when this stage becomes active again after unmount
   useEffect(() => {
-    if (!isActive) setRevealed(false)
-  }, [isActive])
+    if (!isDisplayed && !isIncoming && !isWarming) setRevealed(false)
+  }, [isDisplayed, isIncoming, isWarming])
 
   const handleReady = useCallback(() => {
     setRevealed(true)
-  }, [])
+    onReady?.(car.id)
+  }, [car.id, onReady])
 
   return (
     <section
@@ -218,8 +225,8 @@ function CarStage({
           } 0%, transparent 72%)`,
         }}
         initial={false}
-        animate={revealed && inView ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.7, ease: EASE }}
+        animate={showCar && inView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.55, ease: EASE }}
         aria-hidden
       />
 
@@ -255,23 +262,27 @@ function CarStage({
             resetKey={car.modelUrl}
             fallback={<StageFallback name={car.name} accent={car.accent} />}
           >
-            {!revealed && <StageFallback name={car.name} accent={car.accent} />}
+            {!revealed && (isIncoming || isActive) && !isWarming ? (
+              <StageFallback name={car.name} accent={car.accent} />
+            ) : null}
             <motion.div
               className="absolute inset-0 will-change-[opacity]"
               initial={false}
               animate={{
-                opacity: revealed ? (inView ? 1 : 0) : 0,
+                opacity: showCar && (isDisplayed || isActive || isIncoming) ? 1 : 0,
               }}
-              transition={{ duration: 0.4, ease: EASE }}
+              transition={{ duration: 0.28, ease: EASE }}
             >
               <CarStageCanvas
                 key={car.modelUrl}
                 modelUrl={car.modelUrl}
-                active={renderLive}
+                active={Boolean(renderLive)}
                 mobileLite={isTouchLike}
-                autoRotate={!reducedMotion && renderLive && !entranceActive}
+                autoRotate={
+                  !reducedMotion && isDisplayed && isActive && inView && !entranceActive
+                }
                 reducedMotion={reducedMotion || prefersReducedMotion}
-                playIntro={entranceActive && inView && !isTouchLike}
+                playIntro={entranceActive && inView && !isTouchLike && isDisplayed}
                 onReady={handleReady}
               />
             </motion.div>
@@ -282,7 +293,6 @@ function CarStage({
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/80 to-transparent px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-24 sm:px-8 sm:pb-10 sm:pt-28">
-        {/* Touch-scroll zone: drag here to scroll the page; drag the car area above to orbit */}
         <motion.div
           className="pointer-events-auto mx-auto flex w-full max-w-[1200px] flex-col gap-3 touch-pan-y sm:flex-row sm:items-end sm:justify-between sm:gap-5"
           initial={reducedMotion ? false : { opacity: 0, y: 20 }}
@@ -379,6 +389,8 @@ function FavoriteCarsShowcase({ onEnter }) {
   const reducedMotion = useReducedMotion()
   const lenisRef = useLenis()
   const [activeId, setActiveId] = useState(favoriteCars[0]?.id)
+  const [displayId, setDisplayId] = useState(favoriteCars[0]?.id)
+  const readyIdsRef = useRef(new Set([favoriteCars[0]?.id].filter(Boolean)))
   const enteredRef = useRef(false)
   const activeIndex = Math.max(
     0,
@@ -388,6 +400,10 @@ function FavoriteCarsShowcase({ onEnter }) {
   const handleActive = useCallback(
     (id) => {
       setActiveId(id)
+      // If next car was warmed and already ready, promote instantly (no blank)
+      if (readyIdsRef.current.has(id)) {
+        setDisplayId(id)
+      }
       if (!enteredRef.current) {
         enteredRef.current = true
         onEnter?.()
@@ -396,28 +412,54 @@ function FavoriteCarsShowcase({ onEnter }) {
     [onEnter],
   )
 
-  // Warm only active + next GLB (never dump all 7 / never mount extra canvases)
+  const handleStageReady = useCallback(
+    (id) => {
+      readyIdsRef.current.add(id)
+      if (id === activeId) setDisplayId(id)
+    },
+    [activeId],
+  )
+
+  // If active catches up to display (same car), keep in sync
   useEffect(() => {
-    const urls = [favoriteCars[activeIndex], favoriteCars[activeIndex + 1]]
+    if (activeId === displayId) return undefined
+    // Safety: if incoming never reports ready, promote after timeout
+    const timer = window.setTimeout(() => setDisplayId(activeId), 4000)
+    return () => window.clearTimeout(timer)
+  }, [activeId, displayId])
+
+  // Warm active + next + next+1
+  useEffect(() => {
+    ;[
+      favoriteCars[activeIndex],
+      favoriteCars[activeIndex + 1],
+      favoriteCars[activeIndex + 2],
+    ]
       .filter(Boolean)
-      .map((c) => c.modelUrl)
-    urls.forEach((url) => {
-      try {
-        useGLTF.preload(url)
-      } catch {
-        /* */
-      }
-    })
+      .forEach((c) => preloadCar(c.modelUrl))
   }, [activeIndex])
+
+  // Quiet sequential warm of first 3 cars once garage is entered
+  useEffect(() => {
+    let cancelled = false
+    let i = 0
+    const warm = () => {
+      if (cancelled || i >= 3 || i >= favoriteCars.length) return
+      preloadCar(favoriteCars[i].modelUrl)
+      i += 1
+      if (i < 3) window.setTimeout(warm, 700)
+    }
+    const start = window.setTimeout(warm, 400)
+    return () => {
+      cancelled = true
+      window.clearTimeout(start)
+    }
+  }, [activeId])
 
   const handleNear = useCallback((id) => {
     const car = favoriteCars.find((c) => c.id === id)
     if (!car) return
-    try {
-      useGLTF.preload(car.modelUrl)
-    } catch {
-      /* */
-    }
+    preloadCar(car.modelUrl)
   }, [])
 
   const scrollToCar = useCallback(
@@ -445,8 +487,12 @@ function FavoriteCarsShowcase({ onEnter }) {
           total={favoriteCars.length}
           onActive={handleActive}
           onNear={handleNear}
+          onReady={handleStageReady}
           reducedMotion={Boolean(reducedMotion)}
           isActive={activeId === car.id}
+          isDisplayed={displayId === car.id}
+          isIncoming={activeId === car.id && displayId !== car.id}
+          isWarming={index === activeIndex + 1}
         />
       ))}
     </div>

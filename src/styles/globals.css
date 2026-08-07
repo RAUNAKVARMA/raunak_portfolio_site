@@ -947,6 +947,60 @@ body.art-experience-active main {
   width: 100%;
 }
 
+/* —— Garage entry cinematic (~7s door open) —— */
+.garage-entry-title {
+  color: #f5f5f5;
+  text-shadow: 0 0 80px rgba(202, 138, 4, 0.22);
+}
+
+.garage-entry-horizon {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(202, 138, 4, 0.2) 18%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(202, 138, 4, 0.2) 82%,
+    transparent 100%
+  );
+  box-shadow: 0 0 36px 1px rgba(202, 138, 4, 0.28);
+  transform-origin: center;
+}
+
+.garage-entry-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 75%);
+}
+
+.garage-entry-vignette {
+  background: radial-gradient(ellipse 75% 65% at 50% 45%, transparent 30%, rgba(0, 0, 0, 0.72) 100%);
+}
+
+.garage-entry-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+
+.garage-entry-shutter {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #080808 0px,
+    #080808 14px,
+    #121212 14px,
+    #121212 15px
+  );
+  border-bottom: 1px solid rgba(202, 138, 4, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garage-entry-grain {
+    opacity: 0.12;
+  }
+}
+
 .garage-music-bars span {
   display: block;
   height: 100%;
@@ -1228,6 +1282,728 @@ body.art-experience-active main {
   }
 
   .garage-f1-live-dot.is-live {
+    animation: none;
+  }
+}
+
+/* —— Space / Astrarise-inspired cosmos experience —— */
+.cosmos-root {
+  --cosmos-text: #ffffff;
+  --cosmos-muted: rgba(255, 255, 255, 0.62);
+  --cosmos-soft: rgba(255, 255, 255, 0.38);
+  --cosmos-line: rgba(255, 255, 255, 0.12);
+  --cosmos-accent: #7c5cff;
+  position: relative;
+  background: #000;
+  color: var(--cosmos-text);
+}
+
+.cosmos-back {
+  position: fixed;
+  top: calc(72px + max(0.65rem, env(safe-area-inset-top)));
+  left: max(1rem, env(safe-area-inset-left));
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--cosmos-line);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  color: var(--cosmos-muted);
+  font-family: Syne, Inter, system-ui, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.cosmos-back:hover,
+.cosmos-back:focus-visible {
+  color: var(--cosmos-text);
+  border-color: rgba(255, 255, 255, 0.35);
+  outline: none;
+}
+
+.cosmos-back:focus-visible {
+  box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--cosmos-accent);
+}
+
+.cosmos-color-panel {
+  position: fixed;
+  top: calc(72px + max(0.65rem, env(safe-area-inset-top)));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 60;
+  box-sizing: border-box;
+  width: min(15.5rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  padding: 0.85rem 0.9rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px);
+  color: rgba(255, 255, 255, 0.8);
+  overflow: visible;
+}
+
+.cosmos-color-label {
+  margin: 0 0 0.65rem;
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.cosmos-color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  /* room for active ring / hover scale so circles aren’t clipped */
+  padding: 0.2rem 0.15rem 0.35rem;
+  margin: -0.1rem -0.05rem 0;
+  overflow: visible;
+}
+
+.cosmos-color-swatch {
+  flex: 0 0 auto;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.cosmos-color-swatch:hover,
+.cosmos-color-swatch:focus-visible {
+  transform: scale(1.08);
+  border-color: rgba(255, 255, 255, 0.55);
+  outline: none;
+}
+
+.cosmos-color-swatch.is-active {
+  box-shadow: 0 0 0 2px #000, 0 0 0 4px rgba(196, 181, 253, 0.9);
+}
+
+.cosmos-color-custom {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cosmos-color-field {
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.cosmos-color-field input[type='color'] {
+  box-sizing: border-box;
+  width: 100%;
+  height: 1.55rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  cursor: pointer;
+}
+
+.cosmos-color-field input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.cosmos-color-field input[type='color']::-webkit-color-swatch {
+  border: none;
+}
+
+@media (max-width: 640px) {
+  .cosmos-back {
+    top: calc(72px + max(0.5rem, env(safe-area-inset-top)));
+  }
+
+  .cosmos-color-panel {
+    top: auto;
+    bottom: max(5.25rem, calc(env(safe-area-inset-bottom) + 4.25rem));
+    right: max(0.75rem, env(safe-area-inset-right));
+    left: auto;
+    width: min(14rem, calc(100vw - 1.5rem));
+  }
+}
+
+.cosmos-progress {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  top: 50%;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.cosmos-progress-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: transform 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.cosmos-progress-dot.is-memoir {
+  background: rgba(167, 139, 250, 0.35);
+}
+
+.cosmos-progress-dot.is-active {
+  transform: scale(1.55);
+  background: #fff;
+  box-shadow: 0 0 12px rgba(196, 181, 253, 0.65);
+}
+
+.cosmos-progress-label {
+  margin-top: 0.35rem;
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cosmos-track {
+  position: relative;
+}
+
+.cosmos-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.cosmos-canvas,
+.cosmos-fallback {
+  position: absolute;
+  inset: 0;
+}
+
+.cosmos-fallback {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(124, 92, 255, 0.28), transparent 62%),
+    radial-gradient(ellipse 50% 40% at 30% 60%, rgba(76, 201, 240, 0.18), transparent 55%),
+    radial-gradient(ellipse 45% 35% at 70% 35%, rgba(255, 102, 204, 0.16), transparent 50%),
+    #000;
+}
+
+.cosmos-vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.42), transparent 18%, transparent 58%, rgba(0, 0, 0, 0.72)),
+    linear-gradient(to right, rgba(0, 0, 0, 0.35), transparent 22%, transparent 78%, rgba(0, 0, 0, 0.2)),
+    radial-gradient(ellipse 95% 85% at 55% 45%, transparent 28%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: 2;
+}
+
+.cosmos-memoir-haze {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 48%, rgba(20, 16, 40, 0.35), transparent 70%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.45));
+  transition: opacity 400ms ease;
+}
+
+.cosmos-memoir-haze.is-on {
+  backdrop-filter: blur(0.5px);
+}
+
+.cosmos-chapters {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: end start;
+  padding:
+    max(5.5rem, calc(env(safe-area-inset-top) + 4rem))
+    clamp(1.5rem, 6vw, 5rem)
+    max(5rem, calc(env(safe-area-inset-bottom) + 3.25rem));
+  transition: place-items 300ms ease;
+}
+
+.cosmos-chapters.is-memoir-mode {
+  place-items: center;
+  padding-inline: clamp(1.25rem, 6vw, 5rem);
+}
+
+.cosmos-chapter {
+  grid-area: 1 / 1;
+  max-width: min(36rem, 92vw);
+  will-change: opacity, transform, filter;
+  transition: none;
+}
+
+.cosmos-chapter.is-memoir {
+  max-width: min(42rem, 94vw);
+  text-align: left;
+}
+
+.cosmos-chapters.is-memoir-mode .cosmos-chapter.is-memoir {
+  text-align: left;
+}
+
+.cosmos-era {
+  margin: 0 0 0.85rem;
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #c4b5fd;
+}
+
+.cosmos-eyebrow {
+  margin: 0 0 0.85rem;
+  font-family: Syne, Inter, system-ui, sans-serif;
+  font-size: clamp(2rem, 6.5vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--cosmos-text);
+  text-wrap: balance;
+  text-shadow: 0 0 28px rgba(0, 0, 0, 0.65), 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+
+.cosmos-chapter.is-memoir .cosmos-eyebrow {
+  font-size: clamp(1.55rem, 4.2vw, 2.65rem);
+  margin-bottom: 1rem;
+}
+
+.cosmos-body {
+  margin: 0;
+  max-width: 34rem;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+  text-wrap: pretty;
+  text-shadow: 0 0 22px rgba(0, 0, 0, 0.55);
+}
+
+.cosmos-chapter.is-memoir .cosmos-body {
+  max-width: 40rem;
+  font-size: clamp(1.05rem, 2.15vw, 1.28rem);
+  line-height: 1.72;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cosmos-scroll-cue {
+  position: absolute;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  transform: translateX(-50%);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cosmos-soft);
+  animation: cosmosCue 2.4s ease-in-out infinite;
+}
+
+@keyframes cosmosCue {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate(-50%, 0);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translate(-50%, 4px);
+  }
+}
+
+.cosmos-exit {
+  position: absolute;
+  left: clamp(1.25rem, 5vw, 4.5rem);
+  bottom: max(1.4rem, env(safe-area-inset-bottom));
+  z-index: 5;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+
+.cosmos-exit.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.cosmos-note-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.15rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.cosmos-note-link:hover,
+.cosmos-note-link:focus-visible {
+  color: #ddd6fe;
+  border-bottom-color: rgba(221, 214, 254, 0.75);
+  outline: none;
+}
+
+.cosmos-note-link:focus-visible {
+  box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--cosmos-accent);
+}
+
+@media (max-width: 640px) {
+  .cosmos-chapters,
+  .cosmos-chapters.is-memoir-mode {
+    place-items: center start;
+  }
+
+  .cosmos-progress {
+    right: 0.65rem;
+  }
+
+  .cosmos-progress-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-scroll-cue {
+    animation: none;
+  }
+
+  .cosmos-chapter {
+    filter: none !important;
+  }
+
+  .cosmos-exit {
+    transition: none;
+  }
+
+  .cosmos-progress-dot {
+    transition: none;
+  }
+}
+
+/* —— Video Editing / Felix Brady floating collage + cinema —— */
+body.editing-experience-active header,
+body.editing-experience-active footer,
+body.editing-experience-active .noise-overlay,
+body.editing-experience-active .skip-to-main {
+  display: none !important;
+}
+
+body.editing-experience-active {
+  background: #000;
+}
+
+body.editing-experience-active main {
+  min-height: 100svh;
+  padding: 0;
+}
+
+.felix-root {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: #000;
+  color: #fff;
+  font-family: 'Fragment Mono', ui-monospace, monospace;
+  overflow: hidden;
+  user-select: none;
+}
+
+.felix-chrome {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+  padding-inline: max(1.1rem, env(safe-area-inset-left)) max(1.1rem, env(safe-area-inset-right));
+  pointer-events: none;
+}
+
+.felix-chrome > * {
+  pointer-events: auto;
+}
+
+.felix-chrome-top {
+  top: max(0.9rem, env(safe-area-inset-top));
+}
+
+.felix-chrome-bottom {
+  bottom: max(0.9rem, env(safe-area-inset-bottom));
+}
+
+.felix-chrome-left,
+.felix-chrome-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.felix-wordmark {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #fff;
+}
+
+.felix-text-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.felix-text-btn:hover,
+.felix-text-btn:focus-visible {
+  opacity: 0.55;
+  outline: none;
+}
+
+.felix-text-btn:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.felix-infos {
+  position: absolute;
+  top: max(3rem, calc(env(safe-area-inset-top) + 2.4rem));
+  left: max(1.1rem, env(safe-area-inset-left));
+  z-index: 21;
+  max-width: min(28rem, calc(100vw - 2.2rem));
+  font-size: 10px;
+  line-height: 1.45;
+  color: #fff;
+}
+
+.felix-infos p {
+  margin: 0;
+}
+
+.felix-infos-title {
+  white-space: pre-wrap;
+}
+
+.felix-infos-cinema {
+  top: 50%;
+  left: max(1.1rem, env(safe-area-inset-left));
+  transform: translateY(-50%);
+}
+
+.felix-collage {
+  position: absolute;
+  inset: 0;
+  transition: opacity 280ms ease;
+}
+
+.felix-collage.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.felix-world {
+  position: absolute;
+  inset: 0;
+}
+
+.felix-focus-meta {
+  position: absolute;
+  top: 42%;
+  left: max(1.1rem, env(safe-area-inset-left));
+  z-index: 12;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1.75rem;
+  max-width: min(42vw, 22rem);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: #fff;
+  pointer-events: none;
+}
+
+.felix-focus-gap {
+  opacity: 0.95;
+}
+
+.felix-focus-note {
+  width: 100%;
+  opacity: 0.45;
+}
+
+.felix-depth {
+  position: absolute;
+  inset: 0;
+  perspective: 1100px;
+  perspective-origin: 50% 48%;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.felix-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+}
+
+.felix-card video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  pointer-events: none;
+  background: #0a0a0a;
+}
+
+.felix-card.is-focus video {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.felix-card:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 2px;
+}
+
+.felix-play {
+  position: absolute;
+  top: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.felix-stage,
+.felix-stage-spread,
+.felix-tile,
+.felix-tile-spread,
+.felix-collage,
+.felix-page-count {
+  /* legacy collage selectors retired — kept inert if referenced */
+}
+
+.felix-cinema {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  background: #000;
+  animation: felixCinemaIn 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes felixCinemaIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.felix-cinema-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.felix-hit {
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  width: 18%;
+  z-index: 16;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.felix-hit-left {
+  left: 0;
+}
+
+.felix-hit-right {
+  right: 0;
+}
+
+@media (max-width: 720px) {
+  .felix-focus-meta {
+    top: max(4rem, calc(env(safe-area-inset-top) + 3.25rem));
+    max-width: calc(100vw - 2.2rem);
+  }
+
+  .felix-depth {
+    perspective: 900px;
+  }
+
+  .felix-card {
+    max-width: min(78vw, 420px) !important;
+  }
+
+  .felix-hit {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .felix-cinema {
     animation: none;
   }
 }
