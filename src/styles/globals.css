@@ -1898,17 +1898,48 @@ body.editing-experience-active main {
   will-change: transform, opacity, filter;
 }
 
+.felix-card-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #0a0a0a;
+  pointer-events: none;
+}
+
+.felix-card-poster,
 .felix-card video {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 10;
+  height: 100%;
   object-fit: cover;
   pointer-events: none;
-  background: #0a0a0a;
 }
 
-.felix-card.is-focus video {
+.felix-card-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.felix-card video {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.felix-card video::-webkit-media-controls,
+.felix-card video::-webkit-media-controls-start-playback-button,
+.felix-card video::-webkit-media-controls-enclosure,
+.felix-cinema-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.felix-card.is-focus .felix-card-media {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 

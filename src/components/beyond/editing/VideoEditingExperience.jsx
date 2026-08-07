@@ -352,15 +352,48 @@ function VideoEditingExperience() {
                   }}
                   aria-label={`Open ${frame.clip.title}`}
                 >
-                  <video
-                    src={frame.clip.src}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay={shouldPlay}
-                    preload={frame.isFocus || frame.near > 0.4 ? 'auto' : 'metadata'}
-                    aria-hidden
-                  />
+                  <span className="felix-card-media" aria-hidden>
+                    <img
+                      className="felix-card-poster"
+                      src={frame.clip.poster}
+                      alt=""
+                      draggable={false}
+                      loading={frame.isFocus || frame.near > 0.35 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                    {shouldPlay ? (
+                      <video
+                        key={`${frame.clip.id}-live`}
+                        src={frame.clip.src}
+                        poster={frame.clip.poster}
+                        muted
+                        loop
+                        playsInline
+                        autoPlay
+                        preload="auto"
+                        controls={false}
+                        controlsList="nodownload nofullscreen noremoteplayback"
+                        disablePictureInPicture
+                        disableRemotePlayback
+                        ref={(el) => {
+                          if (!el) return
+                          el.muted = true
+                          el.defaultMuted = true
+                          el.playsInline = true
+                          el.setAttribute('playsinline', '')
+                          el.setAttribute('webkit-playsinline', '')
+                          el.setAttribute('muted', '')
+                          const kick = () => {
+                            el.muted = true
+                            const p = el.play()
+                            if (p?.catch) p.catch(() => {})
+                          }
+                          el.addEventListener('loadeddata', kick, { once: true })
+                          kick()
+                        }}
+                      />
+                    ) : null}
+                  </span>
                   {frame.isFocus ? (
                     <span className="felix-play" aria-hidden>
                       ›
@@ -405,12 +438,15 @@ function VideoEditingExperience() {
             ref={cinemaRef}
             className="felix-cinema-video"
             src={cinemaClip.src}
+            poster={cinemaClip.poster}
             playsInline
             loop
             muted={muted}
             autoPlay
             preload="auto"
             controls={false}
+            controlsList="nodownload nofullscreen noremoteplayback"
+            disablePictureInPicture
             aria-label={cinemaClip.title}
           />
 
