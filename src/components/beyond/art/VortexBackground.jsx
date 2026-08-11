@@ -14,7 +14,7 @@ function easeOutExp(dt, rate) {
   return 1 - Math.exp(-dt * rate)
 }
 
-function VortexBackground({ active, intensity = 1.55 }) {
+function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
   const materialRef = useRef(null)
   const atlasRef = useRef(null)
   const pageCountRef = useRef(1)
@@ -26,8 +26,12 @@ function VortexBackground({ active, intensity = 1.55 }) {
   useEffect(() => {
     materialRef.current = material
     material.uniforms.uIntensity.value = intensity
+    if (material.uniforms.uZoomOut) {
+      // Phone: pull framing out so both vortices + sketches stay readable
+      material.uniforms.uZoomOut.value = mobileLite ? 1.34 : 1
+    }
     applyVortexAtlas(material, atlasRef.current)
-  }, [material, intensity])
+  }, [material, intensity, mobileLite])
 
   useEffect(() => {
     let cancelled = false
@@ -95,9 +99,14 @@ function VortexBackground({ active, intensity = 1.55 }) {
     mat.uniforms.uTime.value = state.clock.elapsedTime
     mat.uniforms.uScroll.value = artScrollState.display
     mat.uniforms.uPageCount.value = pages
-    mat.uniforms.uAspect.value = Math.max(viewport.width / Math.max(viewport.height, 0.001), 0.2)
+    // Floor aspect on portrait phones so page fit doesn’t collapse into a center crop
+    const rawAspect = viewport.width / Math.max(viewport.height, 0.001)
+    mat.uniforms.uAspect.value = mobileLite
+      ? Math.max(rawAspect, 0.72)
+      : Math.max(rawAspect, 0.2)
     mat.uniforms.uPageAspect.value = smoothAspectRef.current
     if (mat.uniforms.uEnergy) mat.uniforms.uEnergy.value = artScrollState.energy
+    if (mat.uniforms.uZoomOut) mat.uniforms.uZoomOut.value = mobileLite ? 1.34 : 1
   })
 
   const w = Math.max(viewport.width * 1.02, 14)

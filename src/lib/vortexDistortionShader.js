@@ -24,6 +24,7 @@ export const vortexFragmentShader = `
   uniform float uAspect;
   uniform float uPageAspect;
   uniform float uEnergy;
+  uniform float uZoomOut;
   varying vec2 vUv;
 
   float cumulAt(float index) {
@@ -32,14 +33,18 @@ export const vortexFragmentShader = `
     return texture2D(uCumulTex, vec2(u, 0.5)).r;
   }
 
-  vec2 heightFitUv(vec2 uv, float viewAspect, float pageAspect) {
+  vec2 heightFitUv(vec2 uv, float viewAspect, float pageAspect, float zoomOut) {
+    float z = max(zoomOut, 1.0);
     vec2 u;
-    u.y = uv.y;
     if (viewAspect > pageAspect) {
-      u.x = 0.5 + (uv.x - 0.5) * (viewAspect / pageAspect);
+      u.y = 0.5 + (uv.y - 0.5) / z;
+      u.x = 0.5 + (uv.x - 0.5) * (viewAspect / pageAspect) / z;
     } else {
+      // Tall phone: lift crop toward full page width so both edges stay in frame
       float vis = viewAspect / pageAspect;
-      u.x = (1.0 - vis) * 0.5 + uv.x * vis;
+      vis = mix(vis, 1.0, clamp((z - 1.0) * 1.75, 0.0, 1.0));
+      u.x = 0.5 + (uv.x - 0.5) * vis;
+      u.y = 0.5 + (uv.y - 0.5) / z;
     }
     return u;
   }
@@ -89,11 +94,14 @@ export const vortexFragmentShader = `
     vec2 w = mix(uv, warped, edge * I * (0.88 + E * 0.08));
 
     float corridor = 1.0 - edge;
-    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.11 * I);
-    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * 0.035 * I);
+    // On phone (uZoomOut > 1), suppress center “push” that feels over-zoomed
+    float zoomOut = max(uZoomOut, 1.0);
+    float corridorAmp = mix(0.11, 0.028, clamp((zoomOut - 1.0) * 2.5, 0.0, 1.0));
+    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * corridorAmp * I);
+    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * corridorAmp * 0.32 * I);
     w = clamp(w, 0.0, 1.0);
 
-    vec2 local = heightFitUv(w, max(uAspect, 0.2), max(uPageAspect, 0.2));
+    vec2 local = heightFitUv(w, max(uAspect, 0.2), max(uPageAspect, 0.2), zoomOut);
     local.x = clamp(local.x, 0.001, 0.999);
     local.y = clamp(local.y, 0.0, 1.0);
 
@@ -143,6 +151,7 @@ export function createVortexMaterial(intensity = 1.5) {
       uAspect: { value: 1.6 },
       uPageAspect: { value: 16 / 10 },
       uEnergy: { value: 0 },
+      uZoomOut: { value: 1 },
     },
     vertexShader: vortexVertexShader,
     fragmentShader: vortexFragmentShader,

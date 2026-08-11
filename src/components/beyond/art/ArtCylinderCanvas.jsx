@@ -5,13 +5,13 @@ import VortexBackground from './VortexBackground'
 
 /**
  * Full-bleed image pages + strong twin side vortices.
- * Phone matches desktop look (same FOV / intensity); DPR only softens for GPU budget.
+ * Phone uses a wider FOV / pulled camera so both eyes + sketches stay readable.
  */
-function ArtScene({ active, intensity }) {
+function ArtScene({ active, intensity, mobileLite }) {
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <VortexBackground active={active} intensity={intensity} />
+      <VortexBackground active={active} intensity={intensity} mobileLite={mobileLite} />
     </>
   )
 }
@@ -23,14 +23,19 @@ function ArtCylinderCanvas({
   onContextLost,
 }) {
   const isActive = active && !paused
-  // Full visual parity with desktop twin vortex
+  // Same warp strength as desktop — framing differs on phone
   const intensity = 1.5
   const dpr = mobileLite ? [1, 1.75] : [1, 2]
 
   return (
     <Canvas
       className="absolute inset-0 block h-full w-full"
-      camera={{ position: [0, 0, 5], fov: 40, near: 0.1, far: 80 }}
+      camera={{
+        position: [0, 0, mobileLite ? 6.35 : 5],
+        fov: mobileLite ? 62 : 40,
+        near: 0.1,
+        far: 80,
+      }}
       dpr={dpr}
       gl={{
         alpha: false,
@@ -39,10 +44,15 @@ function ArtCylinderCanvas({
         stencil: false,
         failIfMajorPerformanceCaveat: false,
       }}
-      onCreated={({ gl }) => {
+      onCreated={({ gl, camera }) => {
         gl.setClearColor(0x000000, 1)
         gl.toneMapping = THREE.NoToneMapping
         gl.outputColorSpace = THREE.SRGBColorSpace
+        if (mobileLite) {
+          camera.position.set(0, 0, 6.35)
+          camera.fov = 62
+          camera.updateProjectionMatrix()
+        }
         try {
           window.__MAX_TEX_SIZE__ = gl.capabilities?.getMaxTextureSize?.() || 8192
         } catch {
@@ -67,7 +77,7 @@ function ArtCylinderCanvas({
       style={{ touchAction: 'pan-y', width: '100%', height: '100%' }}
     >
       <Suspense fallback={null}>
-        <ArtScene active={isActive} intensity={intensity} />
+        <ArtScene active={isActive} intensity={intensity} mobileLite={mobileLite} />
       </Suspense>
     </Canvas>
   )

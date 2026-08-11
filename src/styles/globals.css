@@ -1021,10 +1021,10 @@ body.drawing-immersive .is-drawing-immersive main {
 
   .drawing-field-veil {
     background: radial-gradient(
-      ellipse 92% 72% at 50% 48%,
+      ellipse 96% 78% at 50% 48%,
       transparent 0%,
-      rgba(0, 0, 0, 0.1) 70%,
-      rgba(0, 0, 0, 0.32) 100%
+      rgba(0, 0, 0, 0.06) 72%,
+      rgba(0, 0, 0, 0.22) 100%
     );
   }
 
