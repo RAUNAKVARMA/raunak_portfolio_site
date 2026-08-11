@@ -5,6 +5,7 @@ import VortexBackground from './VortexBackground'
 
 /**
  * Full-bleed image pages + strong twin side vortices.
+ * Phone matches desktop look (same FOV / intensity); DPR only softens for GPU budget.
  */
 function ArtScene({ active, intensity }) {
   return (
@@ -22,18 +23,19 @@ function ArtCylinderCanvas({
   onContextLost,
 }) {
   const isActive = active && !paused
-  const intensity = mobileLite ? 1.28 : 1.5
-  const dpr = mobileLite ? [1, 1.35] : [1, 2]
+  // Full visual parity with desktop twin vortex
+  const intensity = 1.5
+  const dpr = mobileLite ? [1, 1.75] : [1, 2]
 
   return (
     <Canvas
       className="absolute inset-0 block h-full w-full"
-      camera={{ position: [0, 0, 5], fov: mobileLite ? 48 : 40, near: 0.1, far: 80 }}
+      camera={{ position: [0, 0, 5], fov: 40, near: 0.1, far: 80 }}
       dpr={dpr}
       gl={{
         alpha: false,
         antialias: !mobileLite,
-        powerPreference: mobileLite ? 'default' : 'high-performance',
+        powerPreference: 'high-performance',
         stencil: false,
         failIfMajorPerformanceCaveat: false,
       }}
@@ -41,6 +43,11 @@ function ArtCylinderCanvas({
         gl.setClearColor(0x000000, 1)
         gl.toneMapping = THREE.NoToneMapping
         gl.outputColorSpace = THREE.SRGBColorSpace
+        try {
+          window.__MAX_TEX_SIZE__ = gl.capabilities?.getMaxTextureSize?.() || 8192
+        } catch {
+          /* */
+        }
         const canvas = gl.domElement
         canvas.style.width = '100%'
         canvas.style.height = '100%'

@@ -1,7 +1,11 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { createVortexMaterial } from '../../../lib/vortexDistortionShader'
-import { applyVortexAtlas, getVortexAtlas } from '../../../lib/vortexAtlas'
+import {
+  applyVortexAtlas,
+  getVortexAtlas,
+  subscribeVortexAtlas,
+} from '../../../lib/vortexAtlas'
 import { artScrollState } from './artScrollState'
 
 const AUTO_PAGE_SPEED = 0.038
@@ -27,23 +31,34 @@ function VortexBackground({ active, intensity = 1.55 }) {
 
   useEffect(() => {
     let cancelled = false
-    const maxAniso = Math.min(16, gl.capabilities.getMaxAnisotropy?.() ?? 8)
+    // Help atlas cap strip height to this GPU
+    try {
+      window.__MAX_TEX_SIZE__ = gl.capabilities?.getMaxTextureSize?.() || 8192
+    } catch {
+      /* */
+    }
+    const maxAniso = Math.min(8, gl.capabilities.getMaxAnisotropy?.() ?? 4)
+
+    const apply = (atlas) => {
+      if (cancelled || !atlas) return
+      atlasRef.current = atlas
+      pageCountRef.current = atlas.pageCount
+      smoothAspectRef.current = atlas.pageAspect ?? 1.45
+      applyVortexAtlas(materialRef.current, atlas)
+    }
 
     getVortexAtlas(maxAniso)
-      .then((atlas) => {
-        if (cancelled || !atlas) return
-        atlasRef.current = atlas
-        pageCountRef.current = atlas.pageCount
-        smoothAspectRef.current = atlas.pageAspect ?? 1.45
-        applyVortexAtlas(materialRef.current, atlas)
-      })
+      .then(apply)
       .catch((err) => {
         console.warn('[Art vortex] atlas failed', err)
       })
 
+    const unsub = subscribeVortexAtlas(apply)
+
     return () => {
       cancelled = true
-      // Shared session cache — do not dispose (Twin Vortex + immersive reuse it)
+      unsub()
+      // Shared session cache — do not dispose
       atlasRef.current = null
     }
   }, [gl])
@@ -56,7 +71,6 @@ function VortexBackground({ active, intensity = 1.55 }) {
 
     if (artScrollState.enabled) {
       const speedAbs = Math.abs(artScrollState.velocity)
-      // Light damping at speed so fast flicks keep flying; settle only when nearly stopped
       const damp = speedAbs > 6 ? 0.985 : speedAbs > 2.5 ? 0.97 : speedAbs > 1 ? 0.93 : 0.88
       artScrollState.velocity *= Math.pow(damp, dt * 60)
       if (Math.abs(artScrollState.velocity) < 0.0005) artScrollState.velocity = 0

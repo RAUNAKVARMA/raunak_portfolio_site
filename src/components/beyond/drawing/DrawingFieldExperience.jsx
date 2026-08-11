@@ -3,7 +3,7 @@ import ArtCylinderCanvas from '../art/ArtCylinderCanvas'
 import { artScrollState, impulseFlick, impulseScroll } from '../art/artScrollState'
 import WebGLErrorBoundary from '../../ui/WebGLErrorBoundary'
 import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
-import { prefetchVortexAtlas } from '../../../lib/vortexAtlas'
+import { prefetchVortexAtlas, subscribeVortexAtlas } from '../../../lib/vortexAtlas'
 import { drawingArtworks } from '../../../data/drawings'
 
 function VortexFallback() {
@@ -34,13 +34,34 @@ function DrawingFieldExperience({
 }) {
   const stageRef = useRef(null)
   const [webglOk, setWebglOk] = useState(true)
+  const [atlasReady, setAtlasReady] = useState(false)
   const [layer, setLayer] = useState('gate') // 'gate' | 'menu'
   const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
   const showLive = webglOk && !prefersReducedMotion
   const vortexActive = showLive && active
 
   useEffect(() => {
+    // Start bootstrap atlas on first paint — don't wait for idle
     prefetchVortexAtlas(8).catch(() => {})
+    return subscribeVortexAtlas((atlas) => {
+      if (atlas?.texture) setAtlasReady(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.rel = 'preload'
+    link.as = 'image'
+    link.href = '/images/drawings/aurora-wolf.png'
+    link.fetchPriority = 'high'
+    document.head.appendChild(link)
+    return () => {
+      try {
+        document.head.removeChild(link)
+      } catch {
+        /* */
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -145,7 +166,7 @@ function DrawingFieldExperience({
 
       {showLive ? (
         <WebGLErrorBoundary fallback={null}>
-          <div className="drawing-field-canvas is-live">
+          <div className={`drawing-field-canvas${atlasReady ? ' is-live' : ''}`}>
             <ArtCylinderCanvas
               active={vortexActive}
               mobileLite={isTouchLike}

@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom'
 import { interestEntries } from '../../data/interests'
+import { prefetchVortexAtlas } from '../../lib/vortexAtlas'
+
+function warmDrawing(path) {
+  if (path === '/beyond/drawing') {
+    prefetchVortexAtlas(8).catch(() => {})
+  }
+}
 
 function HobbyGrid() {
   return (
@@ -48,6 +55,9 @@ function HobbyGrid() {
                   role="listitem"
                   data-cursor-hover="true"
                   className="studio-index-item no-underline transition-[background-color] duration-150 hover:!bg-[#0a0a0a] focus-visible:!bg-[#0a0a0a]"
+                  onPointerEnter={() => warmDrawing(hobby.path)}
+                  onFocus={() => warmDrawing(hobby.path)}
+                  onTouchStart={() => warmDrawing(hobby.path)}
                 >
                   {body}
                 </Link>
