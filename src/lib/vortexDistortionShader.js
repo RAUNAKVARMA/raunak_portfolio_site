@@ -9,11 +9,9 @@ export const vortexVertexShader = `
 `
 
 /**
- * Iconic Canyon twin — exactly TWO powerful side eyes.
- *
- * Desktop multi-lobes came from: (1) midY×side gates carving incomplete wells,
- * (2) hard page seams warping into extra side voids while scrolling.
- * This rebuild: one fat circular sink per bezel, soft page dissolve, calm center.
+ * Vincent Canyon twin — two perfect semicircle eyes.
+ * Left eye ~quarter, right eye ~three-quarter (NOT edge bezels at 0/1 —
+ * edge sinks destroyed the circles and leaked white margins).
  */
 export const vortexFragmentShader = `
   precision highp float;
@@ -44,12 +42,11 @@ export const vortexFragmentShader = `
     return texture2D(uTexture, vec2(clamp(lx, 0.001, 0.999), sy)).rgb;
   }
 
-  // Wide dissolve so drawing→drawing joints don't curl into fake side eyes
   vec3 sampleField(float pageFloat, float lx) {
     float pageIndex = floor(pageFloat);
     float localY = fract(pageFloat);
     vec3 mid = samplePage(pageIndex, localY, lx);
-    float soft = 0.26;
+    float soft = 0.14;
     if (localY < soft) {
       mid = mix(samplePage(pageIndex - 1.0, 1.0, lx), mid, smoothstep(0.0, soft, localY));
     } else if (localY > 1.0 - soft) {
@@ -58,81 +55,82 @@ export const vortexFragmentShader = `
     return mid;
   }
 
-  // One powerful circular sink + silk spin (single peak, no nested rings)
-  vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin) {
+  // Large circular Canyon sink — screen-round via aspect
+  vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin, float aspect) {
     vec2 d = uv - center;
-    float dist = length(vec2(d.x * 0.58, d.y * 1.0)) + 1e-5;
-    float fall = exp(-dist * 2.55);
+    float dist = length(vec2(d.x * aspect, d.y)) + 1e-5;
+    float fall = exp(-dist * 2.2);
+    fall = fall * fall * (3.0 - 2.0 * fall);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, 0.40, clamp(fall * power, 0.0, 1.0));
+    float pull = mix(1.0, 0.36, clamp(fall * power, 0.0, 1.0));
     return center + d * pull;
   }
 
   vec3 enrich(vec3 c) {
     c = max(c, 0.0);
     c = pow(c, vec3(0.88));
-    c *= 1.28;
+    c *= 1.26;
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    c = mix(vec3(l), c, 1.12);
-    return c;
+    return mix(vec3(l), c, 1.1);
   }
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.026;
-    float I = clamp(uIntensity, 0.6, 2.0);
+    float t = uTime * 0.03;
+    float I = clamp(uIntensity, 0.7, 2.0);
     float pages = max(uPageCount, 1.0);
     float E = clamp(uEnergy, 0.0, 1.0);
+    float aspect = clamp(uAspect, 0.4, 2.4);
 
-    // Near-bezel centers (not deep inset — deep inset made stacked eyes)
-    vec2 leftC = vec2(0.0, 0.5);
-    vec2 rightC = vec2(1.0, 0.5);
+    // Canyon eye centers — half-way into each side (Vincent twin semicircles)
+    vec2 leftC = vec2(0.20, 0.5);
+    vec2 rightC = vec2(0.80, 0.5);
 
-    float spin = (1.15 + E * 0.22) * I;
-    float power = (1.28 + E * 0.16) * I;
+    float spin = (1.35 + E * 0.25) * I;
+    float power = (1.35 + E * 0.18) * I;
 
-    vec2 wL = eyeWarp(uv, leftC, power, spin + t);
-    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82);
+    vec2 wL = eyeWarp(uv, leftC, power, spin + t, aspect);
+    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.85, aspect);
 
-    // Soft exclusive ownership — no hard seam, no deep mid-band ghost
-    float sideBlend = smoothstep(0.47, 0.53, uv.x);
+    // Each half owns one eye — narrow soft join so canyon meets cleanly
+    float sideBlend = smoothstep(0.48, 0.52, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    // Side bezels fully engage the warp; center stays the canyon.
-    // NO midY gate — that was slicing each bezel into stacked lobes.
-    float side = smoothstep(0.16, 0.52, abs(uv.x - 0.5));
-    side = pow(side, 1.15);
-    float warpAmt = clamp(side * min(I, 1.55) * (0.94 + E * 0.05), 0.0, 1.0);
-    vec2 w = mix(uv, warped, warpAmt);
+    // Almost full engagement — large semicircles, thin calm canyon spine
+    float edge = smoothstep(0.02, 0.22, abs(uv.x - 0.5));
+    edge = pow(edge, 0.92);
+    vec2 w = mix(uv, warped, clamp(edge * min(I, 1.7) * (0.96 + E * 0.04), 0.0, 1.0));
 
-    float corridor = 1.0 - side;
-    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.09 * I);
+    // Canyon spine between the two semicircles
+    float corridor = 1.0 - edge;
+    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.14 * I);
     w = clamp(w, 0.0, 1.0);
 
+    // Full-bleed stretch — keeps edges filled (no white bezel leak)
     vec2 local = clamp(w, vec2(0.001, 0.0), vec2(0.999, 1.0));
     float pageFloat = mod(uScroll + (1.0 - local.y), pages);
 
-    float vBias = (0.00028 + E * 0.0002) / max(pages, 1.0);
+    float vBias = (0.00025 + E * 0.0002) / max(pages, 1.0);
     vec3 col = enrich(
-      sampleField(pageFloat, local.x) * 0.68
-      + sampleField(pageFloat + vBias, local.x) * 0.16
-      + sampleField(pageFloat - vBias, local.x) * 0.16
+      sampleField(pageFloat, local.x) * 0.66
+      + sampleField(pageFloat + vBias, local.x) * 0.17
+      + sampleField(pageFloat - vBias, local.x) * 0.17
     );
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * 0.72, uv.y - leftC.y)) * 3.1);
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * 0.72, uv.y - rightC.y)) * 3.1);
-    float vig = smoothstep(1.8, 0.26, length((uv - 0.5) * vec2(1.05, 1.0)));
-    col *= mix(0.94, 1.0, vig);
-    col += col * (eyeL + eyeR) * side * 0.05;
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * aspect, uv.y - leftC.y)) * 2.8);
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * aspect, uv.y - rightC.y)) * 2.8);
+    float vig = smoothstep(1.85, 0.22, length((uv - 0.5) * vec2(1.05, 1.0)));
+    col *= mix(0.93, 1.0, vig);
+    col += col * (eyeL + eyeR) * edge * 0.055;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }
 `
 
-export function createVortexMaterial(intensity = 1.55) {
+export function createVortexMaterial(intensity = 1.6) {
   return new THREE.ShaderMaterial({
     uniforms: {
       uTexture: { value: new THREE.Texture() },

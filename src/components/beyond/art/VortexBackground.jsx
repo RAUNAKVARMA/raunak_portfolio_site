@@ -14,7 +14,7 @@ function easeOutExp(dt, rate) {
   return 1 - Math.exp(-dt * rate)
 }
 
-function VortexBackground({ active, intensity = 1.55 }) {
+function VortexBackground({ active, intensity = 1.6 }) {
   const materialRef = useRef(null)
   const atlasRef = useRef(null)
   const pageCountRef = useRef(1)
