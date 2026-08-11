@@ -4,13 +4,13 @@ import * as THREE from 'three'
 import VortexBackground from './VortexBackground'
 
 /**
- * Full-bleed twin vortex (Vincent-style). Same field on phone with portrait-tuned eyes.
+ * Canyon twin vortex — same field on phone and desktop; only DPR softens for GPU.
  */
-function ArtScene({ active, intensity, mobileLite }) {
+function ArtScene({ active, intensity }) {
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <VortexBackground active={active} intensity={intensity} mobileLite={mobileLite} />
+      <VortexBackground active={active} intensity={intensity} />
     </>
   )
 }
@@ -22,9 +22,8 @@ function ArtCylinderCanvas({
   onContextLost,
 }) {
   const isActive = active && !paused
-  // Match desktop swirl strength; phone slightly hotter so both eyes read
-  const intensity = mobileLite ? 1.65 : 1.5
-  const dpr = mobileLite ? [1, 1.75] : [1, 2]
+  const intensity = 1.45
+  const dpr = mobileLite ? [1, 1.75] : [1, 2.25]
 
   return (
     <Canvas
@@ -66,7 +65,7 @@ function ArtCylinderCanvas({
       style={{ touchAction: 'pan-y', width: '100%', height: '100%' }}
     >
       <Suspense fallback={null}>
-        <ArtScene active={isActive} intensity={intensity} mobileLite={mobileLite} />
+        <ArtScene active={isActive} intensity={intensity} />
       </Suspense>
     </Canvas>
   )

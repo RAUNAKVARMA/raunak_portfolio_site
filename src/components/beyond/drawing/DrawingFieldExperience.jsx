@@ -20,10 +20,8 @@ function VortexFallback() {
   )
 }
 
-/**
- * Full-viewport twin vortex.
- * Gate: Vincent-style pill only.
- * Menu (after click): story intro + archive entry — pill is replaced.
+/* Full-viewport twin vortex.
+ * Gate pill: RAUNAK VARMA STUDIO → enter archive.
  */
 function DrawingFieldExperience({
   title = 'Drawing',
@@ -162,7 +160,8 @@ function DrawingFieldExperience({
       className={`drawing-field is-${layer}`}
       aria-label="Twin vortex field"
     >
-      <VortexFallback />
+      {/* Hide static underlay once the live twin is up — otherwise it reads as extra eyes */}
+      {!atlasReady || !showLive ? <VortexFallback /> : null}
 
       {showLive ? (
         <WebGLErrorBoundary fallback={null}>
@@ -185,11 +184,11 @@ function DrawingFieldExperience({
             className="drawing-field-gate"
             data-cursor-hover="true"
             data-lenis-prevent
-            onClick={() => setLayer('menu')}
-            aria-label="Open Drawing information and archive"
+            onClick={onOpenArchive}
+            aria-label="Raunak Varma Studio — enter archive"
           >
-            <span className="drawing-field-gate-eyebrow">Beyond Work — Art</span>
-            <span className="drawing-field-gate-title">Drawing &amp; Visual Thinking</span>
+            <span className="drawing-field-gate-title">RAUNAK VARMA STUDIO</span>
+            <span className="drawing-field-gate-eyebrow">enter archive</span>
           </button>
         ) : (
           <div className="drawing-field-stack" data-lenis-prevent>

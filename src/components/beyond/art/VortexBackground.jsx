@@ -14,7 +14,7 @@ function easeOutExp(dt, rate) {
   return 1 - Math.exp(-dt * rate)
 }
 
-function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
+function VortexBackground({ active, intensity = 1.45 }) {
   const materialRef = useRef(null)
   const atlasRef = useRef(null)
   const pageCountRef = useRef(1)
@@ -26,11 +26,8 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
   useEffect(() => {
     materialRef.current = material
     material.uniforms.uIntensity.value = intensity
-    if (material.uniforms.uMobile) {
-      material.uniforms.uMobile.value = mobileLite ? 1 : 0
-    }
     applyVortexAtlas(material, atlasRef.current)
-  }, [material, intensity, mobileLite])
+  }, [material, intensity])
 
   useEffect(() => {
     let cancelled = false
@@ -39,7 +36,7 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     } catch {
       /* */
     }
-    const maxAniso = Math.min(8, gl.capabilities.getMaxAnisotropy?.() ?? 4)
+    const maxAniso = Math.min(16, gl.capabilities.getMaxAnisotropy?.() ?? 8)
 
     const apply = (atlas) => {
       if (cancelled || !atlas) return
@@ -93,20 +90,21 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     const targetAspect = atlas?.aspects?.[pageIdx] ?? smoothAspectRef.current
     smoothAspectRef.current += (targetAspect - smoothAspectRef.current) * easeOutExp(dt, 4.5)
 
+    const viewAspect = Math.max(viewport.width / Math.max(viewport.height, 0.001), 0.2)
     mat.uniforms.uTime.value = state.clock.elapsedTime
     mat.uniforms.uScroll.value = artScrollState.display
     mat.uniforms.uPageCount.value = pages
-    mat.uniforms.uAspect.value = Math.max(viewport.width / Math.max(viewport.height, 0.001), 0.2)
+    mat.uniforms.uAspect.value = viewAspect
     mat.uniforms.uPageAspect.value = smoothAspectRef.current
     if (mat.uniforms.uEnergy) mat.uniforms.uEnergy.value = artScrollState.energy
-    if (mat.uniforms.uMobile) mat.uniforms.uMobile.value = mobileLite ? 1 : 0
   })
 
-  // Frustum-matched plane — never floor to oversized mins (that crops UV on phones)
+  // Frustum-matched full-bleed plane — slight overscan stops phone letterbox/crop
   const meshZ = -3.2
   const camZ = camera.position.z
   const depthScale = Math.abs(camZ - meshZ) / Math.max(Math.abs(camZ), 0.001)
-  const cover = 1.04
+  const portrait = viewport.width < viewport.height
+  const cover = portrait ? 1.06 : 1.02
   const w = Math.max(viewport.width * depthScale * cover, 0.01)
   const h = Math.max(viewport.height * depthScale * cover, 0.01)
 

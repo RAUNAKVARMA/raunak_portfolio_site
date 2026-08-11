@@ -10,11 +10,11 @@ const PANELS = drawingArtworks.map((piece) => ({
 
 /** First paint: few pages, smaller canvas. Full set upgrades in background. */
 const BOOTSTRAP_COUNT = 3
-const PAGE_W_BOOT = 1024
-const PAGE_W_FULL = 1280
-const MAX_PAGE_H_BOOT = 1600
-const MAX_PAGE_H_FULL = 2400
-const MIN_PAGE_H = 720
+const PAGE_W_BOOT = 1152
+const PAGE_W_FULL = 1600
+const MAX_PAGE_H_BOOT = 1700
+const MAX_PAGE_H_FULL = 2800
+const MIN_PAGE_H = 780
 
 const listeners = new Set()
 
@@ -36,41 +36,6 @@ function loadImage(url, { priority = 'auto' } = {}) {
   })
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-  const radius = Math.min(r, w / 2, h / 2)
-  ctx.beginPath()
-  ctx.moveTo(x + radius, y)
-  ctx.arcTo(x + w, y, x + w, y + h, radius)
-  ctx.arcTo(x + w, y + h, x, y + h, radius)
-  ctx.arcTo(x, y + h, x, y, radius)
-  ctx.arcTo(x, y, x + w, y, radius)
-  ctx.closePath()
-}
-
-function drawCaption(ctx, y, h, width, eyebrow, title) {
-  const pillW = Math.min(width * 0.62, 520)
-  const pillH = Math.max(40, Math.round(width * 0.045))
-  const px = (width - pillW) / 2
-  const py = y + h - Math.round(h * 0.09)
-
-  ctx.save()
-  ctx.fillStyle = 'rgba(8, 10, 8, 0.55)'
-  roundRect(ctx, px, py, pillW, pillH, pillH / 2)
-  ctx.fill()
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)'
-  ctx.lineWidth = 1
-  roundRect(ctx, px, py, pillW, pillH, pillH / 2)
-  ctx.stroke()
-
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'rgba(255,255,255,0.72)'
-  const fontPx = Math.max(11, Math.round(width * 0.012))
-  ctx.font = `500 ${fontPx}px ui-monospace, Menlo, monospace`
-  ctx.fillText(`${eyebrow.toUpperCase()} — ${title.toUpperCase()}`, width / 2, py + pillH / 2)
-  ctx.restore()
-}
-
 function pageHeightFor(img, pageW, maxH) {
   const raw = Math.round(pageW * (img.height / Math.max(img.width, 1)))
   return Math.min(maxH, Math.max(MIN_PAGE_H, raw))
@@ -78,7 +43,9 @@ function pageHeightFor(img, pageW, maxH) {
 
 function drawExact(ctx, img, x, y, boxW, boxH) {
   ctx.save()
-  ctx.filter = 'brightness(1.14) contrast(1.05) saturate(1.06)'
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.filter = 'brightness(1.16) contrast(1.08) saturate(1.08)'
   ctx.drawImage(img, x, y, boxW, boxH)
   ctx.filter = 'none'
   ctx.restore()
@@ -113,7 +80,7 @@ function atlasFromPanels(panels, { pageW, maxPageH }) {
   panels.forEach((panel, i) => {
     const h = heights[i]
     drawExact(ctx, panel.img, 0, y, width, h)
-    drawCaption(ctx, y, h, width, panel.eyebrow, panel.title)
+    // No baked caption pills — they read as extra stacked “eyes” inside the twin vortex
     y += h
     cumulEnds.push(y / totalH)
   })
@@ -260,7 +227,7 @@ export function prefetchVortexAtlas(maxAniso = 8) {
     atlasPromise = buildBootstrap()
       .then((atlas) => {
         if (atlas?.texture) {
-          atlas.texture.anisotropy = Math.min(maxAniso, 8)
+          atlas.texture.anisotropy = Math.min(maxAniso, 16)
           atlas.texture.needsUpdate = true
         }
         // Fire-and-forget full upgrade
