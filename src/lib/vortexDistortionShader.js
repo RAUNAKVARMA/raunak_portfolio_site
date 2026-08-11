@@ -9,9 +9,9 @@ export const vortexVertexShader = `
 `
 
 /**
- * Vincent Canyon twin — continuous silk field, two round semicircle eyes on
- * the L/R bezels, readable center. Fixes the hard center seam + flat ovals
- * (wrong UV aspect in distance made horizontal smears).
+ * Vincent Canyon twin — polished:
+ * one round semicircle eye on each bezel, soft seamless center canyon,
+ * drawings stay readable, silk warp (not spiral/twirl).
  */
 export const vortexFragmentShader = `
   precision highp float;
@@ -46,7 +46,7 @@ export const vortexFragmentShader = `
     float pageIndex = floor(pageFloat);
     float localY = fract(pageFloat);
     vec3 mid = samplePage(pageIndex, localY, lx);
-    float soft = 0.12;
+    float soft = 0.14;
     if (localY < soft) {
       mid = mix(samplePage(pageIndex - 1.0, 1.0, lx), mid, smoothstep(0.0, soft, localY));
     } else if (localY > 1.0 - soft) {
@@ -55,31 +55,31 @@ export const vortexFragmentShader = `
     return mid;
   }
 
-  // Round-on-screen silk sink (aspect scales X so eyes aren’t flat ovals)
   vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin, float aspect) {
     vec2 d = uv - center;
+    // Round on screen (prevents flat horizontal smears)
     float dist = length(vec2(d.x * aspect, d.y)) + 1e-5;
-    float fall = exp(-dist * 2.7);
+    float fall = exp(-dist * 2.65);
     fall = fall * fall * (3.0 - 2.0 * fall);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, 0.5, clamp(fall * power, 0.0, 1.0));
+    float pull = mix(1.0, 0.48, clamp(fall * power, 0.0, 1.0));
     return center + d * pull;
   }
 
   vec3 enrich(vec3 c) {
     c = pow(max(c, 0.0), vec3(0.9));
-    c *= 1.2;
+    c *= 1.22;
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
     return mix(vec3(l), c, 1.08);
   }
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.024;
-    float I = clamp(uIntensity, 0.55, 1.8);
+    float t = uTime * 0.022;
+    float I = clamp(uIntensity, 0.55, 1.75);
     float pages = max(uPageCount, 1.0);
     float E = clamp(uEnergy, 0.0, 1.0);
     float aspect = clamp(uAspect, 0.5, 2.2);
@@ -87,47 +87,46 @@ export const vortexFragmentShader = `
     vec2 leftC = vec2(0.0, 0.5);
     vec2 rightC = vec2(1.0, 0.5);
 
-    float spin = (1.05 + E * 0.2) * I;
-    float power = (1.15 + E * 0.15) * I;
+    // Silk, not corkscrew
+    float spin = (0.82 + E * 0.16) * I;
+    float power = (1.18 + E * 0.14) * I;
 
     vec2 wL = eyeWarp(uv, leftC, power, spin + t, aspect);
     vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82, aspect);
 
-    // Soft continuous handoff — NO hard vertical seam
-    float sideBlend = smoothstep(0.38, 0.62, uv.x);
+    float sideBlend = smoothstep(0.4, 0.6, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    // Side eyes; center canyon keeps drawings readable
-    float edge = smoothstep(0.14, 0.56, abs(uv.x - 0.5));
-    edge = pow(edge, 1.18);
-    vec2 w = mix(uv, warped, clamp(edge * I * (0.88 + E * 0.06), 0.0, 1.0));
+    float edge = smoothstep(0.13, 0.54, abs(uv.x - 0.5));
+    edge = pow(edge, 1.15);
+    vec2 w = mix(uv, warped, clamp(edge * I * (0.9 + E * 0.05), 0.0, 1.0));
 
     float corridor = 1.0 - edge;
-    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.09 * I);
-    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * 0.03 * I);
+    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.08 * I);
+    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * 0.025 * I);
     w = clamp(w, 0.0, 1.0);
 
     vec2 local = clamp(w, vec2(0.001, 0.0), vec2(0.999, 1.0));
     float pageFloat = mod(uScroll + (1.0 - local.y), pages);
 
-    float vBias = (0.0003 + E * 0.0002) / max(pages, 1.0);
+    float vBias = (0.00028 + E * 0.0002) / max(pages, 1.0);
     vec3 col = enrich(
       sampleField(pageFloat, local.x) * 0.7
       + sampleField(pageFloat + vBias, local.x) * 0.15
       + sampleField(pageFloat - vBias, local.x) * 0.15
     );
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * aspect, uv.y - leftC.y)) * 3.2);
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * aspect, uv.y - rightC.y)) * 3.2);
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * aspect, uv.y - leftC.y)) * 3.15);
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * aspect, uv.y - rightC.y)) * 3.15);
     float vig = smoothstep(1.75, 0.28, length((uv - 0.5) * vec2(1.05, 1.0)));
     col *= mix(0.95, 1.0, vig);
-    col += col * (eyeL + eyeR) * edge * 0.04;
+    col += col * (eyeL + eyeR) * edge * 0.042;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }
 `
 
-export function createVortexMaterial(intensity = 1.45) {
+export function createVortexMaterial(intensity = 1.48) {
   return new THREE.ShaderMaterial({
     uniforms: {
       uTexture: { value: new THREE.Texture() },
