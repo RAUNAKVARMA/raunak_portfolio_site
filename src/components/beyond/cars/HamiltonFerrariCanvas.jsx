@@ -3,10 +3,14 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { ContactShadows, Environment, OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import WebGLErrorBoundary from '../../ui/WebGLErrorBoundary'
+import { ensureDracoDecoder, preloadCar } from './carGltf'
 
 const MODEL_URL = '/models/cars/ferrari-f1-2026-concept.glb?v=4'
 const CAM_DESKTOP = [4.1, 1.35, 5.4]
-const CAM_MOBILE = [4.6, 1.55, 5.9]
+const CAM_MOBILE = [3.55, 1.28, 4.55]
+
+ensureDracoDecoder()
+preloadCar(MODEL_URL)
 
 const COLOR_MAPS = new Set(['map', 'emissiveMap', 'specularMap'])
 const DATA_MAPS = [
@@ -67,13 +71,13 @@ function polishF1Materials(root, mobileLite = false) {
       }
 
       if ('envMapIntensity' in mat) {
-        mat.envMapIntensity = mat.map ? (mobileLite ? 0.95 : 1.15) : 1.0
+        mat.envMapIntensity = mat.map ? (mobileLite ? 1.28 : 1.15) : 1.0
       }
 
       if (/^base$|^wings$/i.test(name)) {
         if ('clearcoat' in mat) {
-          mat.clearcoat = mobileLite ? 0.55 : 1
-          mat.clearcoatRoughness = mobileLite ? 0.12 : 0.04
+          mat.clearcoat = mobileLite ? 0.72 : 1
+          mat.clearcoatRoughness = mobileLite ? 0.1 : 0.04
         }
         if ('specularIntensity' in mat) mat.specularIntensity = 1.05
         if (!mat.metalnessMap) mat.metalness = Math.min(mat.metalness ?? 0.35, 0.4)
@@ -182,7 +186,7 @@ function EpicFloorGlow({ mobileLite }) {
 }
 
 function FerrariF1Model({ reducedMotion = false, autoRotate = true, mobileLite = false }) {
-  const { scene } = useGLTF(MODEL_URL)
+  const { scene } = useGLTF(MODEL_URL, true)
   const rootRef = useRef(null)
   const baseY = useRef(0)
   const t = useRef(0)
@@ -202,7 +206,7 @@ function FerrariF1Model({ reducedMotion = false, autoRotate = true, mobileLite =
     const box = new THREE.Box3().setFromObject(rootRef.current)
     const size = box.getSize(new THREE.Vector3())
     const maxDim = Math.max(size.x, size.y, size.z) || 1
-    const scale = (mobileLite ? 4.55 : 5.15) / maxDim
+    const scale = (mobileLite ? 5.05 : 5.15) / maxDim
     rootRef.current.scale.setScalar(scale)
 
     const fitted = new THREE.Box3().setFromObject(rootRef.current)
@@ -233,12 +237,12 @@ function FerrariF1Model({ reducedMotion = false, autoRotate = true, mobileLite =
 function HamiltonFerrariScene({ reducedMotion, autoRotate, mobileLite, allowOrbit }) {
   return (
     <>
-      <hemisphereLight intensity={mobileLite ? 0.28 : 0.22} color="#f2e8e4" groundColor="#080404" />
-      <ambientLight intensity={mobileLite ? 0.22 : 0.16} color="#e8d8d2" />
+      <hemisphereLight intensity={mobileLite ? 0.36 : 0.22} color="#f2e8e4" groundColor="#080404" />
+      <ambientLight intensity={mobileLite ? 0.32 : 0.16} color="#e8d8d2" />
 
-      <directionalLight position={[5.2, 8.5, 4.2]} intensity={mobileLite ? 1.7 : 2.1} color="#fffaf6" />
-      <directionalLight position={[-4.2, 3.8, 3]} intensity={mobileLite ? 0.55 : 0.7} color="#ffe8dc" />
-      <directionalLight position={[6.5, 2.2, -5]} intensity={mobileLite ? 0.85 : 1.15} color="#ff4a3a" />
+      <directionalLight position={[5.2, 8.5, 4.2]} intensity={mobileLite ? 2.05 : 2.1} color="#fffaf6" />
+      <directionalLight position={[-4.2, 3.8, 3]} intensity={mobileLite ? 0.75 : 0.7} color="#ffe8dc" />
+      <directionalLight position={[6.5, 2.2, -5]} intensity={mobileLite ? 1.15 : 1.15} color="#ff4a3a" />
 
       {!mobileLite && (
         <>
@@ -272,7 +276,7 @@ function HamiltonFerrariScene({ reducedMotion, autoRotate, mobileLite, allowOrbi
         />
         <Environment
           preset={mobileLite ? 'apartment' : 'city'}
-          environmentIntensity={mobileLite ? 0.4 : 0.48}
+          environmentIntensity={mobileLite ? 0.72 : 0.48}
           resolution={mobileLite ? 64 : 256}
         />
       </Suspense>
@@ -354,7 +358,7 @@ function HamiltonFerrariCanvas({
           gl.setClearColor(0x000000, 0)
           gl.outputColorSpace = THREE.SRGBColorSpace
           gl.toneMapping = THREE.ACESFilmicToneMapping
-          gl.toneMappingExposure = mobileLite ? 1.12 : 1.18
+          gl.toneMappingExposure = mobileLite ? 1.32 : 1.18
           gl.domElement.style.display = 'block'
           gl.domElement.style.width = '100%'
           gl.domElement.style.height = '100%'

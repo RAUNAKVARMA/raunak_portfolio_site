@@ -10,9 +10,9 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion'
-import { useGLTF } from '@react-three/drei'
 import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
 import HamiltonFerrariCanvas from './HamiltonFerrariCanvas'
+import { preloadCar } from './carGltf'
 
 const EASE = [0.16, 1, 0.3, 1]
 const F1_RED = '#E10600'
@@ -253,7 +253,7 @@ function HamiltonSection() {
   const stageRef = useRef(null)
   const storyRef = useRef(null)
   const inView = useInView(stageRef, { amount: 0.2, margin: '-6% 0px' })
-  const nearStage = useInView(stageRef, { amount: 0, margin: '60% 0px' })
+  const nearStage = useInView(stageRef, { amount: 0, margin: '120% 0px' })
   const storyInView = useInView(storyRef, { amount: 0.2, once: true })
 
   const [chapterId, setChapterId] = useState(CHAPTERS[0].id)
@@ -263,16 +263,17 @@ function HamiltonSection() {
   const chapter = CHAPTERS.find((c) => c.id === chapterId) ?? CHAPTERS[0]
 
   useEffect(() => {
+    // Warm F1 as early as this section mounts (way before sticky stage)
+    preloadCar(F1_MODEL)
+  }, [])
+
+  useEffect(() => {
     if (nearStage) setMountCanvas(true)
   }, [nearStage])
 
   useEffect(() => {
     if (!nearStage) return undefined
-    try {
-      useGLTF.preload(F1_MODEL)
-    } catch {
-      /* */
-    }
+    preloadCar(F1_MODEL)
     return undefined
   }, [nearStage])
 
@@ -413,7 +414,7 @@ function HamiltonSection() {
           )}
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/88 to-transparent px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-28 sm:px-8 sm:pb-10 sm:pt-32">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/88 to-transparent px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-16 sm:px-8 sm:pb-10 sm:pt-32">
           <div className="pointer-events-auto mx-auto w-full max-w-[1200px]">
             <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-xl">
@@ -436,7 +437,7 @@ function HamiltonSection() {
                     stagger={0.07}
                   />
                 </h2>
-                <div className="mt-3 max-w-prose overflow-hidden break-words font-studio text-[12px] leading-[20px] text-white/88 sm:font-display sm:text-[clamp(1.05rem,2.2vw,1.35rem)] sm:font-semibold sm:leading-snug sm:tracking-tight sm:text-[13px] sm:leading-[21px]">
+                <div className="mt-3 max-w-prose overflow-hidden break-words font-studio text-[12px] leading-[20px] text-white/88 max-sm:line-clamp-3 sm:font-display sm:text-[clamp(1.05rem,2.2vw,1.35rem)] sm:font-semibold sm:leading-snug sm:tracking-tight sm:text-[13px] sm:leading-[21px]">
                   <FadeWords
                     text="I started watching Formula 1 in 2016 because of Lewis Hamilton. What began as admiration for a driver grew into a passion for the sport and a mindset that continues to inspire me."
                     reducedMotion={Boolean(reducedMotion)}
@@ -480,10 +481,10 @@ function HamiltonSection() {
           <div className="garage-hamilton-story-glow absolute inset-0 opacity-70" />
         </div>
 
-        <div className="relative mx-auto grid w-full max-w-[1200px] gap-8 px-4 py-12 sm:gap-10 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-12 lg:py-20">
+        <div className="relative mx-auto grid w-full max-w-[1200px] gap-8 overflow-x-hidden px-4 py-12 sm:gap-10 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-12 lg:py-20">
           <div className="flex min-h-[220px] flex-col gap-6 sm:min-h-[260px] sm:gap-7">
             <div
-              className="garage-hamilton-chapters relative -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
+              className="garage-hamilton-chapters relative flex flex-wrap gap-2 pb-1"
               role="tablist"
               aria-label="Hamilton mindset chapters"
             >
@@ -559,7 +560,7 @@ function HamiltonSection() {
             </AnimatePresence>
           </div>
 
-          <div className="relative grid grid-cols-2 gap-2.5 self-start sm:gap-3 lg:grid-cols-1 xl:grid-cols-2">
+          <div className="garage-hamilton-stats relative grid grid-cols-1 gap-2.5 self-start sm:grid-cols-2 sm:gap-3 lg:grid-cols-1 xl:grid-cols-2">
             {STATS.map((stat, index) => (
               <StatCard
                 key={stat.id}

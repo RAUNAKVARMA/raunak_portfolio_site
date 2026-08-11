@@ -271,7 +271,7 @@ function CarStage({
               animate={{
                 opacity: showCar && (isDisplayed || isActive || isIncoming) ? 1 : 0,
               }}
-              transition={{ duration: 0.28, ease: EASE }}
+              transition={{ duration: isTouchLike ? 0.12 : 0.22, ease: EASE }}
             >
               <CarStageCanvas
                 key={car.modelUrl}
@@ -424,7 +424,7 @@ function FavoriteCarsShowcase({ onEnter }) {
   useEffect(() => {
     if (activeId === displayId) return undefined
     // Safety: if incoming never reports ready, promote after timeout
-    const timer = window.setTimeout(() => setDisplayId(activeId), 4000)
+    const timer = window.setTimeout(() => setDisplayId(activeId), 2000)
     return () => window.clearTimeout(timer)
   }, [activeId, displayId])
 
@@ -439,22 +439,22 @@ function FavoriteCarsShowcase({ onEnter }) {
       .forEach((c) => preloadCar(c.modelUrl))
   }, [activeIndex])
 
-  // Quiet sequential warm of first 3 cars once garage is entered
+  // Quiet sequential warm of first 3 cars once garage is entered — don't contend with car 0
   useEffect(() => {
     let cancelled = false
-    let i = 0
+    let i = 1
     const warm = () => {
       if (cancelled || i >= 3 || i >= favoriteCars.length) return
       preloadCar(favoriteCars[i].modelUrl)
       i += 1
-      if (i < 3) window.setTimeout(warm, 700)
+      if (i < 3) window.setTimeout(warm, 900)
     }
-    const start = window.setTimeout(warm, 400)
+    const start = window.setTimeout(warm, 1200)
     return () => {
       cancelled = true
       window.clearTimeout(start)
     }
-  }, [activeId])
+  }, [])
 
   const handleNear = useCallback((id) => {
     const car = favoriteCars.find((c) => c.id === id)

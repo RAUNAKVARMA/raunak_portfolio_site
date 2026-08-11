@@ -3514,13 +3514,18 @@ body.drawing-inspect-active {
 
 @media (max-width: 768px) {
   .garage-hamilton-stage {
-    touch-action: pan-y;
+    height: 78svh;
+    min-height: 520px;
+    max-height: 780px;
+    touch-action: none;
   }
 
   .garage-hamilton-watermark {
+    font-size: clamp(1.8rem, 12vw, 3.4rem) !important;
+    letter-spacing: -0.04em;
     text-shadow:
-      0 0 24px rgba(225, 6, 0, 0.35),
-      0 0 48px rgba(255, 40, 30, 0.12);
+      0 0 20px rgba(225, 6, 0, 0.3),
+      0 0 40px rgba(255, 40, 30, 0.1);
   }
 
   .garage-hamilton-scan {
@@ -3528,7 +3533,32 @@ body.drawing-inspect-active {
   }
 
   .garage-hamilton-stat {
-    min-height: 88px;
+    min-height: 0;
+  }
+
+  .garage-hamilton-chapters {
+    margin-inline: 0;
+    padding-inline: 0;
+    flex-wrap: wrap;
+    overflow: visible;
+    max-width: 100%;
+  }
+
+  .garage-hamilton-chapters button {
+    max-width: 100%;
+  }
+
+  .garage-hamilton-stats {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .garage-hamilton-timeline {
+    max-width: 100%;
+  }
+
+  .garage-hamilton-timeline > li {
+    min-width: 118px;
   }
 
   .garage-stage {

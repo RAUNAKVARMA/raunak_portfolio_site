@@ -6,6 +6,16 @@ function warmDrawing(path) {
   if (path === '/beyond/drawing') {
     prefetchVortexAtlas(8).catch(() => {})
   }
+  if (path === '/beyond/cars') {
+    import('./cars/carGltf').then(({ preloadCar }) => {
+      import('../../data/favoriteCars').then(({ favoriteCars }) => {
+        preloadCar(favoriteCars[0]?.modelUrl)
+        window.setTimeout(() => {
+          preloadCar('/models/cars/ferrari-f1-2026-concept.glb?v=4')
+        }, 1800)
+      })
+    })
+  }
 }
 
 function HobbyGrid() {

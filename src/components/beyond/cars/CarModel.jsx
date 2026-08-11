@@ -1916,7 +1916,16 @@ function CarModel({
           scene.traverse((obj) => {
             if (!obj.isMesh) return
             const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-            mats.forEach((mat) => prepareMaterial(mat))
+            mats.forEach((mat) => {
+              prepareMaterial(mat)
+              if ('envMapIntensity' in mat) {
+                mat.envMapIntensity = Math.max(mat.envMapIntensity || 0, 1.55)
+              }
+              if ('roughness' in mat && typeof mat.roughness === 'number') {
+                mat.roughness = Math.min(mat.roughness, 0.55)
+              }
+              mat.needsUpdate = true
+            })
           })
           scene.userData.garagePolished = true
           return
@@ -1946,9 +1955,9 @@ function CarModel({
       }
       const ric = window.requestIdleCallback
       if (typeof ric === 'function') {
-        ric(polish, { timeout: mobileLite ? 1400 : 900 })
+        ric(polish, { timeout: mobileLite ? 280 : 900 })
       } else {
-        window.setTimeout(polish, mobileLite ? 120 : 48)
+        window.setTimeout(polish, mobileLite ? 32 : 48)
       }
     }
   }, [scene, targetSize, url, onReady, mobileLite, playReveal, reducedMotion]) // eslint-disable-line react-hooks/exhaustive-deps

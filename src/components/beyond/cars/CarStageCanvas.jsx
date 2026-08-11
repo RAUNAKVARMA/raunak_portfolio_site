@@ -102,14 +102,12 @@ function CarScene({
   const boosted =
     isBugatti || isFerrari || isLambo || isSupra || isBmw || isAston || isPorsche
 
-  // Defer expensive brand lights + Environment until after first paint
+  // Defer expensive brand lights + Environment until after first paint.
+  // Mobile still gets a cheap Environment (res 32) so paints aren't chalk-dark.
   const [richLights, setRichLights] = useState(false)
   useEffect(() => {
-    if (mobileLite) {
-      setRichLights(false)
-      return undefined
-    }
-    const timer = window.setTimeout(() => setRichLights(true), 220)
+    const delay = mobileLite ? 40 : 220
+    const timer = window.setTimeout(() => setRichLights(true), delay)
     return () => window.clearTimeout(timer)
   }, [modelUrl, mobileLite])
 
@@ -120,9 +118,7 @@ function CarScene({
   // BMW: iconic M product shot — low env wash, blue silhouette, hot LEDs
   // Aston: British Racing Green — green rim, warm gold accents
   // Porsche: GT Silver — cool studio, Porsche-red rim
-  // On mobile the per-car accent lights are skipped, so boost base values for Porsche
-  // (silver paint needs more key light or it looks black)
-  const mobilePorscheBrightness = mobileLite && isPorsche ? 1.55 : 1
+  const mobilePorscheBrightness = mobileLite && isPorsche ? 1.55 : mobileLite ? 1.2 : 1
 
   const ambient = isFerrari
     ? 0.12
@@ -299,7 +295,7 @@ function CarScene({
         }
       />
       <ambientLight
-        intensity={mobileLite ? ambient + 0.18 : ambient}
+        intensity={mobileLite ? ambient + 0.38 : ambient}
         color={
           isFerrari
             ? '#e8a090'
@@ -318,7 +314,7 @@ function CarScene({
       />
       <directionalLight
         position={[4.5, 7, 5]}
-        intensity={mobileLite ? keyLight * 1.15 : keyLight}
+        intensity={mobileLite ? keyLight * 1.45 : keyLight}
         color={
           isFerrari
             ? '#fff8f5'
@@ -337,7 +333,7 @@ function CarScene({
       />
       <directionalLight
         position={[-6, 3, -1]}
-        intensity={fillLight}
+        intensity={mobileLite ? fillLight * 1.35 : fillLight}
         color={
           isFerrari
             ? '#d06050'
@@ -356,7 +352,18 @@ function CarScene({
                         : '#f5e6b8'
         }
       />
-      <directionalLight position={[0, 2.5, -6]} intensity={rimIntensity} color={rimColor} />
+      <directionalLight
+        position={[0, 2.5, -6]}
+        intensity={mobileLite ? rimIntensity * 1.25 : rimIntensity}
+        color={rimColor}
+      />
+      {mobileLite ? (
+        <>
+          <directionalLight position={[5.2, 2.2, -3.5]} intensity={0.7} color="#ffe8d8" />
+          <pointLight position={[0, 1.35, 2.2]} intensity={1.05} distance={7} color="#ffffff" />
+          <pointLight position={[0, 0.2, 0]} intensity={0.55} distance={4} color="#ffd8b0" />
+        </>
+      ) : null}
       {!mobileLite && richLights && isFerrari && (
         <>
           {/* Rosso silhouette — product-shot edges + underglow */}
@@ -525,14 +532,24 @@ function CarScene({
                           : '#ffe9a8'
           }
         />
-      ) : null}
-      {!mobileLite && richLights && active && (
-        <Environment
-          preset={envPreset}
-          environmentIntensity={envIntensity}
-          resolution={64}
+      ) : (
+        <spotLight
+          position={[1.2, 7.5, 2.8]}
+          intensity={Math.max(spot, 1.1) * 1.15}
+          angle={0.5}
+          penumbra={0.85}
+          color="#fff5ea"
         />
       )}
+      {richLights && active ? (
+        <Environment
+          preset={mobileLite ? 'apartment' : envPreset}
+          environmentIntensity={
+            mobileLite ? Math.max(envIntensity * 1.35, 0.72) : envIntensity
+          }
+          resolution={mobileLite ? 32 : 64}
+        />
+      ) : null}
       <ModelSwap
         modelUrl={modelUrl}
         active={active}
@@ -562,6 +579,18 @@ function CarScene({
           frames={1}
         />
       )}
+      {mobileLite && richLights ? (
+        <ContactShadows
+          position={[0, 0.002, 0]}
+          opacity={0.72}
+          scale={14}
+          blur={1.55}
+          far={8}
+          color="#000000"
+          frames={1}
+          resolution={256}
+        />
+      ) : null}
       <CameraIntro active={active} reducedMotion={reducedMotion} playIntro={playIntro} />
       <OrbitControls
         makeDefault
@@ -643,21 +672,24 @@ function CarStageCanvas({
         gl.setClearColor(0x000000, 0)
         gl.outputColorSpace = THREE.SRGBColorSpace
         gl.toneMapping = THREE.ACESFilmicToneMapping
-        gl.toneMappingExposure = isFerrari
-          ? 1.12
-          : isSupra
-            ? 1.02
-            : isLambo
-              ? 1.1
-              : isBugatti
-                ? 0.92
-                : isBmw
-                  ? 1.12
-                  : isAston
-                    ? 1.16
-                    : isPorsche
-                      ? 1.1
-                      : 1.18
+        const base =
+          isFerrari
+            ? 1.12
+            : isSupra
+              ? 1.02
+              : isLambo
+                ? 1.1
+                : isBugatti
+                  ? 0.92
+                  : isBmw
+                    ? 1.12
+                    : isAston
+                      ? 1.16
+                      : isPorsche
+                        ? 1.1
+                        : 1.18
+        // Mobile lacking studio HDR previously looked chalk-dark — lift exposure
+        gl.toneMappingExposure = mobileLite ? Math.min(1.42, base * 1.24) : base
         gl.domElement.style.display = 'block'
         gl.domElement.style.width = '100%'
         gl.domElement.style.height = '100%'

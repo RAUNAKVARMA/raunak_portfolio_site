@@ -6,12 +6,12 @@ import { preloadCar } from './carGltf'
 
 const GOLD = '#CA8A04'
 const EASE = [0.16, 1, 0.3, 1]
-/** ~7s cinematic — also warms the first car GLBs. */
-const ENTRY_MS = 7200
+/** ~2.8s door open — first car GLB should be decoding in parallel. */
+const ENTRY_MS = 2800
 
 /**
  * Fullscreen garage-door opening sequence.
- * Locks scroll, preloads first cars, then reveals the page.
+ * Locks scroll, preloads first car, then reveals the page.
  */
 function GarageEntryOverlay({ onComplete }) {
   const reducedMotion = useReducedMotion()
@@ -54,13 +54,13 @@ function GarageEntryOverlay({ onComplete }) {
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
+    // Bandwidth first: only car 0 during the intro critical path
     preloadCar(favoriteCars[0]?.modelUrl)
-    const warm1 = window.setTimeout(() => preloadCar(favoriteCars[1]?.modelUrl), 900)
-    const warm2 = window.setTimeout(() => preloadCar(favoriteCars[2]?.modelUrl), 1800)
+    const warm1 = window.setTimeout(() => preloadCar(favoriteCars[1]?.modelUrl), 1600)
 
-    const boot = window.setTimeout(() => setPhase('brand'), 280)
-    const rosterT = window.setTimeout(() => setPhase('roster'), 1400)
-    const openDoor = window.setTimeout(() => setPhase('open'), 5600)
+    const boot = window.setTimeout(() => setPhase('brand'), 160)
+    const rosterT = window.setTimeout(() => setPhase('roster'), 700)
+    const openDoor = window.setTimeout(() => setPhase('open'), 1900)
     const end = window.setTimeout(() => setOpen(false), ENTRY_MS)
 
     const started = performance.now()
@@ -74,7 +74,6 @@ function GarageEntryOverlay({ onComplete }) {
 
     return () => {
       window.clearTimeout(warm1)
-      window.clearTimeout(warm2)
       window.clearTimeout(boot)
       window.clearTimeout(rosterT)
       window.clearTimeout(openDoor)

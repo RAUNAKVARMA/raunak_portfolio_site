@@ -254,11 +254,21 @@ function CarsPage() {
   const [entryDone, setEntryDone] = useState(false)
   useDocumentTitle('Cars — Beyond')
 
+  // Critical path: first car immediately; F1 after first car gets a head start
+  useEffect(() => {
+    preloadCar(favoriteCars[0]?.modelUrl)
+    const f1 = window.setTimeout(() => {
+      preloadCar('/models/cars/ferrari-f1-2026-concept.glb?v=4')
+    }, 2200)
+    return () => window.clearTimeout(f1)
+  }, [])
+
   // Entry overlay warms cars 0–2; quiet fallback if needed after reveal
   useEffect(() => {
     if (!entryDone) return undefined
     const timer = window.setTimeout(() => {
       preloadCar(favoriteCars[0]?.modelUrl)
+      preloadCar(favoriteCars[1]?.modelUrl)
     }, 400)
     return () => window.clearTimeout(timer)
   }, [entryDone])
