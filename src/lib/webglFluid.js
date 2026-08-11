@@ -750,8 +750,9 @@ export function createFluidSimulation(canvas, userOptions = {}) {
   }
 
   function generateColor() {
+    const gain = config.COLOR_MULTIPLIER ?? 0.15
     const c = hsvToRgb(Math.random(), 1, 1)
-    return { r: c.r * 0.15, g: c.g * 0.15, b: c.b * 0.15 }
+    return { r: c.r * gain, g: c.g * gain, b: c.b * gain }
   }
 
   function splat(x, y, dx, dy, color) {

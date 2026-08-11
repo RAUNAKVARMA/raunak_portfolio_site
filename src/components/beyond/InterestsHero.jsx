@@ -1,9 +1,6 @@
 function InterestsHero() {
   return (
-    <header
-      data-fluid-zone="rich"
-      className="relative flex min-h-[min(52svh,28rem)] flex-col justify-end pb-12 pt-28 sm:pt-32"
-    >
+    <header className="relative flex min-h-[min(52svh,28rem)] flex-col justify-end pb-12 pt-28 sm:pt-32">
       <div className="studio-container">
         <p className="studio-eyebrow">Beyond Work</p>
         <h1 className="studio-title">The person behind the code</h1>

@@ -20,11 +20,7 @@ function warmDrawing(path) {
 
 function HobbyGrid() {
   return (
-    <section
-      data-fluid-zone="rich"
-      className="studio-section"
-      aria-labelledby="interests-heading"
-    >
+    <section className="studio-section" aria-labelledby="interests-heading">
       <div className="studio-container">
         <p className="studio-eyebrow">Interests</p>
         <h2 id="interests-heading" className="studio-title">

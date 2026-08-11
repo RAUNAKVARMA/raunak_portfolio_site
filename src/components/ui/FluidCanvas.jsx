@@ -22,27 +22,29 @@ const SOFT_FLUID_OPTIONS = {
   COLORFUL: true,
 }
 
-/** Rich home-hero settings. */
+/** Rich home-hero settings — punchy neon trail. */
 const RICH_FLUID_OPTIONS = {
   SIM_RESOLUTION: 128,
   DYE_RESOLUTION: 768,
-  DENSITY_DISSIPATION: 1.05,
-  VELOCITY_DISSIPATION: 0.22,
+  DENSITY_DISSIPATION: 0.95,
+  VELOCITY_DISSIPATION: 0.2,
   PRESSURE_ITERATIONS: 16,
-  CURL: 28,
-  SPLAT_RADIUS: 0.24,
-  SPLAT_FORCE: 5200,
+  CURL: 30,
+  SPLAT_RADIUS: 0.26,
+  SPLAT_FORCE: 5600,
   BLOOM: true,
-  BLOOM_ITERATIONS: 6,
-  BLOOM_RESOLUTION: 128,
-  BLOOM_INTENSITY: 0.6,
+  BLOOM_ITERATIONS: 8,
+  BLOOM_RESOLUTION: 256,
+  BLOOM_INTENSITY: 0.78,
+  BLOOM_THRESHOLD: 0.45,
   SUNRAYS: false,
   SHADING: true,
   COLORFUL: true,
+  COLOR_MULTIPLIER: 0.28,
 }
 
 const PEAK_OPACITY = {
-  rich: 0.62,
+  rich: 0.72,
   soft: 0.4,
 }
 
@@ -162,8 +164,13 @@ function FluidCanvas() {
         const ratio = Math.min(1, Math.max(0, visible / Math.min(rect.height || vh, vh)))
         // Soften exit: insist the zone still occupies a useful slice of the first screen.
         const occupy = Math.min(1, Math.max(0, visible / vh))
-        const score = ratio * (0.35 + 0.65 * occupy)
         const mode = el.dataset.fluidZone === 'rich' ? 'rich' : 'soft'
+        // Rich zones should hit full punch even when the section is shorter than 100vh
+        // (Beyond hero used to score ~0.45 opacity vs home ~0.62 — washed colors).
+        const score =
+          mode === 'rich'
+            ? Math.min(1, ratio * (0.55 + 0.7 * occupy))
+            : ratio * (0.35 + 0.65 * occupy)
         const weighted = score * (mode === 'rich' ? 1 : 0.85)
 
         if (weighted > bestVis) {
@@ -172,7 +179,12 @@ function FluidCanvas() {
         }
       })
 
-      const opacity = bestVis > 0.04 ? bestVis * peakFor({ dataset: { fluidZone: bestMode } }) : 0
+      const peak = peakFor({ dataset: { fluidZone: bestMode } })
+      // Rich zones: snap toward peak opacity so short Beyond blocks are not washed vs home
+      const opacity =
+        bestVis > 0.04
+          ? peak * (bestMode === 'rich' ? Math.min(1, bestVis * 1.45) : bestVis)
+          : 0
       acceptSplatRef.current = opacity > 0.06
 
       if (opacity > 0.04) {
