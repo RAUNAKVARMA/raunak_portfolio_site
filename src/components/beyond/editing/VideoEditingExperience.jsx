@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { editingClips } from '../../../data/editingClips'
 import { useDocumentTitle } from '../../../hooks/useDocumentTitle'
 import { useIsMobileOrTouch } from '../../../hooks/useIsMobileOrTouch'
@@ -40,6 +40,7 @@ function smoothstep(edge0, edge1, x) {
 function VideoEditingExperience() {
   useDocumentTitle('Video Editing')
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const lenisRef = useLenis()
   const isMobile = useIsMobileOrTouch()
 
@@ -49,6 +50,8 @@ function VideoEditingExperience() {
   const targetRef = useRef(0)
   const rafRef = useRef(0)
   const touchRef = useRef({ y: null, x: null, moved: false })
+  const modeRef = useRef('world')
+  const closingCinemaRef = useRef(false)
 
   const [mode, setMode] = useState('world')
   const [progress, setProgress] = useState(0)
@@ -63,6 +66,8 @@ function VideoEditingExperience() {
   const spacing = 1
   const maxProgress = Math.max(0.001, (total - 1) * spacing)
   const paths = isMobile ? PATHS_MOBILE : PATHS_DESKTOP
+
+  modeRef.current = mode
 
   // Warm the browser cache so swipe-mounted cards paint instantly
   useEffect(() => {
@@ -98,6 +103,7 @@ function VideoEditingExperience() {
       links.forEach((link) => link.remove())
     }
   }, [])
+
   const focusIndex = useMemo(() => {
     return clamp(Math.round(progress / spacing), 0, total - 1)
   }, [progress, spacing, total])
@@ -105,25 +111,59 @@ function VideoEditingExperience() {
   const focusClip = editingClips[focusIndex]
   const cinemaClip = editingClips[cinemaIndex]
 
-  const openCinema = (index) => {
-    setCinemaIndex(index)
-    setMode('cinema')
-    setInfosOpen(false)
-    touchRef.current.moved = false
-  }
-
-  const closeCinema = () => {
+  const exitCinemaChrome = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen?.()
     if (document.webkitFullscreenElement) document.webkitExitFullscreen?.()
     setMode('world')
     setInfosOpen(false)
-  }
+  }, [])
+
+  const openCinema = useCallback(
+    (index) => {
+      const next = clamp(index, 0, total - 1)
+      setCinemaIndex(next)
+      setMode('cinema')
+      setInfosOpen(false)
+      touchRef.current.moved = false
+      // History entry so phone/browser Back returns to the reel, not Beyond
+      setSearchParams({ watch: String(next) }, { replace: false })
+    },
+    [setSearchParams, total],
+  )
+
+  const closeCinema = useCallback(() => {
+    exitCinemaChrome()
+    if (searchParams.has('watch')) {
+      closingCinemaRef.current = true
+      navigate(-1)
+      return
+    }
+    setSearchParams({}, { replace: true })
+  }, [exitCinemaChrome, navigate, searchParams, setSearchParams])
+
+  // Sync cinema ↔ URL (phone Back / forward / shareable ?watch=)
+  useEffect(() => {
+    const raw = searchParams.get('watch')
+    if (raw == null) {
+      closingCinemaRef.current = false
+      if (modeRef.current === 'cinema') exitCinemaChrome()
+      return
+    }
+    if (closingCinemaRef.current) return
+    const index = clamp(Number.parseInt(raw, 10) || 0, 0, total - 1)
+    setCinemaIndex(index)
+    setMode('cinema')
+  }, [searchParams, total, exitCinemaChrome])
 
   const stepCinema = useCallback(
     (dir) => {
-      setCinemaIndex((i) => (i + dir + total) % total)
+      setCinemaIndex((i) => {
+        const next = (i + dir + total) % total
+        setSearchParams({ watch: String(next) }, { replace: true })
+        return next
+      })
     },
-    [total],
+    [setSearchParams, total],
   )
 
   const stepWorld = useCallback(
@@ -511,7 +551,7 @@ function VideoEditingExperience() {
                 Infos
               </button>
               <button type="button" className="felix-text-btn" data-cursor-hover="true" onClick={closeCinema}>
-                Close
+                Back
               </button>
             </div>
           </header>
