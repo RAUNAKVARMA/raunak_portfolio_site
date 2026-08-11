@@ -11,7 +11,7 @@ export const vortexVertexShader = `
 /**
  * Twin vortices — silky scroll + soft side eyes.
  * Variable-height pages via uCumulTex; framing lerped in JS (uPageAspect).
- * uMobile: portrait phones use width-fit + inset eyes so both vortices read clearly.
+ * uMobile: phones use object-fit contain (full drawing inside screen) + inset eyes.
  */
 export const vortexFragmentShader = `
   precision highp float;
@@ -35,44 +35,60 @@ export const vortexFragmentShader = `
     return texture2D(uCumulTex, vec2(u, 0.5)).r;
   }
 
-  // Desktop tall: height-fit (full page height, crop width).
-  // Phone: width-fit (full sketch width, crop height) so left/right of the
-  // drawing sit under the twin eyes instead of a center-column crop.
-  vec2 heightFitUv(vec2 uv, float viewAspect, float pageAspect, float zoomOut, float mobile) {
+  // Desktop: height-fit cover (fills frame, may crop sides).
+  // Phone: object-fit contain — entire page inside the screen with letterbox.
+  // Returns page UV; out of [0,1] means outside the drawing (letterbox).
+  vec2 pageFitUv(vec2 uv, float viewAspect, float pageAspect, float zoomOut, float mobile) {
     float z = max(zoomOut, 1.0);
-    vec2 u;
+    float m = clamp(mobile, 0.0, 1.0);
+    vec2 cover;
+    vec2 contain;
+
     if (viewAspect > pageAspect) {
-      u.y = 0.5 + (uv.y - 0.5) / z;
-      u.x = 0.5 + (uv.x - 0.5) * (viewAspect / pageAspect) / z;
+      // Wide view: cover = fill height, crop width
+      cover.y = 0.5 + (uv.y - 0.5) / z;
+      cover.x = 0.5 + (uv.x - 0.5) * (viewAspect / pageAspect) / z;
+      // Contain = fit width inside, pillarbox sides (or full if page wider)
+      float margin = 1.0 / z;
+      float pageW = (pageAspect / viewAspect) * margin;
+      float pageH = margin;
+      contain.x = (uv.x - 0.5) / max(pageW, 1e-4) + 0.5;
+      contain.y = (uv.y - 0.5) / max(pageH, 1e-4) + 0.5;
     } else {
+      // Tall view: cover = fill height, crop width (center column)
       float vis = viewAspect / pageAspect;
-      float m = clamp(mobile, 0.0, 1.0);
-      // Height-fit (desktop) vs width-fit (phone)
-      vec2 heightFit;
-      heightFit.x = 0.5 + (uv.x - 0.5) * vis;
-      heightFit.y = 0.5 + (uv.y - 0.5) / z;
-
-      vec2 widthFit;
-      widthFit.x = 0.5 + (uv.x - 0.5) / z;
-      widthFit.y = 0.5 + (uv.y - 0.5) * vis / z;
-
-      u = mix(heightFit, widthFit, m);
+      cover.x = 0.5 + (uv.x - 0.5) * vis;
+      cover.y = 0.5 + (uv.y - 0.5) / z;
+      // Contain = fit page fully (width-limited for landscape pages on phone)
+      float margin = 1.0 / z;
+      float pageW;
+      float pageH;
+      if (pageAspect >= viewAspect) {
+        pageW = margin;
+        pageH = (viewAspect / pageAspect) * margin;
+      } else {
+        pageW = (pageAspect / viewAspect) * margin;
+        pageH = margin;
+      }
+      contain.x = (uv.x - 0.5) / max(pageW, 1e-4) + 0.5;
+      contain.y = (uv.y - 0.5) / max(pageH, 1e-4) + 0.5;
     }
-    return u;
+
+    return mix(cover, contain, m);
   }
 
   vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin, float wide) {
     vec2 d = uv - center;
-    float xs = mix(0.58, 0.34, wide);
-    float ys = mix(1.02, 0.88, wide);
+    float xs = mix(0.58, 0.36, wide);
+    float ys = mix(1.02, 0.9, wide);
     float dist = length(vec2(d.x * xs, d.y * ys)) + 1e-5;
-    float fall = exp(-dist * mix(2.85, 2.05, wide));
+    float fall = exp(-dist * mix(2.85, 2.2, wide));
     fall = fall * fall * (3.0 - 2.0 * fall);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, mix(0.48, 0.36, wide), fall * power);
+    float pull = mix(1.0, mix(0.48, 0.38, wide), fall * power);
     return center + d * pull;
   }
 
@@ -93,37 +109,42 @@ export const vortexFragmentShader = `
     float mobile = clamp(uMobile, 0.0, 1.0);
     float zoomOut = max(uZoomOut, 1.0);
 
-    // Phone: pull eye centers off the bezel into the readable frame
-    vec2 leftC = mix(vec2(0.0, 0.5), vec2(0.18, 0.5), mobile);
-    vec2 rightC = mix(vec2(1.0, 0.5), vec2(0.82, 0.5), mobile);
+    // Phone: eyes sit on the drawing’s side regions (inset from bezel)
+    vec2 leftC = mix(vec2(0.0, 0.5), vec2(0.16, 0.5), mobile);
+    vec2 rightC = mix(vec2(1.0, 0.5), vec2(0.84, 0.5), mobile);
 
-    float spin = (1.35 + E * 0.25) * I * mix(1.0, 1.28, mobile);
-    float power = (1.2 + E * 0.2) * I * mix(1.0, 1.4, mobile);
+    float spin = (1.35 + E * 0.25) * I * mix(1.0, 1.22, mobile);
+    float power = (1.2 + E * 0.2) * I * mix(1.0, 1.32, mobile);
 
     vec2 wL = eyeWarp(uv, leftC, power, spin + t, mobile);
     vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82, mobile);
     float sideBlend = smoothstep(0.36, 0.64, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    // Phone: engage warp earlier across the frame so eyes aren't edge-only
-    float edgeLo = mix(0.14, 0.05, mobile);
-    float edgeHi = mix(0.58, 0.46, mobile);
+    float edgeLo = mix(0.14, 0.06, mobile);
+    float edgeHi = mix(0.58, 0.48, mobile);
     float edge = smoothstep(edgeLo, edgeHi, abs(uv.x - 0.5));
-    edge = pow(edge, mix(1.22, 1.05, mobile));
-    float warpAmt = edge * I * mix(0.88, 1.05, mobile) * (0.88 + E * 0.08);
+    edge = pow(edge, mix(1.22, 1.08, mobile));
+    float warpAmt = edge * I * mix(0.88, 1.0, mobile) * (0.88 + E * 0.08);
     vec2 w = mix(uv, warped, clamp(warpAmt, 0.0, 1.0));
 
     float corridor = 1.0 - edge;
-    float corridorAmp = mix(0.11, 0.045, mobile);
+    float corridorAmp = mix(0.11, 0.04, mobile);
     w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * corridorAmp * I);
     w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * corridorAmp * 0.32 * I);
     w = clamp(w, 0.0, 1.0);
 
-    vec2 local = heightFitUv(w, max(uAspect, 0.2), max(uPageAspect, 0.2), zoomOut, mobile);
-    local.x = clamp(local.x, 0.001, 0.999);
-    local.y = clamp(local.y, 0.0, 1.0);
+    vec2 local = pageFitUv(w, max(uAspect, 0.2), max(uPageAspect, 0.2), zoomOut, mobile);
 
-    float pageFloat = mod(uScroll + (1.0 - local.y), pages);
+    // Letterbox outside the drawing — do not clamp-stretch off-page samples
+    float inside = smoothstep(0.0, 0.012, local.x) * smoothstep(0.0, 0.012, 1.0 - local.x)
+                 * smoothstep(0.0, 0.012, local.y) * smoothstep(0.0, 0.012, 1.0 - local.y);
+    // Soft mask stronger on phone contain; desktop cover barely uses it
+    inside = mix(1.0, inside, mobile);
+
+    vec2 sampleLocal = clamp(local, vec2(0.001, 0.0), vec2(0.999, 1.0));
+
+    float pageFloat = mod(uScroll + (1.0 - sampleLocal.y), pages);
     float pageIndex = floor(pageFloat);
     float localY = fract(pageFloat);
 
@@ -131,14 +152,13 @@ export const vortexFragmentShader = `
     float vEnd = cumulAt(pageIndex);
     float sy = mix(vStart, vEnd, localY);
 
-    vec2 sampleUv = vec2(local.x, sy);
+    vec2 sampleUv = vec2(sampleLocal.x, sy);
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * mix(0.75, 0.55, mobile), uv.y - leftC.y)) * mix(3.6, 2.8, mobile));
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * mix(0.75, 0.55, mobile), uv.y - rightC.y)) * mix(3.6, 2.8, mobile));
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * mix(0.75, 0.55, mobile), uv.y - leftC.y)) * mix(3.6, 2.9, mobile));
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * mix(0.75, 0.55, mobile), uv.y - rightC.y)) * mix(3.6, 2.9, mobile));
     float ring = max(eyeL * (1.0 - eyeL), eyeR * (1.0 - eyeR)) * edge;
-    float ca = ring * 0.0024 * I * mix(1.0, 1.35, mobile);
+    float ca = ring * 0.0024 * I * mix(1.0, 1.25, mobile);
 
-    // 2-tap mild blur along scroll axis reduces shimmer while scrolling
     vec3 colA = vec3(
       texture2D(uTexture, sampleUv + vec2(ca, 0.0)).r,
       texture2D(uTexture, sampleUv).g,
@@ -151,7 +171,8 @@ export const vortexFragmentShader = `
 
     float vig = smoothstep(1.75, 0.28, length((uv - 0.5) * vec2(1.05, 1.0)));
     col *= mix(0.95, 1.0, vig);
-    col += col * (eyeL + eyeR) * edge * mix(0.045, 0.07, mobile);
+    col += col * (eyeL + eyeR) * edge * mix(0.045, 0.065, mobile);
+    col *= inside;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }
