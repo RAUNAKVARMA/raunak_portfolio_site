@@ -9,9 +9,9 @@ export const vortexVertexShader = `
 `
 
 /**
- * Canyon twin — one smooth semicircle eye left + one right.
- * Drawings readable in the center. Sink-first, near-zero spin so high-contrast
- * paintings don’t ripple into jagged multi-lobes.
+ * Vincent Canyon twin — continuous silk field, two round semicircle eyes on
+ * the L/R bezels, readable center. Fixes the hard center seam + flat ovals
+ * (wrong UV aspect in distance made horizontal smears).
  */
 export const vortexFragmentShader = `
   precision highp float;
@@ -46,7 +46,7 @@ export const vortexFragmentShader = `
     float pageIndex = floor(pageFloat);
     float localY = fract(pageFloat);
     vec3 mid = samplePage(pageIndex, localY, lx);
-    float soft = 0.16;
+    float soft = 0.12;
     if (localY < soft) {
       mid = mix(samplePage(pageIndex - 1.0, 1.0, lx), mid, smoothstep(0.0, soft, localY));
     } else if (localY > 1.0 - soft) {
@@ -55,67 +55,73 @@ export const vortexFragmentShader = `
     return mid;
   }
 
-  // Pure radial semicircle sink — spin kept tiny (ripples ≠ vortex)
-  vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin) {
+  // Round-on-screen silk sink (aspect scales X so eyes aren’t flat ovals)
+  vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin, float aspect) {
     vec2 d = uv - center;
-    float dist = length(vec2(d.x * 0.55, d.y * 1.0)) + 1e-5;
-    float fall = exp(-dist * 2.55);
+    float dist = length(vec2(d.x * aspect, d.y)) + 1e-5;
+    float fall = exp(-dist * 2.7);
+    fall = fall * fall * (3.0 - 2.0 * fall);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, 0.46, clamp(fall * power, 0.0, 1.0));
+    float pull = mix(1.0, 0.5, clamp(fall * power, 0.0, 1.0));
     return center + d * pull;
   }
 
   vec3 enrich(vec3 c) {
     c = pow(max(c, 0.0), vec3(0.9));
-    c *= 1.18;
+    c *= 1.2;
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    return mix(vec3(l), c, 1.07);
+    return mix(vec3(l), c, 1.08);
   }
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.012;
-    float I = clamp(uIntensity, 0.55, 1.7);
+    float t = uTime * 0.024;
+    float I = clamp(uIntensity, 0.55, 1.8);
     float pages = max(uPageCount, 1.0);
     float E = clamp(uEnergy, 0.0, 1.0);
+    float aspect = clamp(uAspect, 0.5, 2.2);
 
     vec2 leftC = vec2(0.0, 0.5);
     vec2 rightC = vec2(1.0, 0.5);
 
-    // Near-zero spin — semicircle comes from radial pull, not rotation
-    float spin = (0.18 + E * 0.06) * I;
-    float power = (1.18 + E * 0.12) * I;
+    float spin = (1.05 + E * 0.2) * I;
+    float power = (1.15 + E * 0.15) * I;
 
-    vec2 wL = eyeWarp(uv, leftC, power, spin + t);
-    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.75);
+    vec2 wL = eyeWarp(uv, leftC, power, spin + t, aspect);
+    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82, aspect);
 
-    // Hard half ownership + tiny soften — stop L/R interference ripples
-    float sideBlend = smoothstep(0.49, 0.51, uv.x);
+    // Soft continuous handoff — NO hard vertical seam
+    float sideBlend = smoothstep(0.38, 0.62, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    // Trust gaussian falloff for circle shape; lightly calm dead center only
-    float calm = 1.0 - smoothstep(0.0, 0.18, abs(uv.x - 0.5));
-    float warpAmt = clamp((1.0 - calm * 0.55) * min(I, 1.45) * (0.9 + E * 0.05), 0.0, 1.0);
-    vec2 w = mix(uv, warped, warpAmt);
+    // Side eyes; center canyon keeps drawings readable
+    float edge = smoothstep(0.14, 0.56, abs(uv.x - 0.5));
+    edge = pow(edge, 1.18);
+    vec2 w = mix(uv, warped, clamp(edge * I * (0.88 + E * 0.06), 0.0, 1.0));
 
-    float corridor = calm;
-    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.08 * I);
+    float corridor = 1.0 - edge;
+    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.09 * I);
+    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * 0.03 * I);
     w = clamp(w, 0.0, 1.0);
 
     vec2 local = clamp(w, vec2(0.001, 0.0), vec2(0.999, 1.0));
     float pageFloat = mod(uScroll + (1.0 - local.y), pages);
 
-    vec3 col = enrich(sampleField(pageFloat, local.x));
+    float vBias = (0.0003 + E * 0.0002) / max(pages, 1.0);
+    vec3 col = enrich(
+      sampleField(pageFloat, local.x) * 0.7
+      + sampleField(pageFloat + vBias, local.x) * 0.15
+      + sampleField(pageFloat - vBias, local.x) * 0.15
+    );
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * 0.7, uv.y - leftC.y)) * 3.2);
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * 0.7, uv.y - rightC.y)) * 3.2);
-    float side = smoothstep(0.15, 0.5, abs(uv.x - 0.5));
-    float vig = smoothstep(1.7, 0.3, length((uv - 0.5) * vec2(1.05, 1.0)));
-    col *= mix(0.96, 1.0, vig);
-    col += col * (eyeL + eyeR) * side * 0.035;
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * aspect, uv.y - leftC.y)) * 3.2);
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * aspect, uv.y - rightC.y)) * 3.2);
+    float vig = smoothstep(1.75, 0.28, length((uv - 0.5) * vec2(1.05, 1.0)));
+    col *= mix(0.95, 1.0, vig);
+    col += col * (eyeL + eyeR) * edge * 0.04;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }
