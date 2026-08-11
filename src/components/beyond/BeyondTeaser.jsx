@@ -9,7 +9,7 @@ const interests = [
 function BeyondTeaser() {
   return (
     <section
-      data-fluid-zone="soft"
+      data-fluid-zone="rich"
       className="beyond-studio border-t border-[color:var(--studio-border-muted)]"
       aria-labelledby="beyond-teaser-title"
     >
