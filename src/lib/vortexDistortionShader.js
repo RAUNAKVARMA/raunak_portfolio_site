@@ -9,9 +9,9 @@ export const vortexVertexShader = `
 `
 
 /**
- * Twin vortices — silky scroll + soft side eyes.
+ * Twin vortices — silky scroll + soft side eyes (Vincent-style full-bleed field).
  * Variable-height pages via uCumulTex; framing lerped in JS (uPageAspect).
- * uMobile: phones use object-fit contain (full drawing inside screen) + inset eyes.
+ * uMobile: stretch page to fill the whole phone screen + stronger inset twin eyes.
  */
 export const vortexFragmentShader = `
   precision highp float;
@@ -35,60 +35,42 @@ export const vortexFragmentShader = `
     return texture2D(uCumulTex, vec2(u, 0.5)).r;
   }
 
-  // Desktop: height-fit cover (fills frame, may crop sides).
-  // Phone: object-fit contain — entire page inside the screen with letterbox.
-  // Returns page UV; out of [0,1] means outside the drawing (letterbox).
+  // Desktop: aspect-correct cover (may crop sides).
+  // Phone: stretch entire page onto the full screen — no letterbox, edge-to-edge field.
   vec2 pageFitUv(vec2 uv, float viewAspect, float pageAspect, float zoomOut, float mobile) {
     float z = max(zoomOut, 1.0);
     float m = clamp(mobile, 0.0, 1.0);
-    vec2 cover;
-    vec2 contain;
 
+    vec2 cover;
     if (viewAspect > pageAspect) {
-      // Wide view: cover = fill height, crop width
       cover.y = 0.5 + (uv.y - 0.5) / z;
       cover.x = 0.5 + (uv.x - 0.5) * (viewAspect / pageAspect) / z;
-      // Contain = fit width inside, pillarbox sides (or full if page wider)
-      float margin = 1.0 / z;
-      float pageW = (pageAspect / viewAspect) * margin;
-      float pageH = margin;
-      contain.x = (uv.x - 0.5) / max(pageW, 1e-4) + 0.5;
-      contain.y = (uv.y - 0.5) / max(pageH, 1e-4) + 0.5;
     } else {
-      // Tall view: cover = fill height, crop width (center column)
       float vis = viewAspect / pageAspect;
       cover.x = 0.5 + (uv.x - 0.5) * vis;
       cover.y = 0.5 + (uv.y - 0.5) / z;
-      // Contain = fit page fully (width-limited for landscape pages on phone)
-      float margin = 1.0 / z;
-      float pageW;
-      float pageH;
-      if (pageAspect >= viewAspect) {
-        pageW = margin;
-        pageH = (viewAspect / pageAspect) * margin;
-      } else {
-        pageW = (pageAspect / viewAspect) * margin;
-        pageH = margin;
-      }
-      contain.x = (uv.x - 0.5) / max(pageW, 1e-4) + 0.5;
-      contain.y = (uv.y - 0.5) / max(pageH, 1e-4) + 0.5;
     }
 
-    return mix(cover, contain, m);
+    // Full-bleed phone: map full page 0..1 onto the whole viewport (Vincent cover feel)
+    vec2 fill;
+    fill.x = 0.5 + (uv.x - 0.5) / z;
+    fill.y = 0.5 + (uv.y - 0.5) / z;
+
+    return mix(cover, fill, m);
   }
 
   vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin, float wide) {
     vec2 d = uv - center;
-    float xs = mix(0.58, 0.36, wide);
-    float ys = mix(1.02, 0.9, wide);
+    float xs = mix(0.58, 0.32, wide);
+    float ys = mix(1.02, 0.86, wide);
     float dist = length(vec2(d.x * xs, d.y * ys)) + 1e-5;
-    float fall = exp(-dist * mix(2.85, 2.2, wide));
+    float fall = exp(-dist * mix(2.85, 2.0, wide));
     fall = fall * fall * (3.0 - 2.0 * fall);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, mix(0.48, 0.38, wide), fall * power);
+    float pull = mix(1.0, mix(0.48, 0.34, wide), fall * power);
     return center + d * pull;
   }
 
@@ -109,42 +91,36 @@ export const vortexFragmentShader = `
     float mobile = clamp(uMobile, 0.0, 1.0);
     float zoomOut = max(uZoomOut, 1.0);
 
-    // Phone: eyes sit on the drawing’s side regions (inset from bezel)
-    vec2 leftC = mix(vec2(0.0, 0.5), vec2(0.16, 0.5), mobile);
-    vec2 rightC = mix(vec2(1.0, 0.5), vec2(0.84, 0.5), mobile);
+    // Eyes hug the sides of the full-bleed field (slight inset so they stay readable)
+    vec2 leftC = mix(vec2(0.0, 0.5), vec2(0.08, 0.5), mobile);
+    vec2 rightC = mix(vec2(1.0, 0.5), vec2(0.92, 0.5), mobile);
 
-    float spin = (1.35 + E * 0.25) * I * mix(1.0, 1.22, mobile);
-    float power = (1.2 + E * 0.2) * I * mix(1.0, 1.32, mobile);
+    float spin = (1.35 + E * 0.25) * I * mix(1.0, 1.35, mobile);
+    float power = (1.2 + E * 0.2) * I * mix(1.0, 1.45, mobile);
 
     vec2 wL = eyeWarp(uv, leftC, power, spin + t, mobile);
     vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82, mobile);
     float sideBlend = smoothstep(0.36, 0.64, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    float edgeLo = mix(0.14, 0.06, mobile);
-    float edgeHi = mix(0.58, 0.48, mobile);
+    float edgeLo = mix(0.14, 0.04, mobile);
+    float edgeHi = mix(0.58, 0.44, mobile);
     float edge = smoothstep(edgeLo, edgeHi, abs(uv.x - 0.5));
-    edge = pow(edge, mix(1.22, 1.08, mobile));
-    float warpAmt = edge * I * mix(0.88, 1.0, mobile) * (0.88 + E * 0.08);
+    edge = pow(edge, mix(1.22, 1.0, mobile));
+    float warpAmt = edge * I * mix(0.88, 1.08, mobile) * (0.88 + E * 0.08);
     vec2 w = mix(uv, warped, clamp(warpAmt, 0.0, 1.0));
 
     float corridor = 1.0 - edge;
-    float corridorAmp = mix(0.11, 0.04, mobile);
+    float corridorAmp = mix(0.11, 0.06, mobile);
     w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * corridorAmp * I);
     w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * corridorAmp * 0.32 * I);
     w = clamp(w, 0.0, 1.0);
 
     vec2 local = pageFitUv(w, max(uAspect, 0.2), max(uPageAspect, 0.2), zoomOut, mobile);
+    local.x = clamp(local.x, 0.001, 0.999);
+    local.y = clamp(local.y, 0.0, 1.0);
 
-    // Letterbox outside the drawing — do not clamp-stretch off-page samples
-    float inside = smoothstep(0.0, 0.012, local.x) * smoothstep(0.0, 0.012, 1.0 - local.x)
-                 * smoothstep(0.0, 0.012, local.y) * smoothstep(0.0, 0.012, 1.0 - local.y);
-    // Soft mask stronger on phone contain; desktop cover barely uses it
-    inside = mix(1.0, inside, mobile);
-
-    vec2 sampleLocal = clamp(local, vec2(0.001, 0.0), vec2(0.999, 1.0));
-
-    float pageFloat = mod(uScroll + (1.0 - sampleLocal.y), pages);
+    float pageFloat = mod(uScroll + (1.0 - local.y), pages);
     float pageIndex = floor(pageFloat);
     float localY = fract(pageFloat);
 
@@ -152,12 +128,12 @@ export const vortexFragmentShader = `
     float vEnd = cumulAt(pageIndex);
     float sy = mix(vStart, vEnd, localY);
 
-    vec2 sampleUv = vec2(sampleLocal.x, sy);
+    vec2 sampleUv = vec2(local.x, sy);
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * mix(0.75, 0.55, mobile), uv.y - leftC.y)) * mix(3.6, 2.9, mobile));
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * mix(0.75, 0.55, mobile), uv.y - rightC.y)) * mix(3.6, 2.9, mobile));
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * mix(0.75, 0.5, mobile), uv.y - leftC.y)) * mix(3.6, 2.7, mobile));
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * mix(0.75, 0.5, mobile), uv.y - rightC.y)) * mix(3.6, 2.7, mobile));
     float ring = max(eyeL * (1.0 - eyeL), eyeR * (1.0 - eyeR)) * edge;
-    float ca = ring * 0.0024 * I * mix(1.0, 1.25, mobile);
+    float ca = ring * 0.0024 * I * mix(1.0, 1.4, mobile);
 
     vec3 colA = vec3(
       texture2D(uTexture, sampleUv + vec2(ca, 0.0)).r,
@@ -171,8 +147,7 @@ export const vortexFragmentShader = `
 
     float vig = smoothstep(1.75, 0.28, length((uv - 0.5) * vec2(1.05, 1.0)));
     col *= mix(0.95, 1.0, vig);
-    col += col * (eyeL + eyeR) * edge * mix(0.045, 0.065, mobile);
-    col *= inside;
+    col += col * (eyeL + eyeR) * edge * mix(0.045, 0.075, mobile);
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }

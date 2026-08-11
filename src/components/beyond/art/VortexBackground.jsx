@@ -30,8 +30,8 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
       material.uniforms.uMobile.value = mobileLite ? 1 : 0
     }
     if (material.uniforms.uZoomOut) {
-      // Phone padding so the full drawing + twin eyes sit inside the screen
-      material.uniforms.uZoomOut.value = mobileLite ? 1.16 : 1
+      // Phone stays edge-to-edge (Vincent full-bleed); tiny pad only
+      material.uniforms.uZoomOut.value = mobileLite ? 1.02 : 1
     }
     applyVortexAtlas(material, atlasRef.current)
   }, [material, intensity, mobileLite])
@@ -106,7 +106,7 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     mat.uniforms.uPageAspect.value = smoothAspectRef.current
     if (mat.uniforms.uEnergy) mat.uniforms.uEnergy.value = artScrollState.energy
     if (mat.uniforms.uMobile) mat.uniforms.uMobile.value = mobileLite ? 1 : 0
-    if (mat.uniforms.uZoomOut) mat.uniforms.uZoomOut.value = mobileLite ? 1.16 : 1
+    if (mat.uniforms.uZoomOut) mat.uniforms.uZoomOut.value = mobileLite ? 1.02 : 1
   })
 
   const w = Math.max(viewport.width * 1.02, 14)
