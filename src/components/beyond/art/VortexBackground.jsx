@@ -19,7 +19,7 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
   const atlasRef = useRef(null)
   const pageCountRef = useRef(1)
   const smoothAspectRef = useRef(1.45)
-  const { viewport, gl } = useThree()
+  const { viewport, gl, camera } = useThree()
 
   const material = useMemo(() => createVortexMaterial(intensity), [intensity])
 
@@ -30,8 +30,7 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
       material.uniforms.uMobile.value = mobileLite ? 1 : 0
     }
     if (material.uniforms.uZoomOut) {
-      // Phone stays edge-to-edge (Vincent full-bleed); tiny pad only
-      material.uniforms.uZoomOut.value = mobileLite ? 1.02 : 1
+      material.uniforms.uZoomOut.value = 1
     }
     applyVortexAtlas(material, atlasRef.current)
   }, [material, intensity, mobileLite])
@@ -106,14 +105,20 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     mat.uniforms.uPageAspect.value = smoothAspectRef.current
     if (mat.uniforms.uEnergy) mat.uniforms.uEnergy.value = artScrollState.energy
     if (mat.uniforms.uMobile) mat.uniforms.uMobile.value = mobileLite ? 1 : 0
-    if (mat.uniforms.uZoomOut) mat.uniforms.uZoomOut.value = mobileLite ? 1.02 : 1
+    if (mat.uniforms.uZoomOut) mat.uniforms.uZoomOut.value = 1
   })
 
-  const w = Math.max(viewport.width * 1.02, 14)
-  const h = Math.max(viewport.height * 1.02, 9)
+  // Size the plane to the visible frustum at its depth.
+  // Do NOT floor to 14×9 on phones — that oversizes the mesh and crops UV to the center.
+  const meshZ = -3.2
+  const camZ = camera.position.z
+  const depthScale = Math.abs(camZ - meshZ) / Math.max(Math.abs(camZ), 0.001)
+  const cover = mobileLite ? 1.04 : 1.02
+  const w = Math.max(viewport.width * depthScale * cover, 0.01)
+  const h = Math.max(viewport.height * depthScale * cover, 0.01)
 
   return (
-    <mesh position={[0, 0, -3.2]} renderOrder={0} scale={[w / 16, h / 9, 1]}>
+    <mesh position={[0, 0, meshZ]} renderOrder={0} scale={[w / 16, h / 9, 1]}>
       <planeGeometry args={[16, 9]} />
       <primitive object={material} attach="material" />
     </mesh>

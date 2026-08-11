@@ -5,7 +5,7 @@ import VortexBackground from './VortexBackground'
 
 /**
  * Full-bleed image pages + strong twin side vortices.
- * Phone matches Vincent-style full-bleed stretch fill + strong twin side eyes.
+ * Phone: aspect-correct drawings + continuous neighbors so the field stays full-bleed.
  */
 function ArtScene({ active, intensity, mobileLite }) {
   return (
@@ -23,8 +23,7 @@ function ArtCylinderCanvas({
   onContextLost,
 }) {
   const isActive = active && !paused
-  // Strong twin eyes across the full phone field
-  const intensity = mobileLite ? 1.8 : 1.5
+  const intensity = mobileLite ? 1.78 : 1.5
   const dpr = mobileLite ? [1, 1.75] : [1, 2]
 
   return (
