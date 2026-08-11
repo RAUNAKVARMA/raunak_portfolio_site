@@ -9,9 +9,11 @@ export const vortexVertexShader = `
 `
 
 /**
- * Vincent Canyon twin — phone + desktop:
- * exactly one circular eye left + one right, full-bleed stretch (no crop),
- * soft center canyon, no hard seam / no nested voids.
+ * Iconic Canyon twin — exactly TWO powerful side eyes.
+ *
+ * Desktop multi-lobes came from: (1) midY×side gates carving incomplete wells,
+ * (2) hard page seams warping into extra side voids while scrolling.
+ * This rebuild: one fat circular sink per bezel, soft page dissolve, calm center.
  */
 export const vortexFragmentShader = `
   precision highp float;
@@ -42,11 +44,12 @@ export const vortexFragmentShader = `
     return texture2D(uTexture, vec2(clamp(lx, 0.001, 0.999), sy)).rgb;
   }
 
+  // Wide dissolve so drawing→drawing joints don't curl into fake side eyes
   vec3 sampleField(float pageFloat, float lx) {
     float pageIndex = floor(pageFloat);
     float localY = fract(pageFloat);
     vec3 mid = samplePage(pageIndex, localY, lx);
-    float soft = 0.1;
+    float soft = 0.26;
     if (localY < soft) {
       mid = mix(samplePage(pageIndex - 1.0, 1.0, lx), mid, smoothstep(0.0, soft, localY));
     } else if (localY > 1.0 - soft) {
@@ -55,84 +58,81 @@ export const vortexFragmentShader = `
     return mid;
   }
 
-  // One circular sink per call. Portrait scales axes so eyes stay round on phones
-  // without moving centers (inset centers caused stacked voids).
-  vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin, float portrait) {
+  // One powerful circular sink + silk spin (single peak, no nested rings)
+  vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin) {
     vec2 d = uv - center;
-    float xs = mix(0.55, 0.82, portrait);
-    float ys = mix(1.05, 0.82, portrait);
-    float dist = length(vec2(d.x * xs, d.y * ys)) + 1e-5;
-    float fall = exp(-dist * mix(3.2, 2.75, portrait));
+    float dist = length(vec2(d.x * 0.58, d.y * 1.0)) + 1e-5;
+    float fall = exp(-dist * 2.55);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, 0.5, clamp(fall * power, 0.0, 1.0));
+    float pull = mix(1.0, 0.40, clamp(fall * power, 0.0, 1.0));
     return center + d * pull;
   }
 
   vec3 enrich(vec3 c) {
-    c = pow(max(c, 0.0), vec3(0.91));
-    c *= 1.18;
+    c = max(c, 0.0);
+    c = pow(c, vec3(0.88));
+    c *= 1.28;
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    return mix(vec3(l), c, 1.07);
+    c = mix(vec3(l), c, 1.12);
+    return c;
   }
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.025;
-    float I = clamp(uIntensity, 0.55, 1.85);
+    float t = uTime * 0.026;
+    float I = clamp(uIntensity, 0.6, 2.0);
     float pages = max(uPageCount, 1.0);
     float E = clamp(uEnergy, 0.0, 1.0);
-    // 0 on wide desktop, 1 on tall phones — shaping only, same eye centers
-    float portrait = clamp((1.0 - uAspect) / 0.55, 0.0, 1.0);
 
+    // Near-bezel centers (not deep inset — deep inset made stacked eyes)
     vec2 leftC = vec2(0.0, 0.5);
     vec2 rightC = vec2(1.0, 0.5);
 
-    float spin = (0.95 + E * 0.16) * I;
-    float power = (1.15 + E * 0.12) * I;
+    float spin = (1.15 + E * 0.22) * I;
+    float power = (1.28 + E * 0.16) * I;
 
-    vec2 wL = eyeWarp(uv, leftC, power, spin + t, portrait);
-    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.8, portrait);
+    vec2 wL = eyeWarp(uv, leftC, power, spin + t);
+    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82);
 
-    // Soft center handoff — no hard vertical seam
-    float sideBlend = smoothstep(0.46, 0.54, uv.x);
+    // Soft exclusive ownership — no hard seam, no deep mid-band ghost
+    float sideBlend = smoothstep(0.47, 0.53, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    // Outer thirds only — keeps a canyon center and two side eyes
-    float side = smoothstep(mix(0.20, 0.14, portrait), mix(0.58, 0.5, portrait), abs(uv.x - 0.5));
-    side = pow(side, mix(1.35, 1.18, portrait));
-    float midY = exp(-pow((uv.y - 0.5) * mix(1.7, 1.35, portrait), 2.0));
-    float warpAmt = clamp(side * midY * min(I, 1.4) * (0.92 + E * 0.05), 0.0, 1.0);
+    // Side bezels fully engage the warp; center stays the canyon.
+    // NO midY gate — that was slicing each bezel into stacked lobes.
+    float side = smoothstep(0.16, 0.52, abs(uv.x - 0.5));
+    side = pow(side, 1.15);
+    float warpAmt = clamp(side * min(I, 1.55) * (0.94 + E * 0.05), 0.0, 1.0);
     vec2 w = mix(uv, warped, warpAmt);
 
-    float corridor = (1.0 - side) * midY;
-    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.07 * I);
+    float corridor = 1.0 - side;
+    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.09 * I);
     w = clamp(w, 0.0, 1.0);
 
-    // Full-bleed stretch — never expand X past the page (avoids edge-leak voids)
     vec2 local = clamp(w, vec2(0.001, 0.0), vec2(0.999, 1.0));
     float pageFloat = mod(uScroll + (1.0 - local.y), pages);
 
-    float vBias = (0.0003 + E * 0.0002) / max(pages, 1.0);
+    float vBias = (0.00028 + E * 0.0002) / max(pages, 1.0);
     vec3 col = enrich(
-      sampleField(pageFloat, local.x) * 0.72
-      + sampleField(pageFloat + vBias, local.x) * 0.14
-      + sampleField(pageFloat - vBias, local.x) * 0.14
+      sampleField(pageFloat, local.x) * 0.68
+      + sampleField(pageFloat + vBias, local.x) * 0.16
+      + sampleField(pageFloat - vBias, local.x) * 0.16
     );
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * mix(0.7, 0.85, portrait), (uv.y - leftC.y) * mix(1.1, 0.9, portrait))) * mix(3.6, 3.0, portrait));
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * mix(0.7, 0.85, portrait), (uv.y - rightC.y) * mix(1.1, 0.9, portrait))) * mix(3.6, 3.0, portrait));
-    float vig = smoothstep(1.7, 0.32, length((uv - 0.5) * vec2(1.05, 1.0)));
-    col *= mix(0.96, 1.0, vig);
-    col += col * (eyeL + eyeR) * side * midY * 0.035;
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * 0.72, uv.y - leftC.y)) * 3.1);
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * 0.72, uv.y - rightC.y)) * 3.1);
+    float vig = smoothstep(1.8, 0.26, length((uv - 0.5) * vec2(1.05, 1.0)));
+    col *= mix(0.94, 1.0, vig);
+    col += col * (eyeL + eyeR) * side * 0.05;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }
 `
 
-export function createVortexMaterial(intensity = 1.45) {
+export function createVortexMaterial(intensity = 1.55) {
   return new THREE.ShaderMaterial({
     uniforms: {
       uTexture: { value: new THREE.Texture() },

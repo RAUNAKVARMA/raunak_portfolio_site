@@ -22,8 +22,8 @@ function ArtCylinderCanvas({
   onContextLost,
 }) {
   const isActive = active && !paused
-  const intensity = 1.45
-  const dpr = mobileLite ? [1, 1.75] : [1, 2.25]
+  const intensity = 1.55
+  const dpr = mobileLite ? [1, 1.85] : [1, 2.25]
 
   return (
     <Canvas
