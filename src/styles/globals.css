@@ -411,6 +411,109 @@ body.art-experience-active main {
   line-height: 18px;
 }
 
+/* Beyond landing hero — voice + type over the mono studio system */
+.beyond-hero-glow {
+  background:
+    radial-gradient(ellipse 70% 55% at 18% 78%, rgba(28, 105, 212, 0.16), transparent 62%),
+    radial-gradient(ellipse 55% 45% at 88% 22%, rgba(226, 39, 24, 0.08), transparent 58%);
+}
+
+.beyond-hero-vignette {
+  background:
+    linear-gradient(to top, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.2) 42%, transparent 72%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(0, 0, 0, 0.55), transparent 70%);
+}
+
+.beyond-hero-eyebrow {
+  margin: 0;
+  color: rgba(244, 241, 234, 0.55);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.beyond-hero-title {
+  margin: 18px 0 0;
+  max-width: 14ch;
+  color: #f7f4ee;
+  font-family: 'Syne', 'Fragment Mono', ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.35rem, 7.2vw, 4.35rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.beyond-hero-lede {
+  margin: 22px 0 0;
+  max-width: 34rem;
+  color: rgba(232, 228, 220, 0.78);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.beyond-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.beyond-hero-chips li {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(244, 241, 234, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(244, 241, 234, 0.72);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .beyond-hero-eyebrow,
+  .beyond-hero-title,
+  .beyond-hero-lede,
+  .beyond-hero-chips {
+    animation: beyond-hero-rise 0.9s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  }
+
+  .beyond-hero-title {
+    animation-delay: 0.08s;
+  }
+
+  .beyond-hero-lede {
+    animation-delay: 0.16s;
+  }
+
+  .beyond-hero-chips {
+    animation-delay: 0.24s;
+  }
+}
+
+@keyframes beyond-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .beyond-studio .studio-rule {
   border: 0;
   border-top: 1px solid var(--studio-border-muted);

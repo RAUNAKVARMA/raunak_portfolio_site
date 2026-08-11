@@ -1,28 +1,23 @@
+const curiosities = ['Cars', 'Cricket', 'Sketchbooks', 'Cameras', 'Rabbit holes']
+
 function InterestsHero() {
   return (
-    <header className="relative flex min-h-[min(52svh,28rem)] flex-col justify-end pb-12 pt-28 sm:pt-32">
-      <div className="studio-container">
-        <p className="studio-eyebrow">Beyond Work</p>
-        <h1 className="studio-title">The person behind the code</h1>
-        <p className="studio-lede">
-          Cars, space, drawing, cricket, video editing — the obsessions that sit alongside models and
-          papers. Documentation of interests, studies, and values outside shipping product.
+    <header className="beyond-hero relative flex min-h-[min(78svh,42rem)] flex-col justify-end overflow-hidden pb-14 pt-28 sm:min-h-[min(88svh,48rem)] sm:pb-20 sm:pt-32">
+      <div className="beyond-hero-glow pointer-events-none absolute inset-0" aria-hidden />
+      <div className="beyond-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
+
+      <div className="studio-container relative z-[1]">
+        <p className="beyond-hero-eyebrow">Beyond Work</p>
+        <h1 className="beyond-hero-title">Things that make me curious.</h1>
+        <p className="beyond-hero-lede">
+          Cars, cricket, sketchbooks, cameras, and whatever rabbit hole I&apos;ve fallen into lately.
         </p>
 
-        <dl className="studio-meta" aria-label="Section metadata">
-          <div className="flex gap-2">
-            <dt>Audience</dt>
-            <dd>visitors · collaborators</dd>
-          </div>
-          <div className="flex gap-2">
-            <dt>Surface</dt>
-            <dd>personal index</dd>
-          </div>
-          <div className="flex gap-2">
-            <dt>Status</dt>
-            <dd>living document</dd>
-          </div>
-        </dl>
+        <ul className="beyond-hero-chips" aria-label="Current curiosities">
+          {curiosities.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
       </div>
     </header>
   )

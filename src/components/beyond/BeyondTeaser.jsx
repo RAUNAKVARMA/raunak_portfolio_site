@@ -17,10 +17,10 @@ function BeyondTeaser() {
         <div className="studio-container">
           <p className="studio-eyebrow">Beyond Work</p>
           <h2 id="beyond-teaser-title" className="studio-title">
-            Cars · Space · Drawing
+            Things that make me curious.
           </h2>
           <p className="studio-lede">
-            Cricket, cars, space, and sketching — the obsessions that sit alongside models and papers.
+            Cars, cricket, sketchbooks, cameras, and whatever rabbit hole I&apos;ve fallen into lately.
           </p>
 
           <div className="studio-index mt-6 max-w-xl" role="list">
