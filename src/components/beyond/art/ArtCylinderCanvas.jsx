@@ -5,7 +5,7 @@ import VortexBackground from './VortexBackground'
 
 /**
  * Full-bleed image pages + strong twin side vortices.
- * Phone uses a wider FOV / pulled camera so both eyes + sketches stay readable.
+ * Phone keeps desktop camera framing; shader uses mobile width-fit + inset eyes.
  */
 function ArtScene({ active, intensity, mobileLite }) {
   return (
@@ -23,19 +23,14 @@ function ArtCylinderCanvas({
   onContextLost,
 }) {
   const isActive = active && !paused
-  // Same warp strength as desktop — framing differs on phone
-  const intensity = 1.5
+  // Stronger warp on phone so twin eyes read through portrait framing
+  const intensity = mobileLite ? 1.85 : 1.5
   const dpr = mobileLite ? [1, 1.75] : [1, 2]
 
   return (
     <Canvas
       className="absolute inset-0 block h-full w-full"
-      camera={{
-        position: [0, 0, mobileLite ? 6.35 : 5],
-        fov: mobileLite ? 62 : 40,
-        near: 0.1,
-        far: 80,
-      }}
+      camera={{ position: [0, 0, 5], fov: 40, near: 0.1, far: 80 }}
       dpr={dpr}
       gl={{
         alpha: false,
@@ -44,15 +39,10 @@ function ArtCylinderCanvas({
         stencil: false,
         failIfMajorPerformanceCaveat: false,
       }}
-      onCreated={({ gl, camera }) => {
+      onCreated={({ gl }) => {
         gl.setClearColor(0x000000, 1)
         gl.toneMapping = THREE.NoToneMapping
         gl.outputColorSpace = THREE.SRGBColorSpace
-        if (mobileLite) {
-          camera.position.set(0, 0, 6.35)
-          camera.fov = 62
-          camera.updateProjectionMatrix()
-        }
         try {
           window.__MAX_TEX_SIZE__ = gl.capabilities?.getMaxTextureSize?.() || 8192
         } catch {
