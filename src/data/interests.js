@@ -34,7 +34,13 @@ export const interestEntries = [
     id: 'drawing',
     tag: '03',
     title: 'Drawing',
-    blurb: 'Sketching ideas before they become code — visual thinking on paper.',
+    path: '/beyond/drawing',
+    blurb: 'Self-taught since first grade — sketches made for the joy of making them.',
+    story: [
+      'I started drawing in first grade. No classes, no formal path — just a self-taught habit that never left.',
+      'I love making sketches. In my free time I sit with graphite and color and dig into studies until the page feels alive.',
+      'I really enjoy that quiet craft — shape, light, and rhythm — before ideas ever become code or scenes.',
+    ],
   },
   {
     id: 'cricket',

@@ -10,8 +10,8 @@ function HobbyGrid() {
           What I love
         </h2>
         <p className="studio-lede">
-          Six recurring themes. Open an entry for the full note — Cars, Space &amp; Video Editing are
-          live; more pages next.
+          Six recurring themes. Open an entry for the full note — Cars, Space, Drawing &amp; Video
+          Editing are live; more pages next.
         </p>
 
         <div className="studio-index mt-6" role="list">

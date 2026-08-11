@@ -5,12 +5,12 @@ import WebGLErrorBoundary from '../../ui/WebGLErrorBoundary'
 import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
 import { useLenis } from '../../../providers/SmoothScrollProvider'
 import ArtCylinderCanvas from './ArtCylinderCanvas'
-import { artScrollState } from './artScrollState'
+import { artScrollState, impulseFlick, impulseScroll } from './artScrollState'
 
 function ImmersiveFallback() {
   return (
     <div className="absolute inset-0">
-      <img src="/images/art-canyon-organic.png" alt="" className="h-full w-full object-cover" />
+      <img src="/images/drawings/aurora-wolf.png" alt="" className="h-full w-full object-cover" />
       <div className="absolute inset-0 bg-black/55" />
       <div className="absolute inset-0 flex items-center justify-center">
         <p className="font-heading text-5xl font-bold uppercase tracking-[0.2em] text-white">
@@ -21,23 +21,18 @@ function ImmersiveFallback() {
   )
 }
 
-function applyScrollDelta(deltaY) {
-  if (!artScrollState.enabled) return
-  // Page-based scroll: wheel nudges to next/prev full image
-  const boost = Math.sign(deltaY) * Math.min(Math.abs(deltaY) * 0.012, 2.5)
-  artScrollState.velocity += boost
-}
-
 function ArtExperience() {
   const navigate = useNavigate()
   const lenisRef = useLenis()
   const touchY = useRef(null)
+  const touchSamples = useRef([])
   const [effectOn, setEffectOn] = useState(true)
   const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
   const useStatic = prefersReducedMotion
 
   useEffect(() => {
     artScrollState.position = 0
+    artScrollState.display = 0
     artScrollState.velocity = 0
     artScrollState.energy = 0
     artScrollState.enabled = true
@@ -76,11 +71,13 @@ function ArtExperience() {
     const onWheel = (e) => {
       e.preventDefault()
       e.stopPropagation()
-      applyScrollDelta(e.deltaY)
+      impulseScroll(e.deltaY, { deltaMode: e.deltaMode })
     }
 
     const onTouchStart = (e) => {
-      touchY.current = e.touches[0]?.clientY ?? null
+      const y = e.touches[0]?.clientY ?? null
+      touchY.current = y
+      touchSamples.current = y == null ? [] : [{ y, t: performance.now() }]
     }
 
     const onTouchMove = (e) => {
@@ -88,31 +85,51 @@ function ArtExperience() {
       e.preventDefault()
       const y = e.touches[0]?.clientY
       if (y == null) return
-      applyScrollDelta(touchY.current - y)
+      const dy = touchY.current - y
       touchY.current = y
+      const now = performance.now()
+      touchSamples.current.push({ y, t: now })
+      if (touchSamples.current.length > 6) touchSamples.current.shift()
+      impulseScroll(dy * 2.4)
+    }
+
+    const onTouchEnd = () => {
+      const samples = touchSamples.current
+      touchY.current = null
+      if (samples.length >= 2) {
+        const a = samples[0]
+        const b = samples[samples.length - 1]
+        const dt = Math.max(1, b.t - a.t)
+        impulseFlick((a.y - b.y) / dt)
+      }
+      touchSamples.current = []
     }
 
     const onKey = (e) => {
-      if (e.key === 'Escape') navigate('/beyond')
+      if (e.key === 'Escape') navigate('/beyond/drawing')
       if (e.key === 'ArrowDown' || e.key === ' ') {
         e.preventDefault()
-        applyScrollDelta(80)
+        impulseScroll(100)
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault()
-        applyScrollDelta(-80)
+        impulseScroll(-100)
       }
     }
 
     window.addEventListener('wheel', onWheel, { passive: false, capture: true })
     window.addEventListener('touchstart', onTouchStart, { passive: true, capture: true })
     window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true })
+    window.addEventListener('touchend', onTouchEnd, { passive: true, capture: true })
+    window.addEventListener('touchcancel', onTouchEnd, { passive: true, capture: true })
     window.addEventListener('keydown', onKey)
 
     return () => {
       window.removeEventListener('wheel', onWheel, { capture: true })
       window.removeEventListener('touchstart', onTouchStart, { capture: true })
       window.removeEventListener('touchmove', onTouchMove, { capture: true })
+      window.removeEventListener('touchend', onTouchEnd, { capture: true })
+      window.removeEventListener('touchcancel', onTouchEnd, { capture: true })
       window.removeEventListener('keydown', onKey)
     }
   }, [useStatic, navigate])
@@ -132,16 +149,15 @@ function ArtExperience() {
         </WebGLErrorBoundary>
       )}
 
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_40%_50%_at_50%_50%,transparent_0%,rgba(0,0,0,0.45)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_55%_60%_at_50%_50%,transparent_40%,rgba(0,0,0,0.18)_100%)]" />
 
       <div className="absolute left-5 top-5 z-30 sm:left-7 sm:top-7">
-        <Link to="/beyond" className="art-back-btn inline-flex items-center gap-2">
+        <Link to="/beyond/drawing" className="art-back-btn inline-flex items-center gap-2">
           <RiArrowLeftLine />
           Back
         </Link>
       </div>
 
-      {/* Center pill — VL style */}
       <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6">
         <div className="art-cylinder-pill text-center">
           <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-white/70">

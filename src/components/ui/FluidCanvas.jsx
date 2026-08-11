@@ -84,6 +84,7 @@ function FluidCanvas() {
 
   const heavyRoute =
     pathname.startsWith('/beyond/cars') ||
+    pathname.startsWith('/beyond/drawing') ||
     pathname.startsWith('/beyond/art') ||
     pathname.startsWith('/beyond/space') ||
     pathname.startsWith('/beyond/editing')

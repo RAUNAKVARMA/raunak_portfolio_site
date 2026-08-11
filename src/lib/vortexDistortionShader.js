@@ -9,32 +9,36 @@ export const vortexVertexShader = `
 `
 
 /**
- * Vincent Lowe Canyon — readable photos + side eyes
- * Center corridor ≈ almost clean full-bleed image (object-fit: cover)
- * Strong suck/swirl only near LEFT + RIGHT edges
+ * Twin vortices — silky scroll + soft side eyes.
+ * Variable-height pages via uCumulTex; framing lerped in JS (uPageAspect).
  */
 export const vortexFragmentShader = `
   precision highp float;
 
   uniform sampler2D uTexture;
+  uniform sampler2D uCumulTex;
   uniform float uTime;
   uniform float uIntensity;
   uniform float uScroll;
   uniform float uPageCount;
-  uniform float uAspect; // viewport width / height
+  uniform float uAspect;
+  uniform float uPageAspect;
+  uniform float uEnergy;
   varying vec2 vUv;
 
-  // Map screen UV to square page UV with object-fit: cover
-  vec2 coverUv(vec2 uv, float aspect) {
-    vec2 u = uv;
-    float imgAspect = 1.0; // square atlas pages
-    if (aspect > imgAspect) {
-      // landscape viewport — crop top/bottom of square
-      float vis = imgAspect / aspect;
-      u.y = (1.0 - vis) * 0.5 + uv.y * vis;
+  float cumulAt(float index) {
+    float pages = max(uPageCount, 1.0);
+    float u = (index + 0.5) / pages;
+    return texture2D(uCumulTex, vec2(u, 0.5)).r;
+  }
+
+  vec2 heightFitUv(vec2 uv, float viewAspect, float pageAspect) {
+    vec2 u;
+    u.y = uv.y;
+    if (viewAspect > pageAspect) {
+      u.x = 0.5 + (uv.x - 0.5) * (viewAspect / pageAspect);
     } else {
-      // portrait viewport — crop sides of square
-      float vis = aspect / imgAspect;
+      float vis = viewAspect / pageAspect;
       u.x = (1.0 - vis) * 0.5 + uv.x * vis;
     }
     return u;
@@ -42,84 +46,103 @@ export const vortexFragmentShader = `
 
   vec2 eyeWarp(vec2 uv, vec2 center, float power, float spin) {
     vec2 d = uv - center;
-    float dist = length(vec2(d.x * 0.62, d.y * 1.05)) + 1e-5;
-    float fall = exp(-dist * 3.2);
+    float dist = length(vec2(d.x * 0.58, d.y * 1.02)) + 1e-5;
+    // Softer falloff = silkier eyes, less sparkling
+    float fall = exp(-dist * 2.85);
+    fall = fall * fall * (3.0 - 2.0 * fall);
     float ang = spin * fall;
     float s = sin(ang);
     float c = cos(ang);
     d = mat2(c, -s, s, c) * d;
-    float pull = mix(1.0, 0.42, fall * power);
+    float pull = mix(1.0, 0.48, fall * power);
     return center + d * pull;
   }
 
   vec3 enrich(vec3 c) {
+    c = pow(max(c, 0.0), vec3(0.9));
+    c *= 1.2;
     float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    c = mix(vec3(l), c, 1.12);
-    c *= 1.05;
-    return pow(max(c, 0.0), vec3(0.98));
+    c = mix(vec3(l), c, 1.08);
+    return c;
   }
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.04;
-    float I = clamp(uIntensity, 0.5, 1.8);
+    float t = uTime * 0.028;
+    float I = clamp(uIntensity, 0.5, 2.0);
     float pages = max(uPageCount, 1.0);
+    float E = clamp(uEnergy, 0.0, 1.0);
 
     vec2 leftC = vec2(0.0, 0.5);
     vec2 rightC = vec2(1.0, 0.5);
 
-    float spin = 1.35 * I;
-    float power = 1.25 * I;
+    float spin = (1.35 + E * 0.25) * I;
+    float power = (1.2 + E * 0.2) * I;
 
     vec2 wL = eyeWarp(uv, leftC, power, spin + t);
-    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.8);
-    float sideBlend = smoothstep(0.38, 0.62, uv.x);
+    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82);
+    float sideBlend = smoothstep(0.36, 0.64, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);
 
-    // Center = nearly clean photo; outer thirds = canyon eyes
-    float edge = smoothstep(0.18, 0.58, abs(uv.x - 0.5));
-    edge = pow(edge, 1.35);
-    vec2 w = mix(uv, warped, edge * I * 0.92);
+    float edge = smoothstep(0.14, 0.58, abs(uv.x - 0.5));
+    edge = pow(edge, 1.22);
+    vec2 w = mix(uv, warped, edge * I * (0.88 + E * 0.08));
 
     float corridor = 1.0 - edge;
-    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.12 * I);
-    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * 0.04 * I);
+    w.x = 0.5 + (w.x - 0.5) * (1.0 + corridor * 0.11 * I);
+    w.y = 0.5 + (w.y - 0.5) * (1.0 + corridor * 0.035 * I);
     w = clamp(w, 0.0, 1.0);
 
-    // Cover-crop within the square page, then map into atlas strip
-    vec2 local = coverUv(w, max(uAspect, 0.2));
-    float sy = mod(uScroll + (1.0 - local.y), pages) / pages;
+    vec2 local = heightFitUv(w, max(uAspect, 0.2), max(uPageAspect, 0.2));
+    local.x = clamp(local.x, 0.001, 0.999);
+    local.y = clamp(local.y, 0.0, 1.0);
+
+    float pageFloat = mod(uScroll + (1.0 - local.y), pages);
+    float pageIndex = floor(pageFloat);
+    float localY = fract(pageFloat);
+
+    float vStart = pageIndex <= 0.5 ? 0.0 : cumulAt(pageIndex - 1.0);
+    float vEnd = cumulAt(pageIndex);
+    float sy = mix(vStart, vEnd, localY);
+
     vec2 sampleUv = vec2(local.x, sy);
 
-    float eyeL = exp(-length(vec2((uv.x - leftC.x) * 0.75, uv.y - leftC.y)) * 4.0);
-    float eyeR = exp(-length(vec2((uv.x - rightC.x) * 0.75, uv.y - rightC.y)) * 4.0);
+    float eyeL = exp(-length(vec2((uv.x - leftC.x) * 0.75, uv.y - leftC.y)) * 3.6);
+    float eyeR = exp(-length(vec2((uv.x - rightC.x) * 0.75, uv.y - rightC.y)) * 3.6);
     float ring = max(eyeL * (1.0 - eyeL), eyeR * (1.0 - eyeR)) * edge;
-    float ca = ring * 0.0028 * I;
+    float ca = ring * 0.0024 * I;
 
-    vec3 col = vec3(
+    // 2-tap mild blur along scroll axis reduces shimmer while scrolling
+    vec3 colA = vec3(
       texture2D(uTexture, sampleUv + vec2(ca, 0.0)).r,
       texture2D(uTexture, sampleUv).g,
       texture2D(uTexture, sampleUv - vec2(ca, 0.0)).b
     );
-    col = enrich(col);
+    float vBias = (0.00035 + E * 0.00025) / max(pages, 1.0);
+    vec3 colB = texture2D(uTexture, sampleUv + vec2(0.0, vBias)).rgb;
+    vec3 colC = texture2D(uTexture, sampleUv - vec2(0.0, vBias)).rgb;
+    vec3 col = enrich(colA * 0.7 + (colB + colC) * 0.15);
 
-    float vig = smoothstep(1.6, 0.15, length((uv - 0.5) * vec2(1.05, 1.0)));
-    col *= mix(0.88, 1.0, vig);
-    col += col * (eyeL + eyeR) * edge * 0.05;
+    float vig = smoothstep(1.75, 0.28, length((uv - 0.5) * vec2(1.05, 1.0)));
+    col *= mix(0.95, 1.0, vig);
+    col += col * (eyeL + eyeR) * edge * 0.045;
 
     gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
   }
 `
 
-export function createVortexMaterial(intensity = 1.35) {
+export function createVortexMaterial(intensity = 1.5) {
   return new THREE.ShaderMaterial({
     uniforms: {
       uTexture: { value: new THREE.Texture() },
+      uCumulTex: { value: new THREE.Texture() },
       uTime: { value: 0 },
       uIntensity: { value: intensity },
       uScroll: { value: 0 },
       uPageCount: { value: 1 },
       uAspect: { value: 1.6 },
+      uPageAspect: { value: 16 / 10 },
+      uEnergy: { value: 0 },
     },
     vertexShader: vortexVertexShader,
     fragmentShader: vortexFragmentShader,

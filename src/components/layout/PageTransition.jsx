@@ -3,6 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion'
 const EASE = [0.16, 1, 0.3, 1]
 
 function PageTransition({ routeKey, children }) {
+  const instant = typeof routeKey === 'string' && routeKey.startsWith('/beyond/drawing')
+
+  if (instant) {
+    return <div key={routeKey}>{children}</div>
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
