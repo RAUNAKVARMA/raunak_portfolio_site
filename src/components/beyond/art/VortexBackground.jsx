@@ -29,15 +29,11 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     if (material.uniforms.uMobile) {
       material.uniforms.uMobile.value = mobileLite ? 1 : 0
     }
-    if (material.uniforms.uZoomOut) {
-      material.uniforms.uZoomOut.value = 1
-    }
     applyVortexAtlas(material, atlasRef.current)
   }, [material, intensity, mobileLite])
 
   useEffect(() => {
     let cancelled = false
-    // Help atlas cap strip height to this GPU
     try {
       window.__MAX_TEX_SIZE__ = gl.capabilities?.getMaxTextureSize?.() || 8192
     } catch {
@@ -64,7 +60,6 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     return () => {
       cancelled = true
       unsub()
-      // Shared session cache — do not dispose
       atlasRef.current = null
     }
   }, [gl])
@@ -105,15 +100,13 @@ function VortexBackground({ active, intensity = 1.55, mobileLite = false }) {
     mat.uniforms.uPageAspect.value = smoothAspectRef.current
     if (mat.uniforms.uEnergy) mat.uniforms.uEnergy.value = artScrollState.energy
     if (mat.uniforms.uMobile) mat.uniforms.uMobile.value = mobileLite ? 1 : 0
-    if (mat.uniforms.uZoomOut) mat.uniforms.uZoomOut.value = 1
   })
 
-  // Size the plane to the visible frustum at its depth.
-  // Do NOT floor to 14×9 on phones — that oversizes the mesh and crops UV to the center.
+  // Frustum-matched plane — never floor to oversized mins (that crops UV on phones)
   const meshZ = -3.2
   const camZ = camera.position.z
   const depthScale = Math.abs(camZ - meshZ) / Math.max(Math.abs(camZ), 0.001)
-  const cover = mobileLite ? 1.04 : 1.02
+  const cover = 1.04
   const w = Math.max(viewport.width * depthScale * cover, 0.01)
   const h = Math.max(viewport.height * depthScale * cover, 0.01)
 
