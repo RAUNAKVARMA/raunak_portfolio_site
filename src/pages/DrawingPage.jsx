@@ -33,19 +33,26 @@ function DrawingPage() {
 
   useEffect(() => {
     const lenis = lenisRef?.current
-    if (mode === 'archive') {
-      try {
-        lenis?.stop?.()
-      } catch {
-        /* */
-      }
-    } else {
-      try {
-        lenis?.start?.()
-        lenis?.scrollTo?.(0, { immediate: true })
-      } catch {
-        /* */
-      }
+    // Field owns its own touch/wheel → vortex; never let Lenis scroll the document
+    // or phones overscroll into a black gap under the canvas.
+    try {
+      lenis?.stop?.()
+      lenis?.scrollTo?.(0, { immediate: true })
+    } catch {
+      /* */
+    }
+    window.scrollTo(0, 0)
+
+    if (mode !== 'field') return undefined
+
+    const prevHtml = document.documentElement.style.overflow
+    const prevBody = document.body.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.documentElement.style.overflow = prevHtml
+      document.body.style.overflow = prevBody
     }
   }, [mode, lenisRef])
 

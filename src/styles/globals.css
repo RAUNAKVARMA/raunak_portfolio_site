@@ -670,6 +670,17 @@ body.art-experience-active main {
 html.drawing-immersive,
 body.drawing-immersive {
   overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
+/* Field: hard lock page scroll — rubber-band was exposing a black strip under the vortex */
+html.drawing-immersive:not(.drawing-archive-mode),
+body.drawing-immersive:not(.drawing-archive-mode) {
+  overflow: hidden !important;
+  height: 100%;
+  height: 100dvh;
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 html.drawing-archive-mode,
@@ -679,6 +690,7 @@ body.drawing-archive-mode {
 }
 
 body.drawing-immersive .is-drawing-immersive main {
+  min-height: 100%;
   min-height: 100dvh;
 }
 
@@ -690,9 +702,18 @@ body.drawing-immersive .is-drawing-immersive main {
 }
 
 .drawing-page-modes.is-field {
+  /* Pin to the visual viewport so Safari chrome / bounce never leaves a gap */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   height: 100dvh;
-  max-height: 100dvh;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
+  max-height: none;
   overflow: hidden;
+  overscroll-behavior: none;
+  background: #050505;
 }
 
 .drawing-page-modes.is-archive {
@@ -897,12 +918,14 @@ body.drawing-immersive .is-drawing-immersive main {
 
 /* Field: full-bleed twin vortex + glass overlays */
 .drawing-field {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 100dvh;
-  min-height: 100dvh;
-  max-height: 100dvh;
+  height: 100%;
+  min-height: 100%;
+  max-height: none;
   overflow: hidden;
+  overscroll-behavior: none;
   background: #050505;
 }
 
@@ -913,6 +936,7 @@ body.drawing-immersive .is-drawing-immersive main {
   inset: 0;
   width: 100%;
   height: 100%;
+  min-height: 100%;
 }
 
 .drawing-field-fallback {
@@ -960,15 +984,18 @@ body.drawing-immersive .is-drawing-immersive main {
 }
 
 .drawing-field-hud {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 3;
-  min-height: 100dvh;
+  min-height: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: calc(72px + env(safe-area-inset-top, 0px)) clamp(16px, 3.5vw, 36px)
     calc(28px + env(safe-area-inset-bottom, 0px));
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 .drawing-field-hud .drawing-field-gate,

@@ -107,9 +107,11 @@ function VortexBackground({ active, intensity = 1.48 }) {
   const camZ = camera.position.z
   const depthScale = Math.abs(camZ - meshZ) / Math.max(Math.abs(camZ), 0.001)
   const portrait = viewport.width < viewport.height
-  const cover = portrait ? 1.06 : 1.02
-  const w = Math.max(viewport.width * depthScale * cover, 0.01)
-  const h = Math.max(viewport.height * depthScale * cover, 0.01)
+  // Extra Y overscan on phones — Safari chrome / bounce was flashing the plane edge
+  const coverX = portrait ? 1.08 : 1.02
+  const coverY = portrait ? 1.14 : 1.03
+  const w = Math.max(viewport.width * depthScale * coverX, 0.01)
+  const h = Math.max(viewport.height * depthScale * coverY, 0.01)
 
   return (
     <mesh position={[0, 0, meshZ]} renderOrder={0} scale={[w / 16, h / 9, 1]}>
