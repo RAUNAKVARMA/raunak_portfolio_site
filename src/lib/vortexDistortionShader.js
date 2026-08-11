@@ -78,7 +78,9 @@ export const vortexFragmentShader = `
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.022;
+    // Bounded breath only — never accumulate spin from elapsed time
+    // (old uTime*k kept twisting the eyes until they broke apart)
+    float breath = sin(uTime * 0.27) * 0.07 + sin(uTime * 0.11) * 0.035;
     float I = clamp(uIntensity, 0.55, 1.75);
     float pages = max(uPageCount, 1.0);
     float E = clamp(uEnergy, 0.0, 1.0);
@@ -87,12 +89,12 @@ export const vortexFragmentShader = `
     vec2 leftC = vec2(0.0, 0.5);
     vec2 rightC = vec2(1.0, 0.5);
 
-    // Silk, not corkscrew
+    // Silk, not corkscrew — fixed base spin + tiny living inhale
     float spin = (0.82 + E * 0.16) * I;
     float power = (1.18 + E * 0.14) * I;
 
-    vec2 wL = eyeWarp(uv, leftC, power, spin + t, aspect);
-    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - t * 0.82, aspect);
+    vec2 wL = eyeWarp(uv, leftC, power, spin + breath, aspect);
+    vec2 wR = eyeWarp(uv, rightC, power, -(spin) - breath * 0.9, aspect);
 
     float sideBlend = smoothstep(0.4, 0.6, uv.x);
     vec2 warped = mix(wL, wR, sideBlend);

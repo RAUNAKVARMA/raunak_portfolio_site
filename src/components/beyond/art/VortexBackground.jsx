@@ -91,8 +91,11 @@ function VortexBackground({ active, intensity = 1.48 }) {
     smoothAspectRef.current += (targetAspect - smoothAspectRef.current) * easeOutExp(dt, 4.5)
 
     const viewAspect = Math.max(viewport.width / Math.max(viewport.height, 0.001), 0.2)
-    mat.uniforms.uTime.value = state.clock.elapsedTime
-    mat.uniforms.uScroll.value = artScrollState.display
+    // Wrap time so long sessions do not lose float precision in the shader
+    mat.uniforms.uTime.value = state.clock.elapsedTime % 6000
+    // Keep scroll modulo pages so display floats do not grow without bound
+    const wrappedScroll = ((artScrollState.display % pages) + pages) % pages
+    mat.uniforms.uScroll.value = wrappedScroll
     mat.uniforms.uPageCount.value = pages
     mat.uniforms.uAspect.value = viewAspect
     mat.uniforms.uPageAspect.value = smoothAspectRef.current
