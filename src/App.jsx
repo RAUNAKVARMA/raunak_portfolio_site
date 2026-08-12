@@ -15,6 +15,7 @@ const DrawingPage = lazy(() => import('./pages/DrawingPage'))
 const ArtExperiencePage = lazy(() => import('./pages/ArtExperiencePage'))
 const SpacePage = lazy(() => import('./pages/SpacePage'))
 const EditingPage = lazy(() => import('./pages/EditingPage'))
+const MoviesPage = lazy(() => import('./pages/MoviesPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
@@ -110,6 +111,14 @@ function App() {
                 element={
                   <Suspense fallback={<PageFallback />}>
                     <EditingPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="beyond/movies"
+                element={
+                  <Suspense fallback={<PageFallback />}>
+                    <MoviesPage />
                   </Suspense>
                 }
               />

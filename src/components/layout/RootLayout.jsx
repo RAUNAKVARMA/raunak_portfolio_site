@@ -30,6 +30,8 @@ function RootLayout() {
   const lenisRef = useLenis()
   const { setMorphProgress, setContactProgress, setScrollProgress } = useSceneProgress()
   const isDrawingImmersive = pathname.startsWith('/beyond/drawing')
+  const isMoviesImmersive = pathname.startsWith('/beyond/movies')
+  const isImmersive = isDrawingImmersive || isMoviesImmersive
 
   useRouteScene()
 
@@ -69,12 +71,14 @@ function RootLayout() {
       <SceneController />
       <ScrollSceneTriggers />
       <SceneLayer />
-      <FluidCanvas />
-      <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(28,105,212,0.08),transparent_60%)]" aria-hidden />
+      {!isMoviesImmersive ? <FluidCanvas /> : null}
+      {!isMoviesImmersive ? (
+        <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(28,105,212,0.08),transparent_60%)]" aria-hidden />
+      ) : null}
       <div className="noise-overlay" />
       <CustomCursor />
-      {!isDrawingImmersive ? <ScrollProgressBar /> : null}
-      {!isDrawingImmersive ? <Navbar /> : null}
+      {!isImmersive ? <ScrollProgressBar /> : null}
+      {!isImmersive ? <Navbar /> : null}
 
       <main id="main-content" className="relative isolate z-10 bg-black" tabIndex={-1}>
         <PageTransition routeKey={pathname}>
@@ -82,7 +86,7 @@ function RootLayout() {
         </PageTransition>
       </main>
 
-      {!isDrawingImmersive ? <Footer /> : null}
+      {!isImmersive ? <Footer /> : null}
     </div>
   )
 }

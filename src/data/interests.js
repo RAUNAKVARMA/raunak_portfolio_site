@@ -65,6 +65,17 @@ export const interestEntries = [
     title: 'Music',
     blurb: 'A constant background track while building — always hunting for the next song.',
   },
+  {
+    id: 'movies',
+    tag: '07',
+    title: 'Movies',
+    path: '/beyond/movies',
+    blurb: 'Films I rewatch for rhythm, scale, and the way a frame can hold a whole mood.',
+    story: [
+      'Movies are where editing, sound, and scale collide — the same instincts I chase in reels and in code.',
+      'This shelf is a scroll of favorites: tall cards you drag through, one title at a time.',
+    ],
+  },
 ]
 
 export function getInterestById(id) {

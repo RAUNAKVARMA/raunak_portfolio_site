@@ -13,6 +13,7 @@ const ROUTE_VARIANT = {
   '/beyond/art': 'beyond',
   '/beyond/space': 'beyond',
   '/beyond/editing': 'beyond',
+  '/beyond/movies': 'beyond',
   '/contact': 'contact',
 }
 

@@ -8,7 +8,7 @@ function BeyondPage() {
   useDocumentTitle('Beyond Work')
 
   return (
-    <div className="beyond-studio min-h-screen pb-16" data-fluid-zone="rich">
+    <div className="beyond-studio min-h-screen pb-16">
       <InterestsHero />
       <HobbyGrid />
       <Reading />

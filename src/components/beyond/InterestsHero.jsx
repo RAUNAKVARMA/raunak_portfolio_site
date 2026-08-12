@@ -2,7 +2,10 @@ const curiosities = ['Cars', 'Cricket', 'Sketchbooks', 'Cameras', 'Rabbit holes'
 
 function InterestsHero() {
   return (
-    <header className="beyond-hero relative flex min-h-[min(78svh,42rem)] flex-col justify-end overflow-hidden pb-14 pt-28 sm:min-h-[min(88svh,48rem)] sm:pb-20 sm:pt-32">
+    <header
+      data-fluid-zone="rich"
+      className="beyond-hero relative flex min-h-[min(78svh,42rem)] flex-col justify-end overflow-hidden pb-14 pt-28 sm:min-h-[min(88svh,48rem)] sm:pb-20 sm:pt-32"
+    >
       <div className="beyond-hero-glow pointer-events-none absolute inset-0" aria-hidden />
       <div className="beyond-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
 

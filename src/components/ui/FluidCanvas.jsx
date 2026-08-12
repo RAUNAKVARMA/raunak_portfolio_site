@@ -89,7 +89,8 @@ function FluidCanvas() {
     pathname.startsWith('/beyond/drawing') ||
     pathname.startsWith('/beyond/art') ||
     pathname.startsWith('/beyond/space') ||
-    pathname.startsWith('/beyond/editing')
+    pathname.startsWith('/beyond/editing') ||
+    pathname.startsWith('/beyond/movies')
   const canRun = enableFluidSim && !isTouchLike && !heavyRoute && !prefersReducedMotion
 
   useEffect(() => {

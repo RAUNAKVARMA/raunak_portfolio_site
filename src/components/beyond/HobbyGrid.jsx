@@ -1,6 +1,46 @@
 import { Link } from 'react-router-dom'
 import { interestEntries } from '../../data/interests'
+import { editingClips } from '../../data/editingClips'
+import { movies } from '../../data/movies'
 import { prefetchVortexAtlas } from '../../lib/vortexAtlas'
+
+const INTEREST_VISUALS = {
+  cars: {
+    accent: '#e22718',
+    preview: '/images/drawings/ferrari-laferrari.png',
+    label: 'Garage',
+  },
+  space: {
+    accent: '#1c69d4',
+    preview: '/images/art-vortex-astro.png',
+    label: 'Cosmos',
+  },
+  drawing: {
+    accent: '#e8e4dc',
+    preview: '/images/drawings/aurora-wolf.png',
+    label: 'Field',
+  },
+  cricket: {
+    accent: '#4ade80',
+    preview: '/images/drawings/portrait-kohli.png',
+    label: 'Soon',
+  },
+  editing: {
+    accent: '#c084fc',
+    preview: editingClips[2].poster,
+    label: 'Reels',
+  },
+  music: {
+    accent: '#fbbf24',
+    preview: null,
+    label: 'Soon',
+  },
+  movies: {
+    accent: '#f472b6',
+    preview: movies[0].poster,
+    label: 'Shelf',
+  },
+}
 
 function warmDrawing(path) {
   if (path === '/beyond/drawing') {
@@ -18,68 +58,98 @@ function warmDrawing(path) {
   }
 }
 
+function InterestRow({ hobby }) {
+  const visual = INTEREST_VISUALS[hobby.id] ?? { accent: '#ffffff', preview: null, label: 'Soon' }
+  const isLive = Boolean(hobby.path)
+
+  const inner = (
+    <>
+      <span className="beyond-index-row__ghost" aria-hidden>
+        {hobby.tag}
+      </span>
+
+      {visual.preview ? (
+        <span className="beyond-index-row__preview" aria-hidden>
+          <img src={visual.preview} alt="" loading="lazy" decoding="async" />
+          <span className="beyond-index-row__preview-veil" />
+        </span>
+      ) : null}
+
+      <span
+        className="beyond-index-row__accent"
+        style={{ '--interest-accent': visual.accent }}
+        aria-hidden
+      />
+
+      <span className="beyond-index-row__main">
+        <span className="beyond-index-row__meta">
+          <span className="beyond-index-row__tag">{hobby.tag}</span>
+          <span className={`beyond-index-row__status${isLive ? ' is-live' : ''}`}>
+            {isLive ? visual.label : 'Coming soon'}
+          </span>
+        </span>
+
+        <span className="beyond-index-row__copy">
+          <span className="beyond-index-row__title">{hobby.title}</span>
+          <span className="beyond-index-row__blurb">{hobby.blurb}</span>
+        </span>
+
+        {isLive ? (
+          <span className="beyond-index-row__cta" aria-hidden>
+            Open
+            <span className="beyond-index-row__cta-arrow">→</span>
+          </span>
+        ) : null}
+      </span>
+    </>
+  )
+
+  if (isLive) {
+    return (
+      <Link
+        to={hobby.path}
+        role="listitem"
+        data-cursor-hover="true"
+        className="beyond-index-row is-live"
+        style={{ '--interest-accent': visual.accent }}
+        onPointerEnter={() => warmDrawing(hobby.path)}
+        onFocus={() => warmDrawing(hobby.path)}
+        onTouchStart={() => warmDrawing(hobby.path)}
+      >
+        {inner}
+      </Link>
+    )
+  }
+
+  return (
+    <article
+      role="listitem"
+      className="beyond-index-row is-soon"
+      style={{ '--interest-accent': visual.accent }}
+    >
+      {inner}
+    </article>
+  )
+}
+
 function HobbyGrid() {
   return (
-    <section className="studio-section" aria-labelledby="interests-heading">
+    <section className="beyond-interests" aria-labelledby="interests-heading">
       <div className="studio-container">
-        <p className="studio-eyebrow">Interests</p>
-        <h2 id="interests-heading" className="studio-title">
-          What I love
-        </h2>
-        <p className="studio-lede">
-          Six recurring themes. Open an entry for the full note — Cars, Space, Drawing &amp; Video
-          Editing are live; more pages next.
-        </p>
+        <header className="beyond-interests-head">
+          <p className="beyond-interests-eyebrow">The index</p>
+          <h2 id="interests-heading" className="beyond-interests-title">
+            What I love
+          </h2>
+          <p className="beyond-interests-lede">
+            Seven rabbit holes I keep returning to. Five are live — tap in and wander.
+          </p>
+        </header>
 
-        <div className="studio-index mt-6" role="list">
-          {interestEntries.map((hobby) => {
-            const body = (
-              <>
-                <span className="studio-index-num" aria-hidden>
-                  {hobby.tag}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h3 className="studio-index-title">{hobby.title}</h3>
-                      <p className="studio-index-body">{hobby.blurb}</p>
-                    </div>
-                    {hobby.path && (
-                      <span
-                        className="mt-0.5 shrink-0 text-[10px] uppercase tracking-[0.14em] text-[color:var(--studio-text-muted)]"
-                        aria-hidden
-                      >
-                        →
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </>
-            )
-
-            if (hobby.path) {
-              return (
-                <Link
-                  key={hobby.id}
-                  to={hobby.path}
-                  role="listitem"
-                  data-cursor-hover="true"
-                  className="studio-index-item no-underline transition-[background-color] duration-150 hover:!bg-[#0a0a0a] focus-visible:!bg-[#0a0a0a]"
-                  onPointerEnter={() => warmDrawing(hobby.path)}
-                  onFocus={() => warmDrawing(hobby.path)}
-                  onTouchStart={() => warmDrawing(hobby.path)}
-                >
-                  {body}
-                </Link>
-              )
-            }
-
-            return (
-              <article key={hobby.id} className="studio-index-item" role="listitem">
-                {body}
-              </article>
-            )
-          })}
+        <div className="beyond-interests-list" role="list">
+          {interestEntries.map((hobby) => (
+            <InterestRow key={hobby.id} hobby={hobby} />
+          ))}
         </div>
       </div>
     </section>
