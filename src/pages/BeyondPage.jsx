@@ -1,11 +1,17 @@
+import { useEffect } from 'react'
 import InterestsHero from '../components/beyond/InterestsHero'
 import HobbyGrid from '../components/beyond/HobbyGrid'
 import Reading from '../components/beyond/Reading'
 import Values from '../components/beyond/Values'
+import { preloadReadingCovers } from '../data/reading'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 function BeyondPage() {
   useDocumentTitle('Beyond Work')
+
+  useEffect(() => {
+    preloadReadingCovers()
+  }, [])
 
   return (
     <div className="beyond-studio min-h-screen pb-16">
