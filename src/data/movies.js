@@ -9,12 +9,13 @@ import inceptionPoster from '../assets/movies/inception.png'
 import darkKnightPoster from '../assets/movies/dark-knight.png'
 import matrixPoster from '../assets/movies/matrix.png'
 import transformersPoster from '../assets/movies/transformers.png'
+import threeHundredPoster from '../assets/movies/300.png'
 
 export const movies = [
   {
     id: 'interstellar',
-    line1: 'Inter',
-    line2: 'stellar',
+    line1: 'Interstellar',
+    line2: '',
     title: 'Interstellar',
     year: 2014,
     director: 'Christopher Nolan',
@@ -49,8 +50,8 @@ export const movies = [
   },
   {
     id: 'whiplash',
-    line1: 'Whip',
-    line2: 'lash',
+    line1: 'Whiplash',
+    line2: '',
     title: 'Whiplash',
     year: 2014,
     director: 'Damien Chazelle',
@@ -85,8 +86,8 @@ export const movies = [
   },
   {
     id: 'inception',
-    line1: 'Incep',
-    line2: 'tion',
+    line1: 'Inception',
+    line2: '',
     title: 'Inception',
     year: 2010,
     director: 'Christopher Nolan',
@@ -121,8 +122,8 @@ export const movies = [
   },
   {
     id: 'transformers',
-    line1: 'Age of',
-    line2: 'Extinction',
+    line1: 'Transformers',
+    line2: 'Age of Extinction',
     title: 'Transformers: Age of Extinction',
     year: 2014,
     director: 'Michael Bay',
@@ -130,6 +131,18 @@ export const movies = [
       'The rules have changed — robots, dinosaurs, and chaos at full volume. I put this on when I want pure spectacle and zero apologies.',
     accent: '#f97316',
     poster: transformersPoster,
+  },
+  {
+    id: '300',
+    line1: '300',
+    line2: '',
+    title: '300',
+    year: 2006,
+    director: 'Zack Snyder',
+    note:
+      'Tonight we dine in hell — red capes, graphic-novel frames, and that roar before the spear. I put this on when I want pure myth, blood, and no half measures.',
+    accent: '#b91c1c',
+    poster: threeHundredPoster,
   },
 ]
 

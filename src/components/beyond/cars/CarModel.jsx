@@ -640,6 +640,388 @@ function prepareMaterial(material) {
   fixMaterialMaps(material)
 }
 
+function enhanceLiteSharedDetails(mat, obj) {
+  if (!mat) return
+  const name = mat.name || ''
+
+  if (/Badge|ManufacturerPlate|Crest|Emblem/i.test(name)) {
+    if (mat.map) {
+      mat.color?.setRGB?.(1, 1, 1)
+      mat.map.colorSpace = THREE.SRGBColorSpace
+      mat.map.anisotropy = Math.max(mat.map.anisotropy || 1, 8)
+      mat.map.needsUpdate = true
+    }
+    if ('metalness' in mat) mat.metalness = Math.min(mat.metalness ?? 0.2, 0.15)
+    if ('roughness' in mat) mat.roughness = Math.min(mat.roughness ?? 0.35, 0.3)
+    if ('envMapIntensity' in mat) mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.45)
+    mat.emissive?.setRGB?.(0.18, 0.16, 0.14)
+    if ('emissiveIntensity' in mat) {
+      mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 0, 0.45)
+    }
+    if ('toneMapped' in mat) mat.toneMapped = false
+    mat.needsUpdate = true
+    return
+  }
+
+  if (/Calliper|Caliper/i.test(name)) {
+    if (!mat.map) mat.color?.setRGB?.(1, 0.85, 0.05)
+    if ('metalness' in mat) mat.metalness = 0.18
+    if ('roughness' in mat) mat.roughness = 0.22
+    if ('envMapIntensity' in mat) mat.envMapIntensity = 0.7
+    mat.emissive?.setRGB?.(0.45, 0.28, 0)
+    if ('emissiveIntensity' in mat) mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 0, 0.4)
+    mat.needsUpdate = true
+    return
+  }
+
+  if (/Wheel/i.test(name) && !/vehiclelights|LightA/i.test(name)) {
+    if (mat.map) {
+      mat.color?.setRGB?.(1, 1, 1)
+      mat.map.anisotropy = Math.max(mat.map.anisotropy || 1, 8)
+      mat.map.needsUpdate = true
+    } else {
+      mat.color?.setRGB?.(0.04, 0.04, 0.045)
+    }
+    if ('metalness' in mat) mat.metalness = Math.max(mat.metalness ?? 0.5, 0.55)
+    if ('roughness' in mat) mat.roughness = Math.min(mat.roughness ?? 0.4, 0.32)
+    if ('envMapIntensity' in mat) mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.95)
+    mat.needsUpdate = true
+    return
+  }
+
+  if (/Grille/i.test(name)) {
+    if (mat.map) {
+      mat.color?.setRGB?.(1, 1, 1)
+      mat.map.anisotropy = Math.max(mat.map.anisotropy || 1, 8)
+      mat.map.needsUpdate = true
+    }
+    if ('metalness' in mat) mat.metalness = Math.max(mat.metalness ?? 0.4, 0.5)
+    if ('roughness' in mat) mat.roughness = Math.min(mat.roughness ?? 0.4, 0.35)
+    if ('envMapIntensity' in mat) mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.9)
+    mat.needsUpdate = true
+    return
+  }
+
+  if (/Carbon/i.test(name)) {
+    if (mat.map) {
+      mat.color?.setRGB?.(1, 1, 1)
+      mat.map.anisotropy = Math.max(mat.map.anisotropy || 1, 8)
+      mat.map.needsUpdate = true
+    }
+    if ('metalness' in mat) mat.metalness = Math.max(mat.metalness ?? 0.4, 0.55)
+    if ('roughness' in mat) mat.roughness = Math.min(mat.roughness ?? 0.4, 0.3)
+    if ('envMapIntensity' in mat) mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.85)
+    if (mat.normalMap) {
+      mat.normalMap.anisotropy = Math.max(mat.normalMap.anisotropy || 1, 8)
+      mat.normalScale?.set?.(1.25, 1.25)
+      mat.normalMap.needsUpdate = true
+    }
+    mat.needsUpdate = true
+  }
+}
+
+/**
+ * Fast path: mutate existing materials in place (no MeshPhysical rebuild / no shader splits).
+ * Restores brand paint + lights that the generic mobileLite wash was bleaching.
+ */
+function applyLiteBrandPolish(root, url) {
+  const isSupra = /supra|toyota/i.test(url)
+  const isBugatti = /bugatti/i.test(url)
+  const isLambo = /lamborghini|aventador/i.test(url)
+  const isAston = /aston|valour/i.test(url)
+  const isFerrari = /ferrari/i.test(url)
+  const isBmw = /bmw|m4/i.test(url)
+  const isPorsche = /porsche|918|spyder/i.test(url)
+
+  root.traverse((obj) => {
+    if (!obj.isMesh || !obj.material) return
+    if (/ground|floor|shadow|plane|platform|podium|stand|plinth|Base_Geo/i.test(obj.name || '')) {
+      obj.visible = false
+      return
+    }
+
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+    mats.forEach((mat) => {
+      if (!mat) return
+      prepareMaterial(mat)
+      const name = mat.name || ''
+
+      if (/Base_Material/i.test(name)) {
+        mat.visible = false
+        if ('envMapIntensity' in mat) mat.envMapIntensity = 0
+        mat.needsUpdate = true
+        return
+      }
+
+      // Shared: keep env low on body paint so HDR doesn't grey it out
+      const paintLike =
+        /Paint|PaintA|coloured|Coloured|textureda|chassis|Matte__FF151515|Matte__FFFFFFFF__prim/i.test(
+          name,
+        )
+
+      if (isSupra) {
+        if (/PaintA_Material/i.test(name)) {
+          mat.color?.setRGB?.(1, 0.58, 0.12)
+          if ('metalness' in mat) mat.metalness = 0.04
+          if ('roughness' in mat) mat.roughness = 0.24
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.55
+          if ('clearcoat' in mat) mat.clearcoat = 1
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.05
+          mat.emissive?.setRGB?.(0.35, 0.1, 0.015)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.32
+        } else if (/Coloured_Material/i.test(name)) {
+          mat.color?.setRGB?.(0.95, 1.08, 0.55)
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.85
+        } else if (/LightA_Material/i.test(name) || /Light_Geo/i.test(obj.name || '')) {
+          // Hot LEDs — map drives emissive so lenses aren't chalk-white wash
+          if (mat.map) {
+            mat.color?.setRGB?.(1, 1, 1)
+            mat.emissiveMap = mat.map
+            if (mat.emissiveMap) {
+              mat.emissiveMap.colorSpace = THREE.SRGBColorSpace
+              mat.emissiveMap.needsUpdate = true
+            }
+          } else {
+            mat.color?.setRGB?.(0.95, 0.97, 1)
+          }
+          mat.emissive?.setRGB?.(1, 0.98, 0.94)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 1, 3.8)
+          if ('metalness' in mat) mat.metalness = 0.15
+          if ('roughness' in mat) mat.roughness = 0.1
+          if ('toneMapped' in mat) mat.toneMapped = false
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.15
+          mat.transparent = false
+          mat.opacity = 1
+        } else if (/UnderLighting/i.test(name)) {
+          mat.emissive?.setRGB?.(1, 0.42, 0.05)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 1, 2.8)
+          if ('toneMapped' in mat) mat.toneMapped = false
+        } else if (paintLike && 'envMapIntensity' in mat) {
+          mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.85)
+        }
+      } else if (isBugatti) {
+        if (/coloured|textureda__env|Matte__FFFFFFFF__prim|Matte__FF151515/i.test(name)) {
+          // Deep Noire — low env so HDR doesn't grey the black
+          mat.color?.setRGB?.(0.008, 0.007, 0.008)
+          if ('metalness' in mat) mat.metalness = 0.08
+          if ('roughness' in mat) mat.roughness = 0.36
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.18
+          if ('clearcoat' in mat) mat.clearcoat = 0.85
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.08
+          mat.emissive?.setRGB?.(0.01, 0.008, 0.006)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.04
+        } else if (/Matte__FF114182/i.test(name)) {
+          mat.color?.setRGB?.(0.02, 0.022, 0.028)
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.2
+          if ('roughness' in mat) mat.roughness = 0.4
+        } else if (/Matte__80800000/i.test(name)) {
+          mat.color?.setRGB?.(0.85, 0.01, 0.02)
+          mat.emissiveMap = null
+          mat.emissive?.setRGB?.(0.9, 0.015, 0.015)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 2.2
+          if ('toneMapped' in mat) mat.toneMapped = false
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.06
+        } else if (/vehiclelights128/i.test(name)) {
+          // Spec/env atlas as emissiveMap washes lamps — pure emissive only (like full rebuild).
+          const isFront = /_(FL|FR)$/i.test(name) || /FL|FR/i.test(name)
+          const isRear = /_RR$/i.test(name) || /RR/i.test(name)
+          mat.emissiveMap = null
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0
+          if ('metalness' in mat) mat.metalness = 0.02
+          if ('roughness' in mat) mat.roughness = 0.2
+          if ('toneMapped' in mat) mat.toneMapped = false
+          mat.transparent = false
+          mat.opacity = 1
+          if (isRear) {
+            mat.color?.setRGB?.(1, 0.38, 0.04)
+            mat.emissive?.setRGB?.(1, 0.3, 0.02)
+            if ('emissiveIntensity' in mat) mat.emissiveIntensity = 4.8
+          } else {
+            // Front jewels — hot white, no map wash
+            mat.color?.setRGB?.(1, 1, 1)
+            mat.emissive?.setRGB?.(1, 0.98, 0.92)
+            if ('emissiveIntensity' in mat) mat.emissiveIntensity = isFront ? 9.5 : 7.5
+          }
+        } else if (/lavoiturecsr2_light__/i.test(name)) {
+          // Housing chrome only — keep dark so lamps read
+          mat.color?.setRGB?.(0.05, 0.045, 0.04)
+          mat.emissiveMap = null
+          mat.emissive?.setRGB?.(0, 0, 0)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0
+          if ('metalness' in mat) mat.metalness = 0.4
+          if ('roughness' in mat) mat.roughness = 0.42
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.28
+        } else if (paintLike && 'envMapIntensity' in mat) {
+          mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.22)
+        }
+      } else if (isLambo) {
+        if (/RED_PAINT/i.test(name)) {
+          // Blu Aventador (material id is RED_PAINT)
+          mat.color?.setRGB?.(0.12, 0.42, 1.0)
+          if ('metalness' in mat) mat.metalness = 0
+          if ('roughness' in mat) mat.roughness = 0.22
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.45
+          if ('clearcoat' in mat) mat.clearcoat = 1
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.04
+          mat.emissive?.setRGB?.(0.05, 0.14, 0.55)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.7
+          if ('toneMapped' in mat) mat.toneMapped = false
+        } else if (/PAINT_BLACK/i.test(name)) {
+          mat.color?.setRGB?.(0.035, 0.035, 0.04)
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.65
+        } else if (/Badge|ManufacturerPlate/i.test(name)) {
+          // Crest / plate — keep atlas color true, kill env wash
+          if (mat.map) {
+            mat.color?.setRGB?.(1, 1, 1)
+            mat.map.colorSpace = THREE.SRGBColorSpace
+            mat.map.needsUpdate = true
+          }
+          if ('metalness' in mat) mat.metalness = 0.08
+          if ('roughness' in mat) mat.roughness = 0.28
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.35
+          mat.emissive?.setRGB?.(0.22, 0.2, 0.18)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.55
+          if ('toneMapped' in mat) mat.toneMapped = false
+        } else if (/RED_GLASS/i.test(name)) {
+          mat.color?.setRGB?.(1, 0.0, 0.02)
+          mat.emissiveMap = null
+          mat.emissive?.setRGB?.(1, 0.02, 0.01)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 5.8
+          if ('toneMapped' in mat) mat.toneMapped = false
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.12
+          mat.transparent = true
+          mat.opacity = 0.5
+          mat.depthWrite = false
+        } else if (/ORANGE_GLASS/i.test(name)) {
+          mat.color?.setRGB?.(1, 0.42, 0.02)
+          mat.emissiveMap = null
+          mat.emissive?.setRGB?.(1, 0.38, 0.02)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 4.5
+          if ('toneMapped' in mat) mat.toneMapped = false
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.15
+          mat.transparent = true
+          mat.opacity = 0.55
+          mat.depthWrite = false
+        } else if (/LightA_Material/i.test(name)) {
+          // Front/rear shared housing — map drives LED detail
+          if (mat.map) {
+            mat.color?.setRGB?.(1, 1, 1)
+            mat.emissiveMap = mat.map
+            mat.emissiveMap.colorSpace = THREE.SRGBColorSpace
+            mat.emissiveMap.needsUpdate = true
+          } else {
+            mat.color?.setRGB?.(0.95, 0.97, 1)
+          }
+          mat.emissive?.setRGB?.(0.95, 0.97, 1)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 4.6
+          if ('metalness' in mat) mat.metalness = 0.1
+          if ('roughness' in mat) mat.roughness = 0.08
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.2
+          if ('toneMapped' in mat) mat.toneMapped = false
+          mat.transparent = false
+          mat.opacity = 1
+        } else if (paintLike && 'envMapIntensity' in mat) {
+          mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.5)
+        }
+      } else if (isAston) {
+        if (/Paint_Material/i.test(name)) {
+          // Saturated British racing green — low env keeps it from mint-washing
+          mat.color?.setRGB?.(0.01, 0.2, 0.07)
+          if ('metalness' in mat) mat.metalness = 0.04
+          if ('roughness' in mat) mat.roughness = 0.3
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.28
+          if ('clearcoat' in mat) mat.clearcoat = 0.9
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.07
+          mat.emissive?.setRGB?.(0.01, 0.08, 0.025)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.18
+        } else if (/LightA_Material|red_glass/i.test(name)) {
+          if (/red_glass/i.test(name)) {
+            mat.color?.setRGB?.(1, 0.02, 0.03)
+            mat.emissive?.setRGB?.(1, 0.04, 0.015)
+            if ('emissiveIntensity' in mat) mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 1, 2.2)
+          } else {
+            mat.emissive?.setRGB?.(0.95, 0.96, 1)
+            if ('emissiveIntensity' in mat) mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 1, 1.4)
+          }
+          if ('toneMapped' in mat) mat.toneMapped = false
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.35
+        } else if (paintLike && 'envMapIntensity' in mat) {
+          mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.35)
+        }
+      } else if (isFerrari) {
+        if (/Paint_Material|Rosso|Body_Paint/i.test(name) || (/Paint/i.test(name) && !/PaintA/i.test(name))) {
+          // Iconic Rosso Corsa — blood red, color-first (env was washing it)
+          if (mat.map) {
+            mat.map.colorSpace = THREE.SRGBColorSpace
+            mat.map.needsUpdate = true
+          }
+          mat.color?.setRGB?.(0.92, 0.015, 0.025)
+          if ('metalness' in mat) mat.metalness = 0
+          if ('roughness' in mat) mat.roughness = 0.3
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.28
+          if ('clearcoat' in mat) mat.clearcoat = 1
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.045
+          if ('specularIntensity' in mat) mat.specularIntensity = 0.85
+          if (mat.specularColor) mat.specularColor.setRGB(1, 0.2, 0.12)
+          mat.emissive?.setRGB?.(0.42, 0.02, 0.015)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.55
+          if ('toneMapped' in mat) mat.toneMapped = false
+        } else if (/Coloured_Material|phong1/i.test(name)) {
+          mat.color?.setRGB?.(0.04, 0.04, 0.045)
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.35
+        } else if (paintLike && 'envMapIntensity' in mat) {
+          mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.4)
+        }
+      } else if (isBmw) {
+        if (/chassis|Paint|livery|body/i.test(name) || paintLike) {
+          // Keep livery map true — brightening color was washing the blue/white
+          if (mat.map) {
+            mat.color?.setRGB?.(1, 1, 1)
+            mat.map.colorSpace = THREE.SRGBColorSpace
+            mat.map.needsUpdate = true
+          } else {
+            mat.color?.setRGB?.(0.08, 0.28, 0.78)
+          }
+          if ('metalness' in mat) mat.metalness = Math.min(mat.metalness ?? 0.2, 0.06)
+          if ('roughness' in mat) mat.roughness = Math.min(Math.max(mat.roughness ?? 0.35, 0.28), 0.38)
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.32
+          if ('clearcoat' in mat) mat.clearcoat = 0.75
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.08
+          mat.emissive?.setRGB?.(0.015, 0.04, 0.12)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.1
+        }
+      } else if (isPorsche) {
+        if (paintLike || /Paint|Body|chassis|Car_Paint/i.test(name)) {
+          if (mat.map) {
+            mat.color?.setRGB?.(1.08, 1.06, 1.04)
+          } else {
+            mat.color?.setRGB?.(0.72, 0.74, 0.76)
+          }
+          if ('metalness' in mat) mat.metalness = Math.min(mat.metalness ?? 0.35, 0.22)
+          if ('roughness' in mat) mat.roughness = Math.min(mat.roughness ?? 0.4, 0.22)
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.95
+          if ('clearcoat' in mat) mat.clearcoat = 1
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.035
+          mat.emissive?.setRGB?.(0.08, 0.08, 0.07)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = Math.max(mat.emissiveIntensity || 0, 0.12)
+        }
+      } else if ('envMapIntensity' in mat) {
+        // Default lite: mild polish, not the old 1.55 wash
+        mat.envMapIntensity = Math.min(Math.max(mat.envMapIntensity || 0.8, 0.7), 1.05)
+        if ('roughness' in mat && typeof mat.roughness === 'number') {
+          mat.roughness = Math.min(mat.roughness, 0.58)
+        }
+      }
+
+      mat.needsUpdate = true
+      // Shared accents — badges, wheels, grilles, carbon, calipers (cheap, no rebuild)
+      enhanceLiteSharedDetails(mat, obj)
+    })
+  })
+}
+
+export { applyLiteBrandPolish }
+
 /** F82 Razor — NFS product shot: punchy livery, glowing angel eyes / L-tails, gold Enkeis. */
 function rebuildBmwMaterial(source, cache) {
   if (!source) return source
@@ -1831,9 +2213,13 @@ function CarModel({
     if (!group.current) return
     const fit = group.current.userData.fitScale ?? 1
     reveal.current = 0
-    group.current.scale.setScalar(fit * 0.78)
-    group.current.rotation.y = -0.55
-    group.current.position.y = baseY.current - 0.55
+    // Mobile: subtler rise so it stays snappy; desktop: full cinematic
+    const scaleFrom = mobileLite ? 0.9 : 0.78
+    const yawFrom = mobileLite ? -0.28 : -0.55
+    const yFrom = mobileLite ? 0.22 : 0.55
+    group.current.scale.setScalar(fit * scaleFrom)
+    group.current.rotation.y = yawFrom
+    group.current.position.y = baseY.current - yFrom
   }
 
   useLayoutEffect(() => {
@@ -1908,56 +2294,48 @@ function CarModel({
       }
     })
 
-    // Material polish after first paint. On mobileLite: cheap colorSpace only (no Physical rebuild).
+    // Lite polish after paint — sync traverse was risking a blank first frame.
+    if (scene.userData.garagePolishRev !== 8) {
+      scene.userData.garagePolished = false
+      scene.userData.garagePolishRev = 8
+    }
     if (!scene.userData.garagePolished) {
       const polish = () => {
         if (scene.userData.garagePolished) return
-        if (mobileLite) {
-          scene.traverse((obj) => {
-            if (!obj.isMesh) return
-            const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-            mats.forEach((mat) => {
-              prepareMaterial(mat)
-              if ('envMapIntensity' in mat) {
-                mat.envMapIntensity = Math.max(mat.envMapIntensity || 0, 1.55)
-              }
-              if ('roughness' in mat && typeof mat.roughness === 'number') {
-                mat.roughness = Math.min(mat.roughness, 0.55)
-              }
-              mat.needsUpdate = true
+        try {
+          if (mobileLite) {
+            applyLiteBrandPolish(scene, url)
+          } else if (/bugatti/i.test(url)) {
+            applyBugattiMaterials(scene)
+          } else if (/ferrari/i.test(url)) {
+            applyFerrariMaterials(scene)
+          } else if (/lamborghini|aventador/i.test(url)) {
+            applyLamborghiniMaterials(scene)
+          } else if (/supra|toyota/i.test(url)) {
+            applySupraMaterials(scene)
+          } else if (/bmw|m4/i.test(url)) {
+            applyBmwMaterials(scene)
+          } else if (/aston|valour/i.test(url)) {
+            applyAstonMaterials(scene)
+          } else if (/porsche|918|spyder/i.test(url)) {
+            applyRebuiltMaterials(scene, rebuildPorscheMaterial)
+          } else {
+            scene.traverse((obj) => {
+              if (!obj.isMesh) return
+              const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+              mats.forEach((mat) => prepareMaterial(mat))
             })
-          })
-          scene.userData.garagePolished = true
-          return
-        }
-        if (/bugatti/i.test(url)) {
-          applyBugattiMaterials(scene)
-        } else if (/ferrari/i.test(url)) {
-          applyFerrariMaterials(scene)
-        } else if (/lamborghini|aventador/i.test(url)) {
-          applyLamborghiniMaterials(scene)
-        } else if (/supra|toyota/i.test(url)) {
-          applySupraMaterials(scene)
-        } else if (/bmw|m4/i.test(url)) {
-          applyBmwMaterials(scene)
-        } else if (/aston|valour/i.test(url)) {
-          applyAstonMaterials(scene)
-        } else if (/porsche|918|spyder/i.test(url)) {
-          applyRebuiltMaterials(scene, rebuildPorscheMaterial)
-        } else {
-          scene.traverse((obj) => {
-            if (!obj.isMesh) return
-            const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-            mats.forEach((mat) => prepareMaterial(mat))
-          })
+          }
+        } catch {
+          /* keep stock materials */
         }
         scene.userData.garagePolished = true
       }
       const ric = window.requestIdleCallback
       if (typeof ric === 'function') {
-        ric(polish, { timeout: mobileLite ? 280 : 900 })
+        ric(polish, { timeout: mobileLite ? 120 : 400 })
       } else {
-        window.setTimeout(polish, mobileLite ? 32 : 48)
+        window.setTimeout(polish, mobileLite ? 16 : 24)
       }
     }
   }, [scene, targetSize, url, onReady, mobileLite, playReveal, reducedMotion]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -1978,12 +2356,46 @@ function CarModel({
     }
   }, [playReveal, reducedMotion])
 
+  // Anisotropy / map sharpen — idle only, never blocks scroll or first frame.
+  useEffect(() => {
+    if (!mobileLite || !active || !scene || scene.userData.garageMapsSharp) return undefined
+    let cancelled = false
+    const sharpen = () => {
+      if (cancelled || scene.userData.garageMapsSharp) return
+      scene.traverse((obj) => {
+        if (!obj.isMesh || !obj.material) return
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
+        mats.forEach((mat) => {
+          if (!mat) return
+          ;['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap'].forEach((key) => {
+            const tex = mat[key]
+            if (!tex || typeof tex !== 'object') return
+            tex.anisotropy = Math.max(tex.anisotropy || 1, 8)
+            tex.needsUpdate = true
+          })
+        })
+      })
+      scene.userData.garageMapsSharp = true
+    }
+    const ric = window.requestIdleCallback
+    const id =
+      typeof ric === 'function' ? ric(sharpen, { timeout: 2200 }) : window.setTimeout(sharpen, 700)
+    return () => {
+      cancelled = true
+      if (typeof ric === 'function' && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(id)
+      } else {
+        window.clearTimeout(id)
+      }
+    }
+  }, [mobileLite, active, scene])
+
   useFrame((_, delta) => {
     if (!group.current || !fitted.current) return
     const fit = group.current.userData.fitScale ?? 1
 
     if (reveal.current >= 1) {
-      if (!reducedMotion && active) {
+      if (!reducedMotion && active && !mobileLite) {
         const idle = Math.sin(performance.now() * 0.0011) * 0.01
         group.current.position.y = baseY.current + idle
       } else {
@@ -1992,15 +2404,18 @@ function CarModel({
       return
     }
 
-    reveal.current = Math.min(1, reveal.current + delta * 1.15)
+    reveal.current = Math.min(1, reveal.current + delta * (mobileLite ? 2.05 : 1.15))
     const t = reveal.current
     const rise = easeOutExpo(Math.min(1, t * 1.15))
     const spin = easeOutCubic(t)
     const grow = easeOutCubic(Math.min(1, t * 1.05))
+    const scaleFrom = mobileLite ? 0.9 : 0.78
+    const yawFrom = mobileLite ? -0.28 : -0.55
+    const yFrom = mobileLite ? 0.22 : 0.55
 
-    group.current.position.y = baseY.current - 0.55 * (1 - rise)
-    group.current.rotation.y = -0.55 * (1 - spin)
-    group.current.scale.setScalar(fit * (0.78 + 0.22 * grow))
+    group.current.position.y = baseY.current - yFrom * (1 - rise)
+    group.current.rotation.y = yawFrom * (1 - spin)
+    group.current.scale.setScalar(fit * (scaleFrom + (1 - scaleFrom) * grow))
   })
 
   return (

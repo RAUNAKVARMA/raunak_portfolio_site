@@ -1,3 +1,7 @@
+/**
+ * Personal garage — 3D showcase cars.
+ * Cache-bust ?v= when GLBs are recompressed.
+ */
 export const favoriteCars = [
   {
     id: 'supra',
@@ -7,7 +11,7 @@ export const favoriteCars = [
     badge: 'SUPRA',
     year: '1994',
     accent: '#e87722',
-    modelUrl: '/models/cars/toyota-supra.glb?v=6',
+    modelUrl: '/models/cars/toyota-supra.glb?v=7',
     line: 'Street legend — form, sound, and the drive.',
     tributeLabel: 'Fast & Furious Saga',
     tribute: 'It made me fall in love with cars. Paul Walker changed everything.',
@@ -21,7 +25,7 @@ export const favoriteCars = [
     badge: 'SF90',
     year: '2020',
     accent: '#E22718',
-    modelUrl: '/models/cars/ferrari-sf90-stradale.glb?v=10',
+    modelUrl: '/models/cars/ferrari-sf90-stradale.glb?v=11',
     line: '',
     tributeLabel: 'Always the one',
     tribute:
@@ -36,7 +40,7 @@ export const favoriteCars = [
     badge: 'NOIRE',
     year: '2019',
     accent: '#E8B84A',
-    modelUrl: '/models/cars/bugatti-la-voiture-noire.glb?v=9',
+    modelUrl: '/models/cars/bugatti-la-voiture-noire.glb?v=10',
     line: 'One of one — black art on four wheels.',
     accentNote: 'Silhouette: singular',
   },
@@ -48,7 +52,7 @@ export const favoriteCars = [
     badge: '918',
     year: '2015',
     accent: '#C8F000',
-    modelUrl: '/models/cars/porsche-918-spyder.glb?v=4',
+    modelUrl: '/models/cars/porsche-918-spyder.glb?v=5',
     line: 'Hybrid halo — precision, pace, and open-air theatre.',
     accentNote: 'Silhouette: razor',
   },
@@ -60,7 +64,7 @@ export const favoriteCars = [
     badge: 'SVJ',
     year: '2019',
     accent: '#3B82F6',
-    modelUrl: '/models/cars/lamborghini-aventador.glb?v=11',
+    modelUrl: '/models/cars/lamborghini-aventador.glb?v=12',
     line: 'Wedge aggression — V12 theatre in carbon and blue.',
     accentNote: 'Silhouette: extreme',
   },
@@ -72,7 +76,7 @@ export const favoriteCars = [
     badge: 'F82',
     year: '2014',
     accent: '#1C69D4',
-    modelUrl: '/models/cars/bmw-m4-f82-razor.glb?v=3',
+    modelUrl: '/models/cars/bmw-m4-f82-razor.glb?v=4',
     line: '',
     tributeLabel: 'Need for Speed',
     tribute: 'The legendary M4 — a Need for Speed icon everyone wanted back then. Still the one I always wanted.',
@@ -86,7 +90,7 @@ export const favoriteCars = [
     badge: 'VALOUR',
     year: '2024',
     accent: '#00A86B',
-    modelUrl: '/models/cars/aston-martin-valour.glb?v=4',
+    modelUrl: '/models/cars/aston-martin-valour.glb?v=5',
     line: '',
     tributeLabel: '007',
     tribute:

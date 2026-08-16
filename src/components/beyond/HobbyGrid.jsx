@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { interestEntries } from '../../data/interests'
 import { editingClips } from '../../data/editingClips'
@@ -47,9 +48,12 @@ function warmDrawing(path) {
     prefetchVortexAtlas(8).catch(() => {})
   }
   if (path === '/beyond/cars') {
-    import('./cars/carGltf').then(({ warmCar }) => {
+    import('./cars/carGltf').then(({ bootGarageAssets }) => {
       import('../../data/favoriteCars').then(({ favoriteCars }) => {
-        warmCar(favoriteCars[0]?.modelUrl)
+        bootGarageAssets(
+          favoriteCars.map((c) => c.modelUrl),
+          { concurrency: 5 },
+        )
       })
     })
   }
@@ -130,6 +134,20 @@ function InterestRow({ hobby }) {
 }
 
 function HobbyGrid() {
+  useEffect(() => {
+    // Idle-warm garage while browsing Beyond so cars open instantly.
+    const run = () => warmDrawing('/beyond/cars')
+    const ric = window.requestIdleCallback
+    const id = typeof ric === 'function' ? ric(run, { timeout: 1200 }) : window.setTimeout(run, 400)
+    return () => {
+      if (typeof ric === 'function' && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(id)
+      } else {
+        window.clearTimeout(id)
+      }
+    }
+  }, [])
+
   return (
     <section className="beyond-interests" aria-labelledby="interests-heading">
       <div className="studio-container">

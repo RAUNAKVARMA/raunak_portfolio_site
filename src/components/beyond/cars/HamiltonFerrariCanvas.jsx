@@ -10,7 +10,6 @@ const CAM_DESKTOP = [4.1, 1.35, 5.4]
 const CAM_MOBILE = [3.55, 1.28, 4.55]
 
 ensureDracoDecoder()
-preloadCar(MODEL_URL)
 
 const COLOR_MAPS = new Set(['map', 'emissiveMap', 'specularMap'])
 const DATA_MAPS = [
@@ -277,7 +276,7 @@ function HamiltonFerrariScene({ reducedMotion, autoRotate, mobileLite, allowOrbi
         <Environment
           preset={mobileLite ? 'apartment' : 'city'}
           environmentIntensity={mobileLite ? 0.72 : 0.48}
-          resolution={mobileLite ? 64 : 256}
+          resolution={64}
         />
       </Suspense>
 
@@ -289,7 +288,7 @@ function HamiltonFerrariScene({ reducedMotion, autoRotate, mobileLite, allowOrbi
         far={mobileLite ? 8 : 12}
         color="#1a0000"
         frames={1}
-        resolution={mobileLite ? 256 : 512}
+        resolution={256}
       />
 
       <OrbitControls
@@ -337,7 +336,7 @@ function HamiltonFerrariCanvas({
       <Canvas
         className="absolute inset-0 block h-full w-full"
         camera={{ position: cam, fov: mobileLite ? 36 : 30, near: 0.1, far: 80 }}
-        dpr={mobileLite ? [1, 1.5] : [1, 1.75]}
+        dpr={mobileLite ? [1, 1.15] : [1, 1.5]}
         gl={{
           alpha: true,
           antialias: !mobileLite,

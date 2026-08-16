@@ -14,10 +14,13 @@ export function SmoothScrollProvider({ children }) {
 
     registerGsap()
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 2.35,
       easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.5,
+      wheelMultiplier: 0.65,
+      touchMultiplier: 1.08,
+      syncTouch: true,
+      syncTouchLerp: 0.035,
     })
     lenisRef.current = lenis
     document.documentElement.classList.add('lenis')

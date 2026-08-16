@@ -1,21 +1,22 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import {
   motion,
   useReducedMotion,
 } from 'framer-motion'
 import FavoriteCarsShowcase from '../components/beyond/cars/FavoriteCarsShowcase'
-import F1Section from '../components/beyond/cars/F1Section'
 import GarageEntryOverlay from '../components/beyond/cars/GarageEntryOverlay'
 import GarageMusic from '../components/beyond/cars/GarageMusic'
-import HamiltonSection from '../components/beyond/cars/HamiltonSection'
 import HotWheelsSection from '../components/beyond/cars/HotWheelsSection'
-import { preloadCar } from '../components/beyond/cars/carGltf'
+import { bootGarageAssets, isCarWarmed, warmCar, warmCars } from '../components/beyond/cars/carGltf'
 import AutoPlayVideo from '../components/ui/AutoPlayVideo'
 import { favoriteCars } from '../data/favoriteCars'
 import { getInterestById } from '../data/interests'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useLenis } from '../providers/SmoothScrollProvider'
+
+const F1Section = lazy(() => import('../components/beyond/cars/F1Section'))
+const HamiltonSection = lazy(() => import('../components/beyond/cars/HamiltonSection'))
 
 const EASE = [0.16, 1, 0.3, 1]
 const GOLD = '#CA8A04'
@@ -75,11 +76,11 @@ function SplitWords({ text, className, delay = 0, reducedMotion }) {
   )
 }
 
-function GarageIntro({ tag, reducedMotion, onJumpToCar }) {
+function GarageIntro({ tag, reducedMotion, onJumpToCar, allowVideo = true }) {
   return (
     <header className="garage-intro relative flex min-h-[100svh] flex-col overflow-hidden bg-[#030303]">
       <div className="garage-intro-video pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
-        {reducedMotion ? (
+        {reducedMotion || !allowVideo ? (
           <img
             src="/videos/garage-intro-poster.jpg"
             alt=""
@@ -251,34 +252,67 @@ function CarsPage() {
     rootMargin: '-5% 0px -5% 0px',
   })
   const [garageMusicReady, setGarageMusicReady] = useState(false)
-  const [entryDone, setEntryDone] = useState(false)
+  const [entryDone, setEntryDone] = useState(() =>
+    isCarWarmed(favoriteCars[0]?.modelUrl),
+  )
+  const [focusCarId, setFocusCarId] = useState(null)
   useDocumentTitle('Cars — Beyond')
 
-  // Critical path: first car immediately; F1 after first car gets a head start
+  // Critical path: warm every garage GLB (do not clear the GLTF cache on mount —
+  // that races the canvas loader and left the garage blank).
   useEffect(() => {
-    preloadCar(favoriteCars[0]?.modelUrl)
-    const f1 = window.setTimeout(() => {
-      preloadCar('/models/cars/ferrari-f1-2026-concept.glb?v=4')
-    }, 2200)
-    return () => window.clearTimeout(f1)
+    const urls = favoriteCars.map((c) => c.modelUrl)
+    bootGarageAssets(urls, { concurrency: 5 })
   }, [])
 
-  // Entry overlay warms cars 0–2; quiet fallback if needed after reveal
+  // Creamy Lenis while on the garage page — sticky car stages feel continuous.
+  useEffect(() => {
+    const lenis = lenisRef?.current
+    if (!lenis?.options || reducedMotion) return undefined
+    const prev = {
+      duration: lenis.options.duration,
+      wheelMultiplier: lenis.options.wheelMultiplier,
+      touchMultiplier: lenis.options.touchMultiplier,
+      syncTouchLerp: lenis.options.syncTouchLerp,
+      lerp: lenis.options.lerp,
+    }
+    // Butter-smooth garage scroll
+    lenis.options.duration = 3.4
+    lenis.options.lerp = 0.022
+    lenis.options.wheelMultiplier = 0.34
+    lenis.options.touchMultiplier = 0.88
+    lenis.options.syncTouchLerp = 0.016
+    return () => {
+      lenis.options.duration = prev.duration
+      lenis.options.wheelMultiplier = prev.wheelMultiplier
+      lenis.options.touchMultiplier = prev.touchMultiplier
+      lenis.options.syncTouchLerp = prev.syncTouchLerp
+      lenis.options.lerp = prev.lerp
+    }
+  }, [lenisRef, reducedMotion])
+
   useEffect(() => {
     if (!entryDone) return undefined
-    const timer = window.setTimeout(() => {
-      preloadCar(favoriteCars[0]?.modelUrl)
-      preloadCar(favoriteCars[1]?.modelUrl)
-    }, 400)
-    return () => window.clearTimeout(timer)
+    warmCars(
+      favoriteCars.map((c) => c.modelUrl),
+      { concurrency: 5 },
+    )
+    return undefined
   }, [entryDone])
 
   const jumpToCar = (id) => {
+    setFocusCarId(id)
+    const car = favoriteCars.find((c) => c.id === id)
+    if (car) warmCar(car.modelUrl)
     const el = document.getElementById(`garage-${id}`)
     if (!el) return
     const lenis = lenisRef?.current
     if (lenis && !reducedMotion) {
-      lenis.scrollTo(el, { offset: 0, duration: 1.2 })
+      lenis.scrollTo(el, {
+        offset: 0,
+        duration: 1.9,
+        easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+      })
     } else {
       el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
     }
@@ -294,14 +328,23 @@ function CarsPage() {
         tag={cars.tag}
         reducedMotion={Boolean(reducedMotion)}
         onJumpToCar={jumpToCar}
+        allowVideo={entryDone}
       />
 
-      <FavoriteCarsShowcase onEnter={() => setGarageMusicReady(true)} />
+      <FavoriteCarsShowcase
+        forceArm
+        focusCarId={focusCarId}
+        onEnter={() => setGarageMusicReady(true)}
+      />
       <HotWheelsSection />
       <div ref={f1SectionRef}>
-        <F1Section />
+        <Suspense fallback={null}>
+          <F1Section />
+        </Suspense>
       </div>
-      <HamiltonSection />
+      <Suspense fallback={null}>
+        <HamiltonSection />
+      </Suspense>
 
       <section
         className="border-t border-white/[0.08] bg-[#050505] py-20 text-white"

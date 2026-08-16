@@ -50,8 +50,8 @@ function polishMaterials(root) {
       }
       if ('aoMapIntensity' in mat) mat.aoMapIntensity = 0.45
       if ('emissive' in mat) {
-        mat.emissive.set('#9aa3ae')
-        mat.emissiveIntensity = mat.emissiveMap ? 0.5 : 0.32
+        mat.emissive.set('#c4ccd6')
+        mat.emissiveIntensity = mat.emissiveMap ? 0.72 : 0.48
       }
       if ('metalness' in mat) mat.metalness = Math.min(mat.metalness ?? 0.4, 0.28)
       if ('roughness' in mat) mat.roughness = Math.max(mat.roughness ?? 0.45, 0.42)
@@ -89,7 +89,16 @@ function PadInstance({ position, rotation, targetDiameter }) {
   return <primitive object={model} position={position} rotation={rotation} />
 }
 
-function PadLights() {
+function PadLights({ lite = false }) {
+  if (lite) {
+    return (
+      <>
+        <ambientLight intensity={1.2} color="#f2f4f7" />
+        <directionalLight position={[2, 3, 4]} intensity={1.1} color="#ffffff" />
+      </>
+    )
+  }
+
   return (
     <>
       <ambientLight intensity={1.05} color="#f2f4f7" />
@@ -103,12 +112,12 @@ function PadLights() {
 }
 
 /** Single pad — top ring or bottom floor, locked in its CSS frame */
-function PadScene({ placement }) {
+function PadScene({ placement, lite = false }) {
   const isTop = placement === 'top'
 
   return (
     <>
-      <PadLights />
+      <PadLights lite={lite} />
       <PadInstance
         position={[0, 0, 0]}
         rotation={isTop ? [0, 0, 0] : [Math.PI, 0, 0]}
@@ -118,9 +127,35 @@ function PadScene({ placement }) {
   )
 }
 
-function MoviesPadCanvas({ placement = 'top', className = '' }) {
+/** CSS disc — zero WebGL cost on phones; keeps the Ciao ring silhouette */
+function StaticPad({ placement }) {
   return (
-    <WebGLErrorBoundary fallback={null}>
+    <div
+      className={`movies-pad-static movies-pad-static--${placement}`}
+      aria-hidden
+    >
+      <span className="movies-pad-static__rim" />
+      <span className="movies-pad-static__ring" />
+      <span className="movies-pad-static__core" />
+      <span className="movies-pad-static__shine" />
+    </div>
+  )
+}
+
+function MoviesPadCanvas({ placement = 'top', className = '', lite = false }) {
+  if (lite) {
+    return (
+      <div
+        className={`movies-pad-canvas movies-pad-canvas--${placement} ${className}`.trim()}
+        aria-hidden
+      >
+        <StaticPad placement={placement} />
+      </div>
+    )
+  }
+
+  return (
+    <WebGLErrorBoundary fallback={<StaticPad placement={placement} />}>
       <div
         className={`movies-pad-canvas movies-pad-canvas--${placement} ${className}`.trim()}
         aria-hidden

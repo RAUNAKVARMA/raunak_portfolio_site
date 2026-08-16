@@ -3584,9 +3584,7 @@ body.drawing-inspect-active {
 }
 
 .garage-stage {
-  content-visibility: auto;
-  contain-intrinsic-size: 100svh;
-  contain: layout paint style;
+  /* Keep stages transparent so the fixed WebGL garage canvas shows through. */
 }
 
 .garage-intro {
@@ -5861,8 +5859,8 @@ body.music-immersive main {
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.48) 0%, rgba(0, 0, 0, 0.14) 38%, transparent 68%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, transparent 18%, transparent 72%, rgba(0, 0, 0, 0.5) 100%);
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.08) 34%, transparent 62%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, transparent 16%, transparent 78%, rgba(0, 0, 0, 0.32) 100%);
 }
 
 .music-back {

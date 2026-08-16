@@ -253,7 +253,7 @@ function HamiltonSection() {
   const stageRef = useRef(null)
   const storyRef = useRef(null)
   const inView = useInView(stageRef, { amount: 0.2, margin: '-6% 0px' })
-  const nearStage = useInView(stageRef, { amount: 0, margin: '120% 0px' })
+  const nearStage = useInView(stageRef, { amount: 0, margin: '35% 0px' })
   const storyInView = useInView(storyRef, { amount: 0.2, once: true })
 
   const [chapterId, setChapterId] = useState(CHAPTERS[0].id)
@@ -263,18 +263,14 @@ function HamiltonSection() {
   const chapter = CHAPTERS.find((c) => c.id === chapterId) ?? CHAPTERS[0]
 
   useEffect(() => {
-    // Warm F1 as early as this section mounts (way before sticky stage)
-    preloadCar(F1_MODEL)
-  }, [])
-
-  useEffect(() => {
-    if (nearStage) setMountCanvas(true)
-  }, [nearStage])
-
-  useEffect(() => {
+    // Only warm F1 when the Hamilton stage is approaching — never on page mount
     if (!nearStage) return undefined
     preloadCar(F1_MODEL)
     return undefined
+  }, [nearStage])
+
+  useEffect(() => {
+    if (nearStage) setMountCanvas(true)
   }, [nearStage])
 
   const mouseX = useMotionValue(0.5)

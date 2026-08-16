@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useReducedMotionProfile } from '../../hooks/useReducedMotionProfile'
 import WebGLErrorBoundary from './WebGLErrorBoundary'
 import LoadingExperience from './LoadingExperience'
@@ -15,9 +16,15 @@ function StaticAmbientFallback() {
 }
 
 function SceneLayer() {
+  const { pathname } = useLocation()
   const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
+  const skipHeroWebGL =
+    pathname.startsWith('/beyond/cars') ||
+    pathname.startsWith('/beyond/movies') ||
+    pathname.startsWith('/beyond/music') ||
+    pathname.startsWith('/beyond/drawing')
 
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion || skipHeroWebGL) {
     return <StaticAmbientFallback />
   }
 

@@ -37,6 +37,35 @@ function RootLayout() {
 
   useRouteScene()
 
+  // Warm garage GLBs as soon as the site is idle so /beyond/cars opens in <1s.
+  useEffect(() => {
+    let cancelled = false
+    const run = () => {
+      if (cancelled) return
+      import('../beyond/cars/carGltf')
+        .then(({ bootGarageAssets }) => import('../../data/favoriteCars').then(({ favoriteCars }) => ({
+          bootGarageAssets,
+          favoriteCars,
+        })))
+        .then(({ bootGarageAssets, favoriteCars }) => {
+          if (cancelled) return
+          bootGarageAssets(favoriteCars.map((c) => c.modelUrl), { concurrency: 5 })
+        })
+        .catch(() => {})
+    }
+    const ric = window.requestIdleCallback
+    const idleId =
+      typeof ric === 'function' ? ric(run, { timeout: 900 }) : window.setTimeout(run, 280)
+    return () => {
+      cancelled = true
+      if (typeof ric === 'function' && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId)
+      } else {
+        window.clearTimeout(idleId)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     setMorphProgress(0)
     setContactProgress(0)

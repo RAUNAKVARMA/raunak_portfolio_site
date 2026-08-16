@@ -2,21 +2,25 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { favoriteCars } from '../../../data/favoriteCars'
 import { useLenis } from '../../../providers/SmoothScrollProvider'
-import { preloadCar } from './carGltf'
+import { isCarWarmed, prefetchDracoDecoder, warmCar, warmCars } from './carGltf'
 
 const GOLD = '#CA8A04'
 const EASE = [0.16, 1, 0.3, 1]
-/** ~2.8s door open — first car GLB should be decoding in parallel. */
-const ENTRY_MS = 2800
+/** Instant when cached; otherwise open as soon as first bytes are ready. */
+const ENTRY_MIN_MS = 0
+const ENTRY_MAX_MS = 520
+const DOOR_OUT_MS = 40
+const ENTRY_MIN_CACHED_MS = 0
 
 /**
  * Fullscreen garage-door opening sequence.
- * Locks scroll, preloads first car, then reveals the page.
+ * Locks scroll, warms first car with real progress, then reveals the page.
  */
 function GarageEntryOverlay({ onComplete }) {
   const reducedMotion = useReducedMotion()
   const lenisRef = useLenis()
   const doneRef = useRef(false)
+  const carReadyRef = useRef(false)
   const [phase, setPhase] = useState('boot')
   const [rosterIndex, setRosterIndex] = useState(0)
   const [progress, setProgress] = useState(0)
@@ -54,30 +58,91 @@ function GarageEntryOverlay({ onComplete }) {
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
-    // Bandwidth first: only car 0 during the intro critical path
-    preloadCar(favoriteCars[0]?.modelUrl)
-    const warm1 = window.setTimeout(() => preloadCar(favoriteCars[1]?.modelUrl), 1600)
+    prefetchDracoDecoder()
 
-    const boot = window.setTimeout(() => setPhase('brand'), 160)
-    const rosterT = window.setTimeout(() => setPhase('roster'), 700)
-    const openDoor = window.setTimeout(() => setPhase('open'), 1900)
-    const end = window.setTimeout(() => setOpen(false), ENTRY_MS)
+    const firstUrl = favoriteCars[0]?.modelUrl
+    const alreadyWarm = isCarWarmed(firstUrl)
+    if (alreadyWarm) carReadyRef.current = true
+
+    let cancelled = false
+    let loadProgress = alreadyWarm ? 1 : 0
+    let cinemaProgress = 0
+
+    const syncProgress = () => {
+      // Prefer real asset progress; blend a light cinematic floor so the bar never feels stuck.
+      const next = Math.max(cinemaProgress * 0.18, loadProgress)
+      setProgress(next)
+    }
+
+    if (alreadyWarm) {
+      setProgress(1)
+      setPhase('open')
+      setOpen(false)
+      // finish via exit; if exit skipped, finish next tick
+      window.queueMicrotask?.(() => finish())
+      window.setTimeout(() => finish(), 0)
+      return () => {
+        cancelled = true
+        document.body.style.overflow = prevOverflow
+        if (!doneRef.current) lenis?.start?.()
+      }
+    }
+
+    // First car is critical path; rest warm in parallel immediately (don't wait for first).
+    warmCar(firstUrl, (p) => {
+      if (cancelled) return
+      loadProgress = p
+      if (p >= 0.7) carReadyRef.current = true
+      syncProgress()
+    }).then(() => {
+      if (cancelled) return
+      carReadyRef.current = true
+      loadProgress = 1
+      syncProgress()
+    })
+
+    warmCars(
+      favoriteCars.slice(1).map((c) => c.modelUrl),
+      { concurrency: 5 },
+    )
+
+    const boot = window.setTimeout(() => setPhase('brand'), 20)
+    const rosterT = window.setTimeout(() => setPhase('roster'), 70)
+    const openDoor = window.setTimeout(() => setPhase('open'), 140)
 
     const started = performance.now()
     let raf = 0
+    let closed = false
+    const minMs = ENTRY_MIN_MS
+
+    const tryClose = (now) => {
+      if (closed || cancelled) return
+      const elapsed = now - started
+      const ready = carReadyRef.current || loadProgress >= 0.7
+      if ((ready && elapsed >= minMs) || elapsed >= ENTRY_MAX_MS) {
+        closed = true
+        setProgress(1)
+        setPhase('open')
+        window.setTimeout(() => {
+          if (!cancelled) setOpen(false)
+        }, DOOR_OUT_MS)
+      }
+    }
+
     const tick = (now) => {
-      const t = Math.min(1, (now - started) / ENTRY_MS)
-      setProgress(t)
-      if (t < 1) raf = requestAnimationFrame(tick)
+      if (cancelled) return
+      cinemaProgress = Math.min(1, (now - started) / ENTRY_MAX_MS)
+      syncProgress()
+      tryClose(now)
+      if (!closed) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
 
     return () => {
-      window.clearTimeout(warm1)
-      window.clearTimeout(boot)
-      window.clearTimeout(rosterT)
+      cancelled = true
+      if (boot) window.clearTimeout(boot)
+      if (rosterT) window.clearTimeout(rosterT)
       window.clearTimeout(openDoor)
-      window.clearTimeout(end)
       cancelAnimationFrame(raf)
       document.body.style.overflow = prevOverflow
       if (!doneRef.current) lenis?.start?.()
@@ -89,14 +154,14 @@ function GarageEntryOverlay({ onComplete }) {
     if (phase !== 'roster') return undefined
     const id = window.setInterval(() => {
       setRosterIndex((i) => (i + 1) % roster.length)
-    }, 520)
+    }, 420)
     return () => window.clearInterval(id)
   }, [phase, roster.length])
 
   const skip = () => {
     setPhase('open')
     setProgress(1)
-    window.setTimeout(() => setOpen(false), 700)
+    window.setTimeout(() => setOpen(false), 80)
   }
 
   const active = roster[rosterIndex] ?? roster[0]
@@ -108,7 +173,7 @@ function GarageEntryOverlay({ onComplete }) {
           className="garage-entry fixed inset-0 z-[80] flex flex-col overflow-hidden bg-[#030303] text-white"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.55, ease: EASE }}
+          transition={{ duration: 0.12, ease: EASE }}
           role="dialog"
           aria-modal="true"
           aria-label="Entering the garage"
@@ -122,7 +187,7 @@ function GarageEntryOverlay({ onComplete }) {
             style={{ ['--garage-gold']: GOLD }}
             initial={{ scaleX: 0 }}
             animate={{ scaleX: phase === 'boot' ? 0 : 1 }}
-            transition={{ duration: 1.1, ease: EASE }}
+            transition={{ duration: 0.9, ease: EASE }}
             aria-hidden
           />
 
@@ -135,7 +200,7 @@ function GarageEntryOverlay({ onComplete }) {
                 opacity: phase === 'boot' ? 0 : 1,
                 y: phase === 'boot' ? 10 : 0,
               }}
-              transition={{ duration: 0.55, ease: EASE }}
+              transition={{ duration: 0.5, ease: EASE }}
             >
               Interests — Cars
             </motion.p>
@@ -148,7 +213,7 @@ function GarageEntryOverlay({ onComplete }) {
                   y: phase === 'boot' ? '110%' : '0%',
                   opacity: phase === 'boot' ? 0 : 1,
                 }}
-                transition={{ duration: 0.85, ease: EASE, delay: 0.05 }}
+                transition={{ duration: 0.75, ease: EASE, delay: 0.04 }}
               >
                 The Garage
               </motion.h1>
@@ -161,7 +226,7 @@ function GarageEntryOverlay({ onComplete }) {
                 scaleX: phase === 'boot' ? 0 : 1,
                 opacity: phase === 'boot' ? 0 : 1,
               }}
-              transition={{ duration: 0.9, ease: EASE, delay: 0.2 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.15 }}
               aria-hidden
             />
 
@@ -174,7 +239,7 @@ function GarageEntryOverlay({ onComplete }) {
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -14 }}
-                    transition={{ duration: 0.35, ease: EASE }}
+                    transition={{ duration: 0.32, ease: EASE }}
                   >
                     <span
                       className="font-studio text-[11px] tracking-[0.28em]"
@@ -211,7 +276,7 @@ function GarageEntryOverlay({ onComplete }) {
                 />
               </div>
               <div className="mt-3 flex items-center justify-between font-studio text-[9px] uppercase tracking-[0.24em] text-white/35">
-                <span>Opening doors</span>
+                <span>{progress >= 0.97 ? 'Ready' : 'Loading first car'}</span>
                 <span>{String(Math.round(progress * 100)).padStart(2, '0')}%</span>
               </div>
             </div>
@@ -221,7 +286,7 @@ function GarageEntryOverlay({ onComplete }) {
             className="pointer-events-none absolute inset-x-0 top-0 z-30 h-1/2 origin-top bg-[#050505]"
             initial={{ scaleY: 1 }}
             animate={{ scaleY: phase === 'open' ? 0 : 1 }}
-            transition={{ duration: 1.05, ease: EASE }}
+            transition={{ duration: 0.85, ease: EASE }}
             aria-hidden
           >
             <div className="garage-entry-shutter absolute inset-0" />
@@ -230,7 +295,7 @@ function GarageEntryOverlay({ onComplete }) {
             className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-1/2 origin-bottom bg-[#050505]"
             initial={{ scaleY: 1 }}
             animate={{ scaleY: phase === 'open' ? 0 : 1 }}
-            transition={{ duration: 1.05, ease: EASE }}
+            transition={{ duration: 0.85, ease: EASE }}
             aria-hidden
           >
             <div className="garage-entry-shutter absolute inset-0" />
