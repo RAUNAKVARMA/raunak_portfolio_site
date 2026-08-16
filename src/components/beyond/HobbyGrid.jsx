@@ -33,7 +33,7 @@ const INTEREST_VISUALS = {
   music: {
     accent: '#fbbf24',
     preview: null,
-    label: 'Soon',
+    label: 'Room',
   },
   movies: {
     accent: '#f472b6',
@@ -47,12 +47,9 @@ function warmDrawing(path) {
     prefetchVortexAtlas(8).catch(() => {})
   }
   if (path === '/beyond/cars') {
-    import('./cars/carGltf').then(({ preloadCar }) => {
+    import('./cars/carGltf').then(({ warmCar }) => {
       import('../../data/favoriteCars').then(({ favoriteCars }) => {
-        preloadCar(favoriteCars[0]?.modelUrl)
-        window.setTimeout(() => {
-          preloadCar('/models/cars/ferrari-f1-2026-concept.glb?v=4')
-        }, 1800)
+        warmCar(favoriteCars[0]?.modelUrl)
       })
     })
   }
@@ -142,7 +139,7 @@ function HobbyGrid() {
             What I love
           </h2>
           <p className="beyond-interests-lede">
-            Seven rabbit holes I keep returning to. Five are live — tap in and wander.
+            Seven rabbit holes I keep returning to. Six are live — tap in and wander.
           </p>
         </header>
 

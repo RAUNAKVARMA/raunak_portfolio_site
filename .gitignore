@@ -25,3 +25,9 @@ dist-ssr
 
 # Vercel
 .vercel
+
+# Local GLB originals (pre-optimize backups)
+public/models/cars/originals/
+.tmp-frames/
+.tmp-cube-ref/
+.tmp-*/

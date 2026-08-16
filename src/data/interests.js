@@ -63,7 +63,11 @@ export const interestEntries = [
     id: 'music',
     tag: '06',
     title: 'Music',
+    path: '/beyond/music',
     blurb: 'A constant background track while building — always hunting for the next song.',
+    story: [
+      'Music is the background track while I build — always hunting for the next song.',
+    ],
   },
   {
     id: 'movies',

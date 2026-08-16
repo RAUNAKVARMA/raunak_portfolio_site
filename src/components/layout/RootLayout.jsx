@@ -31,7 +31,9 @@ function RootLayout() {
   const { setMorphProgress, setContactProgress, setScrollProgress } = useSceneProgress()
   const isDrawingImmersive = pathname.startsWith('/beyond/drawing')
   const isMoviesImmersive = pathname.startsWith('/beyond/movies')
-  const isImmersive = isDrawingImmersive || isMoviesImmersive
+  const isMusicImmersive = pathname.startsWith('/beyond/music')
+  const isImmersive = isDrawingImmersive || isMoviesImmersive || isMusicImmersive
+  const hideFluid = isMoviesImmersive || isMusicImmersive
 
   useRouteScene()
 
@@ -71,8 +73,8 @@ function RootLayout() {
       <SceneController />
       <ScrollSceneTriggers />
       <SceneLayer />
-      {!isMoviesImmersive ? <FluidCanvas /> : null}
-      {!isMoviesImmersive ? (
+      {!hideFluid ? <FluidCanvas /> : null}
+      {!hideFluid ? (
         <div className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(28,105,212,0.08),transparent_60%)]" aria-hidden />
       ) : null}
       <div className="noise-overlay" />
