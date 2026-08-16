@@ -33,6 +33,11 @@ function AutoPlayVideo({
     video.setAttribute('x5-video-player-type', 'h5')
     video.setAttribute('x5-video-player-fullscreen', 'false')
     video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback')
+    try {
+      video.volume = 0
+    } catch {
+      /* */
+    }
 
     let cancelled = false
     let visible = true
@@ -41,7 +46,16 @@ function AutoPlayVideo({
       if (cancelled || !video) return
       if (pauseWhenHidden && !visible) return
       video.muted = true
+      video.defaultMuted = true
       video.playsInline = true
+      video.setAttribute('muted', '')
+      video.setAttribute('playsinline', '')
+      video.setAttribute('webkit-playsinline', '')
+      try {
+        video.volume = 0
+      } catch {
+        /* */
+      }
       const playPromise = video.play()
       if (playPromise?.catch) {
         playPromise.catch(() => {
