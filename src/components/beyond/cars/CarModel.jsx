@@ -949,28 +949,40 @@ function applyLiteBrandPolish(root, url) {
           mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.35)
         }
       } else if (isFerrari) {
-        if (/Paint_Material|Rosso|Body_Paint/i.test(name) || (/Paint/i.test(name) && !/PaintA/i.test(name))) {
-          // Iconic Rosso Corsa — blood red, color-first (env was washing it)
+        // Full rebuild is applied in CarStageCanvas via applyFerrariMaterials —
+        // keep a safe lite fallback if this path is still hit.
+        if (/Badge/i.test(name) || /ManufacturerPlate/i.test(name)) {
           if (mat.map) {
+            mat.color?.setRGB?.(1, 1, 1)
             mat.map.colorSpace = THREE.SRGBColorSpace
             mat.map.needsUpdate = true
           }
-          mat.color?.setRGB?.(0.92, 0.015, 0.025)
-          if ('metalness' in mat) mat.metalness = 0
-          if ('roughness' in mat) mat.roughness = 0.3
-          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.28
-          if ('clearcoat' in mat) mat.clearcoat = 1
-          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.045
-          if ('specularIntensity' in mat) mat.specularIntensity = 0.85
-          if (mat.specularColor) mat.specularColor.setRGB(1, 0.2, 0.12)
-          mat.emissive?.setRGB?.(0.42, 0.02, 0.015)
-          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.55
+          mat.emissive?.setRGB?.(0.4, 0.25, 0.03)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.65
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.2
           if ('toneMapped' in mat) mat.toneMapped = false
-        } else if (/Coloured_Material|phong1/i.test(name)) {
-          mat.color?.setRGB?.(0.04, 0.04, 0.045)
-          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.35
-        } else if (paintLike && 'envMapIntensity' in mat) {
-          mat.envMapIntensity = Math.min(mat.envMapIntensity || 1, 0.4)
+        } else if (/Paint_Material/i.test(name)) {
+          mat.map = null
+          mat.color?.set?.(0xd40000)
+          if ('metalness' in mat) mat.metalness = 0
+          if ('roughness' in mat) mat.roughness = 0.34
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.22
+          if ('clearcoat' in mat) mat.clearcoat = 1
+          if ('clearcoatRoughness' in mat) mat.clearcoatRoughness = 0.055
+          mat.emissive?.setRGB?.(0.06, 0, 0.008)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0.14
+        } else if (/Coloured_Material|phong1|Carbon|Grille/i.test(name)) {
+          if (/Carbon|Grille/i.test(name) && mat.map) {
+            mat.color?.setRGB?.(0.08, 0.08, 0.09)
+          } else {
+            mat.map = null
+            mat.color?.setRGB?.(0.004, 0.004, 0.005)
+          }
+          if ('metalness' in mat) mat.metalness = 0.2
+          if ('roughness' in mat) mat.roughness = 0.55
+          if ('envMapIntensity' in mat) mat.envMapIntensity = 0.1
+          mat.emissive?.setRGB?.(0, 0, 0)
+          if ('emissiveIntensity' in mat) mat.emissiveIntensity = 0
         }
       } else if (isBmw) {
         if (/chassis|Paint|livery|body/i.test(name) || paintLike) {
@@ -1014,13 +1026,20 @@ function applyLiteBrandPolish(root, url) {
       }
 
       mat.needsUpdate = true
-      // Shared accents — badges, wheels, grilles, carbon, calipers (cheap, no rebuild)
-      enhanceLiteSharedDetails(mat, obj)
+      // Shared accents — badges, wheels, grilles, carbon, calipers (cheap, no rebuild).
+      // Ferrari already handled badge / roof / paint above — don't let shared pass re-wash them.
+      if (
+        !(
+          isFerrari &&
+          (/Paint_Material|Coloured_Material|phong1|Carbon|Grille|Badge|ManufacturerPlate/i.test(name) ||
+            /roof|canopy|hardtop/i.test(obj.name || ''))
+        )
+      ) {
+        enhanceLiteSharedDetails(mat, obj)
+      }
     })
   })
 }
-
-export { applyLiteBrandPolish }
 
 /** F82 Razor — NFS product shot: punchy livery, glowing angel eyes / L-tails, gold Enkeis. */
 function rebuildBmwMaterial(source, cache) {
@@ -1793,29 +1812,33 @@ function rebuildFerrariMaterial(source, cache) {
     mat.normalMap.needsUpdate = true
   }
 
-  // Iconic Rosso Corsa — blood-red lacquer, high clearcoat, color-first
+  // Iconic Rosso Corsa — Ferrari blood red (#D40000 family), lacquer not candy wash
   if (/Paint_Material/i.test(name)) {
-    mat.color.setRGB(0.95, 0.018, 0.028)
+    mat.map = null
+    mat.color.set(0xd40000)
     mat.metalness = 0
-    mat.roughness = 0.28
+    mat.roughness = 0.34
     mat.clearcoat = 1
-    mat.clearcoatRoughness = 0.04
-    mat.envMapIntensity = 0.4
-    mat.specularIntensity = 0.85
-    if (mat.specularColor) mat.specularColor.setRGB(1, 0.22, 0.14)
-    mat.emissive.setRGB(0.38, 0.02, 0.018)
-    mat.emissiveIntensity = 0.48
-    mat.toneMapped = false
+    mat.clearcoatRoughness = 0.055
+    mat.envMapIntensity = 0.22
+    mat.specularIntensity = 0.7
+    if (mat.specularColor) mat.specularColor.setRGB(1, 0.18, 0.1)
+    mat.emissive.setRGB(0.06, 0.0, 0.008)
+    mat.emissiveIntensity = 0.14
+    mat.toneMapped = true
   }
 
-  // Near-black panels — soft contrast against Rosso
+  // Roof / dark panels — jet black (Coloured + phong1 on this model)
   if (/Coloured_Material|phong1/i.test(name)) {
-    mat.color.setRGB(0.01, 0.01, 0.012)
-    mat.metalness = 0.2
-    mat.roughness = 0.38
-    mat.clearcoat = 0.55
-    mat.clearcoatRoughness = 0.1
-    mat.envMapIntensity = 0.55
+    mat.map = null
+    mat.color.setRGB(0.004, 0.004, 0.005)
+    mat.metalness = 0.15
+    mat.roughness = 0.55
+    mat.clearcoat = 0.15
+    mat.clearcoatRoughness = 0.25
+    mat.envMapIntensity = 0.08
+    mat.emissive.setRGB(0, 0, 0)
+    mat.emissiveIntensity = 0
   }
 
   if (/Base_Material/i.test(name)) {
@@ -1828,33 +1851,60 @@ function rebuildFerrariMaterial(source, cache) {
     mat.visible = false
   }
 
+  // Carbon roof / aero — deep black weave (was reading grey from bright map tint + env)
   if (/Carbon/i.test(name)) {
-    if (mat.map) mat.color.setRGB(1, 1, 1)
-    mat.metalness = 0.55
-    mat.roughness = 0.3
-    mat.clearcoat = 0.65
-    mat.clearcoatRoughness = 0.1
-    mat.envMapIntensity = 0.95
-    if (mat.normalScale) mat.normalScale.set(1.4, 1.4)
+    if (mat.map) {
+      mat.color.setRGB(0.08, 0.08, 0.09)
+      mat.map.colorSpace = THREE.SRGBColorSpace
+      mat.map.needsUpdate = true
+    } else {
+      mat.color.setRGB(0.008, 0.008, 0.01)
+    }
+    mat.metalness = 0.2
+    mat.roughness = 0.55
+    mat.clearcoat = 0.15
+    mat.clearcoatRoughness = 0.22
+    mat.envMapIntensity = 0.12
+    mat.emissive.setRGB(0, 0, 0)
+    mat.emissiveIntensity = 0
+    if (mat.normalScale) mat.normalScale.set(1.1, 1.1)
   }
 
-  // Yellow shield + cavallino — keep atlas colors true
-  if (/Badge|ManufacturerPlate/i.test(name)) {
-    if (mat.map) mat.color.setRGB(1, 1, 1)
+  // Yellow cavallino shield + manufacturer plate (names are …BadgeA_Material / …ManufacturerPlateA…)
+  if (/Badge/i.test(name) || /ManufacturerPlate/i.test(name)) {
+    if (mat.map) {
+      mat.color.setRGB(1, 1, 1)
+      mat.map.colorSpace = THREE.SRGBColorSpace
+      mat.map.anisotropy = 16
+      mat.map.needsUpdate = true
+    } else {
+      mat.color.setRGB(1, 0.78, 0.05)
+    }
     mat.metalness = 0.05
-    mat.roughness = 0.3
-    mat.clearcoat = 0.55
-    mat.clearcoatRoughness = 0.08
-    mat.envMapIntensity = 0.65
-    mat.emissive.setRGB(0.28, 0.16, 0.02)
-    mat.emissiveIntensity = 0.45
+    mat.roughness = 0.35
+    mat.clearcoat = 0.3
+    mat.clearcoatRoughness = 0.12
+    mat.envMapIntensity = 0.2
+    mat.emissive.setRGB(0.4, 0.25, 0.03)
+    mat.emissiveIntensity = 0.65
+    mat.toneMapped = false
   }
 
+  // Mesh grilles / intakes — charcoal black, not washed grey chrome
   if (/Grille/i.test(name)) {
-    if (mat.map) mat.color.setRGB(1, 1, 1)
-    mat.metalness = Math.min(Math.max(mat.metalness, 0.45), 0.7)
-    mat.roughness = Math.max(0.28, Math.min(mat.roughness || 0.4, 0.45))
-    mat.envMapIntensity = 0.95
+    if (mat.map) {
+      mat.color.setRGB(0.12, 0.12, 0.13)
+      mat.map.colorSpace = THREE.SRGBColorSpace
+      mat.map.needsUpdate = true
+    } else {
+      mat.color.setRGB(0.02, 0.02, 0.022)
+    }
+    mat.metalness = 0.35
+    mat.roughness = 0.55
+    mat.clearcoat = 0.1
+    mat.envMapIntensity = 0.15
+    mat.emissive.setRGB(0, 0, 0)
+    mat.emissiveIntensity = 0
   }
 
   // Light housings — warm lens glass (signature strip lives on LightEmissive)
@@ -1955,6 +2005,8 @@ function applyFerrariMaterials(root) {
       : rebuildFerrariMaterial(list[0], cache)
   })
 }
+
+export { applyLiteBrandPolish, applyFerrariMaterials }
 
 /** Aventador — showroom navy lacquer, vivid accents, crisp carbon / glass. */
 function rebuildLamborghiniMaterial(source, cache) {

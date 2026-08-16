@@ -3,21 +3,28 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { Environment, OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { ensureDracoDecoder, warmCar, warmCars } from './carGltf'
-import { applyLiteBrandPolish } from './CarModel'
+import { applyLiteBrandPolish, applyFerrariMaterials } from './CarModel'
 
 ensureDracoDecoder()
 
 const CAM = new THREE.Vector3(3.35, 1.05, 4.75)
 
 /** Polished scene clones — avoids re-polish hitch on every car swap. */
+const POLISH_VER = 6
 const polishCache = new Map()
 
 function getPolishedRoot(url, scene) {
-  const hit = polishCache.get(url)
+  const key = `${url}#v${POLISH_VER}`
+  const hit = polishCache.get(key)
   if (hit && hit.uuid === scene.uuid) return hit.template.clone(true)
 
   const template = scene.clone(true)
-  applyLiteBrandPolish(template, url)
+  // SF90 needs the full material rebuild for iconic Rosso + black roof + badges
+  if (/ferrari|sf90|stradale/i.test(url)) {
+    applyFerrariMaterials(template)
+  } else {
+    applyLiteBrandPolish(template, url)
+  }
   template.traverse((obj) => {
     if (!obj.isMesh) return
     obj.castShadow = false
@@ -27,7 +34,7 @@ function getPolishedRoot(url, scene) {
       obj.visible = false
     }
   })
-  polishCache.set(url, { uuid: scene.uuid, template })
+  polishCache.set(key, { uuid: scene.uuid, template })
   return template.clone(true)
 }
 
@@ -48,18 +55,18 @@ const CAR_LOOK = {
     accentLight: 0.85,
   },
   stradale: {
-    exposure: 1.18,
-    ambient: 0.58,
-    hemi: 0.42,
-    key: 2.2,
-    fill: 0.75,
-    rim: 0.7,
-    spot: 1.35,
-    fillColor: '#ff8a78',
-    rimColor: '#ffd0c4',
-    accent: '#E22718',
-    env: 0.28,
-    accentLight: 0.45,
+    exposure: 1.12,
+    ambient: 0.48,
+    hemi: 0.38,
+    key: 2.05,
+    fill: 0.7,
+    rim: 0.65,
+    spot: 1.25,
+    fillColor: '#f2ece8',
+    rimColor: '#e8eef5',
+    accent: '#D40000',
+    env: 0.32,
+    accentLight: 0.18,
   },
   bugatti: {
     exposure: 1.22,

@@ -102,15 +102,16 @@ function CarStage({ car, index, total, onActive, reducedMotion, isActive, onNear
         className="pointer-events-none absolute left-1/2 top-[42%] z-[1] h-[50vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2"
         style={{
           background: `radial-gradient(circle, ${car.accent}${
-            car.id === 'bugatti' ||
-            car.id === 'stradale' ||
-            car.id === 'm4' ||
-            car.id === 'valour' ||
-            car.id === 'aventador' ||
-            car.id === 'spyder' ||
-            car.id === 'supra'
-              ? '50'
-              : '24'
+            car.id === 'stradale'
+              ? '28'
+              : car.id === 'bugatti' ||
+                  car.id === 'm4' ||
+                  car.id === 'valour' ||
+                  car.id === 'aventador' ||
+                  car.id === 'spyder' ||
+                  car.id === 'supra'
+                ? '50'
+                : '24'
           } 0%, transparent 72%)`,
         }}
         initial={false}
