@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;700&family=Syne:wght@600;700;800&display=swap');
+@import './about.css';
 
 @tailwind base;
 @tailwind components;
@@ -6411,6 +6412,21 @@ body.music-immersive main {
   text-transform: uppercase;
 }
 
+.music-video-bank {
+  /* Keep videos “present” for iOS/WebKit decode — display:none blocks autoplay + VideoTexture. */
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
 .music-void {
   position: relative;
   z-index: 3;
@@ -6570,64 +6586,72 @@ body.music-immersive main {
 
 @media (max-width: 900px) {
   .music-cards__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
   }
 }
 
 @media (max-width: 768px) {
+  /* Match desktop composition exactly — phone-only reliability tweaks below */
   .music-scene {
-    /* Keep the cube as the hero plane — same composition as desktop */
-    height: min(72svh, 560px);
+    height: min(78svh, 640px);
     width: 100%;
   }
 
   .music-void {
     min-height: 100svh;
-    padding: 5rem 3vw 1.75rem;
+    padding: 5.5rem 1.25rem 2.25rem;
   }
 
   .music-cards {
-    width: calc(100% - 1.25rem);
-    padding-top: 0.35rem;
-    padding-bottom: max(3.5rem, env(safe-area-inset-bottom));
+    width: min(1180px, calc(100% - 2.5rem));
+    padding: 1.5rem 0 max(4.5rem, env(safe-area-inset-bottom));
   }
 
   .music-card__meta {
-    left: 0.65rem;
-    bottom: 0.55rem;
-    right: 0.65rem;
+    left: 0.85rem;
+    bottom: 0.75rem;
+    right: 0.85rem;
   }
 
   .music-card__title {
-    font-size: clamp(10px, 2.8vw, 12px);
+    font-size: clamp(11px, 1.35vw, 13px);
   }
 
   .music-card__artist {
-    font-size: clamp(9px, 2.4vw, 10px);
+    font-size: clamp(10px, 1.15vw, 11px);
   }
 
   .music-back,
   .music-kicker {
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .music-cube-canvas,
   .music-card__video {
-    /* Avoid iOS fullscreen / overlay chrome fighting autoplay */
     -webkit-touch-callout: none;
+  }
+
+  /* Let the cube own gestures; scroll from the padding around it */
+  .music-scene--webgl,
+  .music-scene--webgl .music-cube-canvas {
+    touch-action: none;
+  }
+
+  .music-void {
+    touch-action: pan-y;
   }
 }
 
-/* Stay 2-up on phones so the page still reads like the desktop grid */
+/* Stay on the same 3-up grid as desktop so the page reads identically */
 @media (max-width: 560px) {
   .music-cards__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
   }
 
   .music-scene {
-    height: min(68svh, 480px);
+    height: min(78svh, 640px);
   }
 }
 

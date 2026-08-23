@@ -12,6 +12,9 @@ export default defineConfig({
       '@react-three/postprocessing',
       'postprocessing',
       'three/examples/jsm/loaders/RGBELoader',
+      'gsap',
+      'gsap/ScrollTrigger',
+      'lenis',
     ],
   },
 })

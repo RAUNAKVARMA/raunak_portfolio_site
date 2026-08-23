@@ -1,24 +1,25 @@
-import { Suspense, lazy } from 'react'
+import { Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import RootLayout from './components/layout/RootLayout'
 import { SceneProgressProvider } from './providers/SceneProgressProvider'
 import { SmoothScrollProvider } from './providers/SmoothScrollProvider'
+import { lazyWithRetry } from './lib/lazyWithRetry'
+import AboutPage from './pages/AboutPage'
 
-const HomePage = lazy(() => import('./pages/HomePage'))
-const AboutPage = lazy(() => import('./pages/AboutPage'))
-const WorkPage = lazy(() => import('./pages/WorkPage'))
-const ExperiencePage = lazy(() => import('./pages/ExperiencePage'))
-const BeyondPage = lazy(() => import('./pages/BeyondPage'))
-const CarsPage = lazy(() => import('./pages/CarsPage'))
-const DrawingPage = lazy(() => import('./pages/DrawingPage'))
-const ArtExperiencePage = lazy(() => import('./pages/ArtExperiencePage'))
-const SpacePage = lazy(() => import('./pages/SpacePage'))
-const EditingPage = lazy(() => import('./pages/EditingPage'))
-const MoviesPage = lazy(() => import('./pages/MoviesPage'))
-const MusicPage = lazy(() => import('./pages/MusicPage'))
-const ContactPage = lazy(() => import('./pages/ContactPage'))
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
+const HomePage = lazyWithRetry(() => import('./pages/HomePage'))
+const WorkPage = lazyWithRetry(() => import('./pages/WorkPage'))
+const ExperiencePage = lazyWithRetry(() => import('./pages/ExperiencePage'))
+const BeyondPage = lazyWithRetry(() => import('./pages/BeyondPage'))
+const CarsPage = lazyWithRetry(() => import('./pages/CarsPage'))
+const DrawingPage = lazyWithRetry(() => import('./pages/DrawingPage'))
+const ArtExperiencePage = lazyWithRetry(() => import('./pages/ArtExperiencePage'))
+const SpacePage = lazyWithRetry(() => import('./pages/SpacePage'))
+const EditingPage = lazyWithRetry(() => import('./pages/EditingPage'))
+const MoviesPage = lazyWithRetry(() => import('./pages/MoviesPage'))
+const MusicPage = lazyWithRetry(() => import('./pages/MusicPage'))
+const ContactPage = lazyWithRetry(() => import('./pages/ContactPage'))
+const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage'))
 
 function PageFallback() {
   return (
@@ -45,11 +46,7 @@ function App() {
               />
               <Route
                 path="about"
-                element={
-                  <Suspense fallback={<PageFallback />}>
-                    <AboutPage />
-                  </Suspense>
-                }
+                element={<AboutPage />}
               />
               <Route
                 path="work"

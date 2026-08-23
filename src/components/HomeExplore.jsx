@@ -3,6 +3,7 @@ import { RiArrowRightUpLine } from 'react-icons/ri'
 import SectionReveal from './layout/SectionReveal'
 import SectionHeader from './ui/SectionHeader'
 import MStripe from './ui/MStripe'
+import { prefetchAboutRoute } from './about/aboutPrefetch'
 
 const pages = [
   {
@@ -37,6 +38,8 @@ function HomeExplore() {
               to={page.to}
               data-cursor-hover="true"
               data-reveal
+              onMouseEnter={page.to === '/about' ? prefetchAboutRoute : undefined}
+              onFocus={page.to === '/about' ? prefetchAboutRoute : undefined}
               className="group bg-[#0a0a0a] p-8 transition-colors hover:bg-[#141414] sm:p-10"
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#1c69d4]">Section</p>

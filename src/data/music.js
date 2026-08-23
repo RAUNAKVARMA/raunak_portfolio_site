@@ -36,4 +36,16 @@ export const musicClips = [
     title: 'Sunflower',
     artist: 'Post Malone, Swae Lee',
   },
+  {
+    id: '07',
+    src: '/videos/music/07.mp4?v=1',
+    title: 'Night Changes',
+    artist: 'One Direction',
+  },
+  {
+    id: '08',
+    src: '/videos/music/08.mp4?v=1',
+    title: 'Mirrors',
+    artist: 'Justin Timberlake',
+  },
 ]

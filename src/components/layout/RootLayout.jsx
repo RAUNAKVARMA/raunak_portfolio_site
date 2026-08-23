@@ -13,6 +13,9 @@ import { useSceneProgress } from '../../providers/SceneProgressProvider'
 import { useLenis } from '../../providers/SmoothScrollProvider'
 import { useReducedMotionProfile } from '../../hooks/useReducedMotionProfile'
 import { useRouteScene } from '../../hooks/useRouteScene'
+import { releaseAboutScrollLock } from '../about/aboutHeroScrollLock'
+import { prefetchAboutRoute } from '../about/aboutPrefetch'
+import { scheduleScrollRefresh } from '../about/scheduleScrollRefresh'
 
 function CursorBodyClass() {
   const { enableCustomCursor } = useReducedMotionProfile()
@@ -42,6 +45,7 @@ function RootLayout() {
     let cancelled = false
     const run = () => {
       if (cancelled) return
+      prefetchAboutRoute()
       import('../beyond/cars/carGltf')
         .then(({ bootGarageAssets }) => import('../../data/favoriteCars').then(({ favoriteCars }) => ({
           bootGarageAssets,
@@ -55,7 +59,7 @@ function RootLayout() {
     }
     const ric = window.requestIdleCallback
     const idleId =
-      typeof ric === 'function' ? ric(run, { timeout: 900 }) : window.setTimeout(run, 280)
+      typeof ric === 'function' ? ric(run, { timeout: 450 }) : window.setTimeout(run, 120)
     return () => {
       cancelled = true
       if (typeof ric === 'function' && typeof window.cancelIdleCallback === 'function') {
@@ -71,12 +75,16 @@ function RootLayout() {
     setContactProgress(0)
     setScrollProgress(0)
 
+    releaseAboutScrollLock(lenisRef)
+
     const lenis = lenisRef?.current
     if (lenis) {
       lenis.scrollTo(0, { immediate: true })
     } else {
       window.scrollTo(0, 0)
     }
+
+    scheduleScrollRefresh(true)
 
     const main = document.getElementById('main-content')
     if (main) {

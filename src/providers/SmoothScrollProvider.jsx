@@ -1,9 +1,18 @@
 import { createContext, useContext, useEffect, useRef } from 'react'
 import Lenis from 'lenis'
-import { registerGsap, ScrollTrigger } from '../lib/gsap.client'
+import { gsap, registerGsap, ScrollTrigger } from '../lib/gsap.client'
 import { useReducedMotionProfile } from '../hooks/useReducedMotionProfile'
+import { setScrolling } from '../components/about/aboutWebStore'
 
 const LenisContext = createContext(null)
+
+let scrollStopTimer = 0
+
+function markAboutScrolling() {
+  setScrolling(true)
+  window.clearTimeout(scrollStopTimer)
+  scrollStopTimer = window.setTimeout(() => setScrolling(false), 120)
+}
 
 export function SmoothScrollProvider({ children }) {
   const lenisRef = useRef(null)
@@ -14,18 +23,22 @@ export function SmoothScrollProvider({ children }) {
 
     registerGsap()
     const lenis = new Lenis({
-      duration: 2.35,
+      lerp: 0.08,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - 2 ** (-10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 0.65,
-      touchMultiplier: 1.08,
+      wheelMultiplier: 0.68,
+      touchMultiplier: 1,
       syncTouch: true,
-      syncTouchLerp: 0.035,
+      syncTouchLerp: 0.08,
     })
     lenisRef.current = lenis
     document.documentElement.classList.add('lenis')
 
-    lenis.on('scroll', ScrollTrigger.update)
+    lenis.on('scroll', () => {
+      ScrollTrigger.update()
+      if (window.location.pathname === '/about') markAboutScrolling()
+    })
 
     ScrollTrigger.scrollerProxy(document.documentElement, {
       scrollTop(value) {
@@ -48,15 +61,16 @@ export function SmoothScrollProvider({ children }) {
     ScrollTrigger.addEventListener('refresh', () => lenis.resize())
     ScrollTrigger.refresh()
 
-    let rafId
-    const raf = (time) => {
-      lenis.raf(time)
-      rafId = requestAnimationFrame(raf)
+    const tick = (time) => {
+      lenis.raf(time * 1000)
     }
-    rafId = requestAnimationFrame(raf)
+    gsap.ticker.add(tick)
+    gsap.ticker.lagSmoothing(0)
 
     return () => {
-      cancelAnimationFrame(rafId)
+      gsap.ticker.remove(tick)
+      window.clearTimeout(scrollStopTimer)
+      setScrolling(false)
       document.documentElement.classList.remove('lenis')
       ScrollTrigger.scrollerProxy(document.documentElement, {})
       lenis.destroy()

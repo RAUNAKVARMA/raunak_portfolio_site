@@ -1,28 +1,30 @@
-import { Suspense, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useVideoTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { musicClips } from '../../../data/music'
 import { useReducedMotionProfile } from '../../../hooks/useReducedMotionProfile'
+import { useLenis } from '../../../providers/SmoothScrollProvider'
 import WebGLErrorBoundary from '../../ui/WebGLErrorBoundary'
 
-/** How long the front face stays before the cube turns to the next side. */
 const FACE_DWELL_MS = 9000
 const TURN_MS = 1850
 const DEG = Math.PI / 180
-/** Inset video UVs so face-edge texels don’t flash as thin seams. */
-const UV_INSET = 0.006
-
-/** Box material slot order in three.js: +X −X +Y −Y +Z −Z */
-const CLIP_BY_SLOT = [1, 3, 4, 5, 0, 2] // right, left, top, bottom, front, back
+/** Box slots: +X −X +Y −Y +Z −Z. Front (+Z) plays Interstellar, then Night Changes, then Mirrors. */
+const CLIP_BY_SLOT = [1, 3, 4, 5, 0, 2]
+const SEQUENCE_SLOT = 4
+const SEQUENCE_FOLLOW_UPS = [musicClips[6]?.src, musicClips[7]?.src].filter(Boolean)
+const UV_INSET = 0.01
+const OPPOSITE_SLOT = { 0: 1, 1: 0, 2: 3, 3: 2, 4: 5, 5: 4 }
+/** Phone cuboid scale vs desktop (desktop stays 3.2). */
+const TOUCH_CUBE_SCALE = 0.78
 
 function facingMaterialSlot(rx, ry) {
   const rxDeg = rx / DEG
   const ryDeg = ry / DEG
-  if (rxDeg <= -48) return 2 // top (+Y)
-  if (rxDeg >= 48) return 3 // bottom (−Y)
+  if (rxDeg <= -48) return 2
+  if (rxDeg >= 48) return 3
   const a = ((-ryDeg % 360) + 360) % 360
-  const side = Math.round(a / 90) % 4 // front, right, back, left
+  const side = Math.round(a / 90) % 4
   return [4, 0, 5, 1][side]
 }
 
@@ -35,18 +37,18 @@ function clipSrc(index) {
   return clip?.src || musicClips[0].src
 }
 
-/** iOS/Android: force muted inline playback attributes on the HTMLVideoElement. */
 function prepMutedVideo(video) {
   if (!video || typeof video.play !== 'function') return
   video.muted = true
   video.defaultMuted = true
   video.playsInline = true
+  video.autoplay = true
+  video.controls = false
+  video.preload = 'auto'
   video.setAttribute('muted', '')
   video.setAttribute('playsinline', '')
   video.setAttribute('webkit-playsinline', '')
   video.setAttribute('x5-playsinline', '')
-  video.loop = true
-  video.controls = false
   try {
     video.volume = 0
   } catch {
@@ -57,129 +59,70 @@ function prepMutedVideo(video) {
 function kickPlay(video) {
   if (!video || typeof video.play !== 'function') return
   if (!video.paused) return
-  const p = video.play()
-  if (p?.catch) p.catch(() => {})
+  const playPromise = video.play()
+  if (playPromise?.catch) playPromise.catch(() => {})
 }
 
-/**
- * Unlock front-face audio inside a user gesture (required on iOS).
- * Returns true when a face was unmuted.
- */
-function unlockFrontAudio(mats, frontSlot) {
-  if (!Array.isArray(mats)) return false
-  let unlocked = false
-  mats.forEach((mat, slot) => {
-    const video = mat?.map?.image
-    if (!video || typeof video.play !== 'function') return
-    if (slot === frontSlot) {
-      video.muted = false
-      video.defaultMuted = false
-      video.removeAttribute('muted')
-      try {
-        video.volume = 1
-      } catch {
-        /* */
-      }
-      const p = video.play()
-      if (p?.catch) p.catch(() => {})
-      unlocked = true
+function hearVideo(video) {
+  if (!video || typeof video.play !== 'function') return
+  video.muted = false
+  video.defaultMuted = false
+  video.removeAttribute('muted')
+  try {
+    video.volume = 1
+  } catch {
+    /* */
+  }
+  // Always call play after unmute — iOS often needs a fresh play() in the gesture.
+  const playPromise = video.play()
+  if (playPromise?.catch) playPromise.catch(() => {})
+}
+
+function queueNextOnFront(video) {
+  if (!video) return
+  const step = Number(video.dataset.sequenceStep || '0')
+  const next = SEQUENCE_FOLLOW_UPS[step]
+  if (!next) {
+    video.loop = true
+    kickPlay(video)
+    return
+  }
+  video.dataset.sequenceStep = String(step + 1)
+  video.loop = step + 1 >= SEQUENCE_FOLLOW_UPS.length
+  video.src = next
+  video.load()
+  kickPlay(video)
+}
+
+/** Front face unmuted when sound is on; everyone else stays muted + playing (desktop behavior). */
+function applyFrontAudio(videos, frontSlot, soundOn, hiddenSlot = -1) {
+  videos.forEach((video, slot) => {
+    if (!video) return
+    if (slot === hiddenSlot) {
+      if (!video.paused) video.pause()
+      if (!video.muted) prepMutedVideo(video)
+      return
+    }
+    if (soundOn && slot === frontSlot) {
+      if (video.muted || video.paused || video.volume < 0.5) hearVideo(video)
     } else {
-      video.muted = true
-      video.defaultMuted = true
-      video.setAttribute('muted', '')
-      try {
-        video.volume = 0
-      } catch {
-        /* */
-      }
+      if (!video.muted) prepMutedVideo(video)
       kickPlay(video)
     }
   })
-  return unlocked
 }
 
-function FaceMaterial({ src, slot }) {
-  const texture = useVideoTexture(src, {
-    unsuspend: 'canplay',
-    muted: true,
-    loop: true,
-    start: true,
-    playsInline: true,
-  })
-
-  useEffect(() => {
-    texture.colorSpace = THREE.SRGBColorSpace
-    texture.wrapS = THREE.ClampToEdgeWrapping
-    texture.wrapT = THREE.ClampToEdgeWrapping
-    texture.minFilter = THREE.LinearFilter
-    texture.magFilter = THREE.LinearFilter
-    texture.generateMipmaps = false
-    texture.anisotropy = 1
-    texture.offset.set(UV_INSET, UV_INSET)
-    texture.repeat.set(1 - UV_INSET * 2, 1 - UV_INSET * 2)
-    texture.needsUpdate = true
-
-    const video = texture.image
-    prepMutedVideo(video)
-    kickPlay(video)
-  }, [texture])
-
-  return (
-    <meshBasicMaterial
-      attach={`material-${slot}`}
-      map={texture}
-      toneMapped={false}
-      side={THREE.FrontSide}
-      depthWrite
-      depthTest
-      polygonOffset
-      polygonOffsetFactor={-1}
-      polygonOffsetUnits={-1}
-    />
-  )
-}
-
-function applyFrontAudio(mats, frontSlot, soundOn) {
-  if (!Array.isArray(mats)) return
-  mats.forEach((mat, slot) => {
-    const video = mat?.map?.image
-    if (!video || typeof video.muted !== 'boolean') return
-
-    const shouldHear = Boolean(soundOn && slot === frontSlot)
-    if (shouldHear) {
-      if (video.muted) {
-        video.muted = false
-        video.defaultMuted = false
-        video.removeAttribute('muted')
-        try {
-          video.volume = 1
-        } catch {
-          /* */
-        }
-      }
-    } else if (!video.muted) {
-      video.muted = true
-      video.defaultMuted = true
-      video.setAttribute('muted', '')
-      try {
-        video.volume = 0
-      } catch {
-        /* */
-      }
-    }
-    kickPlay(video)
-  })
-}
-
-function VideoCube({ reducedMotion }) {
-  const mesh = useRef(null)
-  const soundOn = useRef(false)
+function VideoCube({ reducedMotion, videosRef, touchLite, lenisRef, soundOnRef }) {
+  const root = useRef(null)
+  const matsRef = useRef([])
+  const texturesRef = useRef(Array(6).fill(null))
   const pose = useRef({
     rx: -10 * DEG,
     ry: -26 * DEG,
     vx: 0,
     vy: 0,
     dragging: false,
+    pending: false,
     lastX: 0,
     lastY: 0,
     lastT: 0,
@@ -192,108 +135,130 @@ function VideoCube({ reducedMotion }) {
     turnTo: 0,
     turnStart: 0,
   })
+  const lastFrontRef = useRef(-1)
   const { gl } = useThree()
 
   const size = useMemo(() => {
-    const w = 3.2
+    const w = touchLite ? 3.2 * TOUCH_CUBE_SCALE : 3.2
     const h = w * (9 / 16)
     const d = w * 0.46
     return [w, h, d]
-  }, [])
+  }, [touchLite])
+  const maxAniso = gl.capabilities.getMaxAnisotropy()
 
-  const sources = useMemo(
-    () => CLIP_BY_SLOT.map((clipIndex) => clipSrc(clipIndex)),
-    [],
-  )
+  useEffect(() => {
+    const textures = texturesRef.current
+    return () => {
+      textures.forEach((texture) => texture?.dispose())
+    }
+  }, [])
 
   useEffect(() => {
     const el = gl.domElement
-    el.style.touchAction = 'pan-y'
+    el.style.touchAction = touchLite ? 'none' : 'pan-y'
     el.style.cursor = 'grab'
 
-    /** Must unmute + play inside the same user gesture (iOS). */
     const unlockAudio = () => {
-      soundOn.current = true
-      const cube = mesh.current
-      if (!cube) return
-      const frontSlot = facingMaterialSlot(pose.current.rx, pose.current.ry)
-      unlockFrontAudio(cube.material, frontSlot)
+      soundOnRef.current = true
+      applyFrontAudio(
+        videosRef.current,
+        facingMaterialSlot(pose.current.rx, pose.current.ry),
+        true,
+      )
     }
 
-    const kickAllMuted = () => {
-      const cube = mesh.current
-      const mats = cube?.material
-      if (!Array.isArray(mats)) return
-      mats.forEach((mat) => {
-        const video = mat?.map?.image
-        if (!video) return
-        if (!soundOn.current) prepMutedVideo(video)
-        kickPlay(video)
-      })
-    }
+    const DRAG_THRESHOLD = touchLite ? 6 : 12
+    const VERTICAL_SCROLL_RATIO = touchLite ? 3.2 : 2.5
 
-    const onDown = (event) => {
-      if (event.pointerType === 'touch' && event.isPrimary === false) return
-      unlockAudio()
-      kickAllMuted()
-
-      const p = pose.current
-      p.dragging = true
-      p.vx = 0
-      p.vy = 0
-      p.lastX = event.clientX
-      p.lastY = event.clientY
-      p.lastT = performance.now()
-      auto.current.turning = false
-      auto.current.dwellUntil = performance.now() + FACE_DWELL_MS * 1.5
-      el.style.cursor = 'grabbing'
+    const stopLenis = () => {
+      if (!touchLite) return
       try {
-        el.setPointerCapture(event.pointerId)
+        lenisRef?.current?.stop?.()
       } catch {
         /* */
       }
     }
 
+    const startLenis = () => {
+      if (!touchLite) return
+      try {
+        lenisRef?.current?.start?.()
+      } catch {
+        /* */
+      }
+    }
+
+    const onDown = (event) => {
+      if (event.pointerType === 'touch' && event.isPrimary === false) return
+      unlockAudio()
+      const p = pose.current
+      p.pending = true
+      p.dragging = false
+      p.vx = 0
+      p.vy = 0
+      p.lastX = event.clientX
+      p.lastY = event.clientY
+      p.lastT = performance.now()
+    }
+
     const onMove = (event) => {
       const p = pose.current
-      if (!p.dragging) return
+      if (!p.pending && !p.dragging) return
       const now = performance.now()
       const dx = event.clientX - p.lastX
       const dy = event.clientY - p.lastY
-      if (event.pointerType === 'touch' && Math.abs(dy) > Math.abs(dx) * 1.35) {
-        p.dragging = false
-        el.style.cursor = 'grab'
+
+      if (p.pending && !p.dragging) {
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
+        if (!touchLite && Math.abs(dy) >= Math.abs(dx) * VERTICAL_SCROLL_RATIO) {
+          p.pending = false
+          p.dragging = false
+          return
+        }
+        p.dragging = true
+        p.pending = false
+        stopLenis()
+        auto.current.turning = false
+        auto.current.dwellUntil = now + FACE_DWELL_MS * 1.5
+        el.style.cursor = 'grabbing'
         try {
-          el.releasePointerCapture(event.pointerId)
+          el.setPointerCapture(event.pointerId)
         } catch {
           /* */
         }
-        return
       }
+
+      if (!p.dragging) return
+
       event.preventDefault()
       const step = Math.max(8, now - p.lastT) / 1000
       p.lastX = event.clientX
       p.lastY = event.clientY
       p.lastT = now
-      p.ry += dx * 0.0068
-      p.rx -= dy * 0.0068
-      p.rx = Math.max(-68 * DEG, Math.min(68 * DEG, p.rx))
-      p.vy = (dx / step) * 0.0068
-      p.vx = (-dy / step) * 0.0068
+      const sens = touchLite ? 0.0084 : 0.0068
+      p.ry += dx * sens
+      p.rx -= dy * sens
+      p.vy = (dx / step) * sens
+      p.vx = (-dy / step) * sens
     }
 
     const onUp = () => {
       const p = pose.current
+      const wasDragging = p.dragging
+      p.pending = false
       p.dragging = false
       p.vy = Math.max(-3.8, Math.min(3.8, p.vy))
       p.vx = Math.max(-3.8, Math.min(3.8, p.vx))
       auto.current.dwellUntil = performance.now() + FACE_DWELL_MS
       el.style.cursor = 'grab'
-    }
-
-    const onPageGesture = () => {
-      unlockAudio()
-      kickAllMuted()
+      if (wasDragging) startLenis()
+      if (soundOnRef.current) {
+        applyFrontAudio(
+          videosRef.current,
+          facingMaterialSlot(pose.current.rx, pose.current.ry),
+          true,
+        )
+      }
     }
 
     el.addEventListener('pointerdown', onDown)
@@ -301,27 +266,23 @@ function VideoCube({ reducedMotion }) {
     el.addEventListener('pointerup', onUp)
     el.addEventListener('pointercancel', onUp)
     el.addEventListener('lostpointercapture', onUp)
-    window.addEventListener('pointerdown', onPageGesture, { passive: true })
-    window.addEventListener('touchstart', onPageGesture, { passive: true })
-
-    // Keep muted faces alive even before the first tap
-    const keepAlive = window.setInterval(kickAllMuted, 1200)
-    kickAllMuted()
+    window.addEventListener('pointerdown', unlockAudio, { passive: true })
+    window.addEventListener('touchstart', unlockAudio, { passive: true })
 
     return () => {
-      window.clearInterval(keepAlive)
+      startLenis()
       el.removeEventListener('pointerdown', onDown)
       el.removeEventListener('pointermove', onMove)
       el.removeEventListener('pointerup', onUp)
       el.removeEventListener('pointercancel', onUp)
       el.removeEventListener('lostpointercapture', onUp)
-      window.removeEventListener('pointerdown', onPageGesture)
-      window.removeEventListener('touchstart', onPageGesture)
+      window.removeEventListener('pointerdown', unlockAudio)
+      window.removeEventListener('touchstart', unlockAudio)
     }
-  }, [gl])
+  }, [gl, videosRef, touchLite, lenisRef, soundOnRef])
 
   useFrame((_, delta) => {
-    const cube = mesh.current
+    const cube = root.current
     if (!cube) return
 
     const now = performance.now()
@@ -369,53 +330,182 @@ function VideoCube({ reducedMotion }) {
     d.ry += (p.ry - d.ry) * follow
     cube.rotation.x = d.rx
     cube.rotation.y = d.ry
+    cube.position.y = Math.sin(now * 0.00088) * 0.12
 
     const frontSlot = facingMaterialSlot(p.rx, p.ry)
-    applyFrontAudio(cube.material, frontSlot, soundOn.current)
+    const frontChanged = lastFrontRef.current !== frontSlot
+    lastFrontRef.current = frontSlot
+
+    videosRef.current.forEach((video, slot) => {
+      if (!video) return
+      const hidden = !a.turning && slot === OPPOSITE_SLOT[frontSlot]
+      if (hidden) {
+        if (!video.paused) video.pause()
+        return
+      }
+      kickPlay(video)
+      const mat = matsRef.current[slot]
+      if (!mat) return
+      const hasFrame = video.readyState >= 2 && video.videoWidth > 0 && video.currentTime > 0
+      if (hasFrame && !texturesRef.current[slot]) {
+        const texture = new THREE.VideoTexture(video)
+        texture.colorSpace = THREE.SRGBColorSpace
+        texture.wrapS = THREE.ClampToEdgeWrapping
+        texture.wrapT = THREE.ClampToEdgeWrapping
+        texture.minFilter = THREE.LinearFilter
+        texture.magFilter = THREE.LinearFilter
+        texture.generateMipmaps = false
+        texture.anisotropy = Math.min(touchLite ? 2 : 4, maxAniso)
+        texture.offset.set(UV_INSET, UV_INSET)
+        texture.repeat.set(1 - UV_INSET * 2, 1 - UV_INSET * 2)
+        texturesRef.current[slot] = texture
+        mat.map = texture
+        mat.color.set('#ffffff')
+        mat.needsUpdate = true
+      } else if (texturesRef.current[slot]) {
+        texturesRef.current[slot].needsUpdate = true
+      }
+    })
+
+    // Sync audio every frame when unlocked; force when the front face changes.
+    if (soundOnRef.current || frontChanged) {
+      applyFrontAudio(
+        videosRef.current,
+        frontSlot,
+        soundOnRef.current,
+        a.turning ? -1 : OPPOSITE_SLOT[frontSlot],
+      )
+    }
   })
 
   return (
-    <mesh ref={mesh} castShadow={false} receiveShadow={false} frustumCulled={false}>
-      <boxGeometry args={size} />
-      {sources.map((src, slot) => (
-        <Suspense key={`${src}-${slot}`} fallback={<meshBasicMaterial attach={`material-${slot}`} color="#0a0a0a" />}>
-          <FaceMaterial src={src} slot={slot} />
-        </Suspense>
-      ))}
-    </mesh>
+    <group ref={root}>
+      <mesh frustumCulled={false}>
+        <boxGeometry args={size} />
+        {CLIP_BY_SLOT.map((_, slot) => (
+          <meshBasicMaterial
+            key={slot}
+            ref={(node) => {
+              matsRef.current[slot] = node
+            }}
+            attach={`material-${slot}`}
+            color="#0b0b0b"
+            toneMapped={false}
+          />
+        ))}
+      </mesh>
+    </group>
   )
 }
 
 function MusicVideoStage() {
-  const { prefersReducedMotion } = useReducedMotionProfile()
+  const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
+  const lenisRef = useLenis()
+  const videosRef = useRef([])
+  const soundOnRef = useRef(false)
+  const voidRef = useRef(null)
+  const sources = useMemo(() => CLIP_BY_SLOT.map((clipIndex) => clipSrc(clipIndex)), [])
+  const touchLite = Boolean(isTouchLike)
+
+  useEffect(() => {
+    const kickMuted = () => {
+      if (soundOnRef.current) return
+      videosRef.current.forEach((video) => {
+        if (!video) return
+        prepMutedVideo(video)
+        kickPlay(video)
+      })
+    }
+
+    const unlockFromScreen = () => {
+      soundOnRef.current = true
+      // VideoCube applies the real front face from pose; this kickstarts play in the gesture.
+      videosRef.current.forEach((video) => {
+        if (!video) return
+        kickPlay(video)
+      })
+      const front = videosRef.current[SEQUENCE_SLOT]
+      if (front) hearVideo(front)
+    }
+
+    kickMuted()
+    window.addEventListener('pointerdown', unlockFromScreen, { passive: true })
+    window.addEventListener('touchstart', unlockFromScreen, { passive: true })
+    window.addEventListener('pageshow', kickMuted)
+
+    const voidEl = voidRef.current
+    voidEl?.addEventListener('pointerdown', unlockFromScreen, { passive: true })
+    voidEl?.addEventListener('touchstart', unlockFromScreen, { passive: true })
+
+    return () => {
+      window.removeEventListener('pointerdown', unlockFromScreen)
+      window.removeEventListener('touchstart', unlockFromScreen)
+      window.removeEventListener('pageshow', kickMuted)
+      voidEl?.removeEventListener('pointerdown', unlockFromScreen)
+      voidEl?.removeEventListener('touchstart', unlockFromScreen)
+    }
+  }, [])
 
   return (
-    <section className="music-void" role="region" aria-label="Music cube">
+    <section ref={voidRef} className="music-void" role="region" aria-label="Music cube">
+      <div className="music-video-bank" aria-hidden="true">
+        {sources.map((src, slot) => (
+          <video
+            key={`cube-face-${slot}`}
+            ref={(node) => {
+              videosRef.current[slot] = node
+              if (!node) return
+              prepMutedVideo(node)
+              node.loop = slot !== SEQUENCE_SLOT
+              if (slot === SEQUENCE_SLOT && !node.dataset.sequenceBound) {
+                node.dataset.sequenceBound = '1'
+                node.addEventListener('ended', () => queueNextOnFront(node))
+              }
+              kickPlay(node)
+            }}
+            className="music-video-bank__clip"
+            src={src}
+            muted
+            loop={slot !== SEQUENCE_SLOT}
+            autoPlay
+            playsInline
+            preload="auto"
+            width={320}
+            height={180}
+            disablePictureInPicture
+            controls={false}
+          />
+        ))}
+      </div>
       <div className="music-scene music-scene--webgl">
-        <WebGLErrorBoundary
-          fallback={<div className="music-cube-fallback" aria-hidden />}
-        >
+        <WebGLErrorBoundary fallback={<div className="music-cube-fallback" aria-hidden />}>
           <Canvas
             className="music-cube-canvas"
-            dpr={[1, 1.75]}
+            dpr={touchLite ? [1, 1.25] : [1, 1.5]}
+            events={() => ({ enabled: false })}
             gl={{
               antialias: true,
               alpha: true,
-              powerPreference: 'high-performance',
+              premultipliedAlpha: false,
+              powerPreference: touchLite ? 'default' : 'high-performance',
               stencil: false,
               depth: true,
             }}
             camera={{ position: [0, 0.12, 5.35], fov: 34, near: 0.1, far: 40 }}
-            style={{ width: '100%', height: '100%', touchAction: 'pan-y' }}
+            style={{ width: '100%', height: '100%', touchAction: touchLite ? 'none' : 'pan-y' }}
             onCreated={({ gl }) => {
               gl.setClearColor(0x000000, 0)
               gl.outputColorSpace = THREE.SRGBColorSpace
               gl.toneMapping = THREE.NoToneMapping
             }}
           >
-            <Suspense fallback={null}>
-              <VideoCube reducedMotion={Boolean(prefersReducedMotion)} />
-            </Suspense>
+            <VideoCube
+              reducedMotion={Boolean(prefersReducedMotion)}
+              videosRef={videosRef}
+              touchLite={touchLite}
+              lenisRef={lenisRef}
+              soundOnRef={soundOnRef}
+            />
           </Canvas>
         </WebGLErrorBoundary>
         <div className="music-cube__shadow" aria-hidden />

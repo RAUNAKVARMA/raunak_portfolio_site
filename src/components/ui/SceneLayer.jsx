@@ -19,6 +19,7 @@ function SceneLayer() {
   const { pathname } = useLocation()
   const { prefersReducedMotion, isTouchLike } = useReducedMotionProfile()
   const skipHeroWebGL =
+    pathname.startsWith('/about') ||
     pathname.startsWith('/beyond/cars') ||
     pathname.startsWith('/beyond/movies') ||
     pathname.startsWith('/beyond/music') ||

@@ -11,6 +11,10 @@ export default class RootErrorBoundary extends Component {
     return { hasError: true, message: error?.message ?? 'Unknown error' }
   }
 
+  componentDidCatch(error, info) {
+    console.error('[RootErrorBoundary]', error, info?.componentStack)
+  }
+
   render() {
     if (this.state.hasError) {
       return (

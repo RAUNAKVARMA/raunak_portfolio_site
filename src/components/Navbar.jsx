@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { NavLink, Link } from 'react-router-dom'
 import { RiCloseLine, RiMenu3Line } from 'react-icons/ri'
+import { prefetchAboutRoute } from './about/aboutPrefetch'
 
 const links = [
   { label: 'Home', to: '/' },
@@ -35,6 +36,8 @@ function Navbar() {
                 to={link.to}
                 end={link.to === '/'}
                 data-cursor-hover="true"
+                onMouseEnter={link.to === '/about' ? prefetchAboutRoute : undefined}
+                onFocus={link.to === '/about' ? prefetchAboutRoute : undefined}
                 className={({ isActive }) =>
                   `relative font-mono text-[11px] uppercase tracking-[0.22em] transition-colors duration-300 ${
                     isActive ? 'text-white' : 'text-textSubtle hover:text-white'
@@ -79,6 +82,8 @@ function Navbar() {
                   to={link.to}
                   end={link.to === '/'}
                   onClick={() => setMobileOpen(false)}
+                  onMouseEnter={link.to === '/about' ? prefetchAboutRoute : undefined}
+                  onFocus={link.to === '/about' ? prefetchAboutRoute : undefined}
                   className={({ isActive }) =>
                     `border-b border-white/[0.08] px-2 py-4 font-mono text-[11px] uppercase tracking-[0.22em] last:border-0 ${
                       isActive ? 'text-white' : 'text-textSubtle'
